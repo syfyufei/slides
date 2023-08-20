@@ -306,6 +306,20 @@ $H_4$: 强调参与活动**对公共政策制定的影响**，正向激发个体
     - 人心是[最大的政治]{.red}，讲政治需要[讲科学]{.red}
     - 治理目标差异 &rarr; 合理[资源分配]{.red}
     - 培养和[激励]{.red}相结合
+    
+## {background="#43464B"}
+
+:::{style="text-align: center; margin-top: 5em"}  
+[请多指教]{.Large}
+
+:::{style="margin-top: 2em"}
+[sunyf20@tsinghua.edu.cn](mailto:yuehu@tsinghua.edu.cn) 
+
+[syfyufei.github.io](https://sammo3182.github.io/)
+
+[github.com/syfyufei](https://github.com/sammo3182)
+:::
+:::
 
 ## Reference
 
