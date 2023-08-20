@@ -54,6 +54,8 @@ theme_set(theme_minimal())
 
 ## 太长不读
 
+人民场景化、参与的弱势、民主合作体制....
+
 何以通过[低成本、快时效]{.tiffany}的手段激发[普通民众]{.tiffany}投身公共服务？
 
 :::: {.columns}
