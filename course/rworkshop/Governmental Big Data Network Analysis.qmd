@@ -1,0 +1,92 @@
+---
+title: "社会网络方法论: 理解网络"
+subtitle: "Political Research with Big Data (80700673)"
+
+author: "孙宇飞（Adrian）"
+institute: "清华大学政治学系" 
+
+knitr: 
+    opts_chunk: 
+      echo: false
+
+format: 
+  revealjs:
+    css: https://drhuyue.site:10002/Adrian/data/style_basic.css
+    theme: https://drhuyue.site:10002/Adrian/data/tiffany.scss
+    logo: https://gitlab.com/sammo3182/backup/raw/85b3c1ad4b459d7a9f901f124b936428eda5fcaf/logo_zzxx.png?inline=true
+    slide-number: true
+    incremental: true
+    preview-links: true # open an iframe for a link
+    link-external-newwindow: true
+    chalkboard: true # allwoing chalk board B, notes canvas C
+    footer: "Adrian Sun"
+    progress: true
+    hide-inactive-cursor: true
+    hide-cursor-timeout: 1000
+    
+    show-slide-number: all # `speaker` only print in pdf, `all` shows all the time
+    width: 1600
+    height: 900
+    title-slide-attributes:
+      data-background-image: https://adriansun.drhuyue.site/img/logo.jpg
+      data-background-size: 100px   
+      data-background-position: top 10% right 5%
+---
+
+## 概要
+
+```{r setup}
+#| include = FALSE
+
+library(pacman)
+
+p_load(
+  knitr,
+  RColorBrewer,
+  dotwhisker,
+  interplot,
+  modelsummary,
+  # dependency
+  stringr,
+  haven,
+  purrr,
+  broom,
+  
+  tidyr,
+  tidyverse
+) # data wrangling # data wrangling
+
+# Functions preload
+set.seed(313)
+```
+
+::::{.columns style="text-align:center; margin-top: 3em"}
+:::{.column width="50%" .nonincremental}
+*理解网络* (本节课)
+
++ 网络方法论
++ 网络要素
++ 自我中心网络
+:::
+
+:::{.column width="50%" .nonincremental}
+*分析网络* (下节课)
+
++ 邻居分析
++ 扩散分析
++ 全网分析
+:::
+::::
+
+## 概要
+
+## 概要
+
+## 概要
+
+## 概要
+
+## 概要
+
+
+

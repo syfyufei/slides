@@ -1,0 +1,31 @@
+/*-- scss:defaults --*/
+
+//@import url(./fonts/league-gothic/league-gothic.css);
+//@import url(`https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic`);
+
+// fonts
+$font-family-sans-serif: Lato, "Source Code Pro", 'STHeiti', 'Microsoft YaHei', 'SimHei', sans-serif !default;
+$presentation-font-size-root: 30px; // basic size of font, default was 40px
+
+// colors
+$body-bg: #f7f3de !default;
+$body-color: #333 !default;
+$link-color: #7B8B3D !default;
+$selection-bg: #3D7B8B !default;
+
+// headings
+$presentation-heading-font: "League Gothic", 'STHeiti', 'Microsoft YaHei', 'SimHei', sans-serif !default; // STHeiti etc. are Chinese characters
+$presentation-heading-text-transform: uppercase !default;
+$presentation-h1-font-size: 2.5em !default;
+$presentation-h2-font-size: 1.5em;
+$presentation-h3-font-size: 1.5em;
+
+
+// code blocks
+//$code-block-bg: transparent !default;
+
+/*-- scss:mixins --*/
+
+@mixin bodyBackground() {
+  @include radial-gradient(rgba(247, 242, 211, 1), rgba(255, 255, 255, 1));
+}
