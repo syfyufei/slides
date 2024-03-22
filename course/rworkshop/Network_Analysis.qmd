@@ -1,13 +1,13 @@
 ---
-title: "社会网络方法论: 理解网络"
-subtitle: "Political Research with Big Data (80700673)"
+title: "社会网络方法"
+subtitle: "R Workshop 2024 Spring"
 
 author: "孙宇飞（Adrian）"
 institute: "清华大学政治学系" 
 
 knitr: 
     opts_chunk: 
-      echo: false
+      eval: false
 
 format: 
   revealjs:
@@ -33,8 +33,6 @@ format:
       data-background-position: top 10% right 5%
 ---
 
-## 概要
-
 ```{r setup}
 #| include = FALSE
 
@@ -53,40 +51,513 @@ p_load(
   broom,
   
   tidyr,
-  tidyverse
+  tidyverse,
+  
+  igraph
 ) # data wrangling # data wrangling
 
 # Functions preload
 set.seed(313)
 ```
 
-::::{.columns style="text-align:center; margin-top: 3em"}
-:::{.column width="50%" .nonincremental}
-*理解网络* (本节课)
+## 概要
 
-+ 网络方法论
-+ 网络要素
-+ 自我中心网络
+为什么
+
+是什么
+
+怎么做
+
+# 为什么：[社会]{.navy}网络分析
+
+## 之前的方法：“Sociological Meat Grinder”
+
+> sample survey ... tearing the individual from his social context and guaranteeing that [nobody in the study interacts]{.red} with anyone else in it. --- Allen Barton (1968)
+
+::: {.callout-note}
+
+# 问题时间到🙋
+
+你能想到回归分析的几个基本假设？
+
 :::
 
-:::{.column width="50%" .nonincremental}
-*分析网络* (下节课)
+:::{.fragment style="text-align:center"}
 
-+ 邻居分析
-+ 扩散分析
-+ 全网分析
+- 线性关系
+
+- [独立性]{.red}：模型的观测值应该是独立的，也就是说，一个观测值的出现或数值不应该由其他观测值决定
+
+- 同方差性
+
+- 误差正态分布
+
+- 无多重共线性
+
+:::
+
+## One more step
+
+::::{.columns style="text-align:center; margin-top: 2em"}
+:::{.column width="50%" .fragment}
+
+### 理解：
+
++ 相似性(Similarity)
++ 关联性(Social relations)
++ 互动性(Interactions)
++ 流动性(Flows)
+
+:::
+
+:::{.notes}
+Parkinson, Sarah Elizabeth. 2013. “Organizing Rebellion: Rethinking High-Risk Mobilization and Social Networks in War.” American Political Science Review 107(3): 418–32.
+:::
+
+:::{.column width="50%" .fragment}
+### 分析：
+
++ 距离(Distance)
++ 通道(Degree)
++ 聚类(Moduarity)
++ 预测(Relation prediction)
+
 :::
 ::::
 
-## 概要
+# 社会[网络]{.navy}分析
 
-## 概要
+## 是什么：网络组成要素
 
-## 概要
+![](https://drhuyue.site:10002/sammo3182/figure/sna_networkIllustration.jpg){height=300 fig-align="center"}
 
-## 概要
+:::{.fragment}
 
-## 概要
+[Node]{.red} / Actor / Vertex
 
+Node：网络分析，用来指代网络中的一个独立实体。
+
+Actor：社会科学，强调社会性质的实体在网络中的互动和功能。
+
+Vertex：图论和复杂网络，强调的是数学或物理结构中点的概念。
+
+:::
+
+:::{.fragment}
+
+[Edge]{.red} / Relation / Link / Tie
+
+Edge/Link：图论和复杂网络，指的是连接两个节点的线或路径，强调的是网络连接的结构性质。
+
+Relation/Tie：社会科学，它强调的是社会实体之间的关系性质。
+
+
+:::
+
+## 是什么：网络类型
+
+::::{.columns style="text-align:left; margin-top: 2em"}
+:::{.column width="50%" .fragment}
+
+### 点
+
+类型：一模网络和二模网络
+
+
+:::
+
+:::{.column width="50%" .fragment}
+
+### 线
+
+方向：无向网络和有向网络
+
+粗细：加权网络和非加权网络
+
+:::
+::::
+
+## 是什么：网络类型
+
+### 网
+
+全网络 和 样本网络
+
+:::{.panel-tabset}
+### **随机样本**
+
+* **操作方式**：
+    * 从网络中的全部节点随机选择一定数量，形成网络样本。
+    * 这些节点之间的连接（如果存在）也被包括在样本中。
+* **特点**：
+    * 尽量无偏地反映整个网络的特性。
+    * 适用于节点间相对独立，且网络全貌较易获取的情况。
+    * 可能不会捕捉到网络中的聚类或社区结构，因为抽样是随机进行的。
+
+![](https://drhuyue.site:10002/sammo3182/figure/sna_illustrated_net.bmp){height=350 fig-align="center"}
+
+:::{.notes}
+随机抽样是什么方法论视角？
+:::
+
+### **自我中心样本**
+
+* **操作方式**：
+    * 选定一个或多个中心节点（ego），然后收集这些中心节点的直接联系人（alters）及其间的关系。
+    * 通常只包括一度联系（直接连接到ego的节点）。
+* **特点**：
+    * 专注于个体及其社交环境的分析。
+    * 可以揭示个体在其社交圈中的位置和作用。
+    * 可能无法展现更广阔的网络连接和结构。
+
+![](https://drhuyue.site:10002/sammo3182/figure/sna_illustrated_netEgo.bmp){height=350 fig-align="center"}
+
+### **痕迹网络样本**
+
+* **操作方式**：
+    * 跟踪特定的节点或边的活动，例如通过记录交易、通信或其他互动。
+    * 生成的网络样本侧重于这些活动的路径和模式。
+* **特点**：
+    * 能够捕获网络中的动态过程和活跃连接。
+    * 有助于分析网络中的流动性和交互模式。
+    * 可能会忽视不活跃或不显著的节点和边。
+
+![](https://drhuyue.site:10002/sammo3182/figure/sna_illustrated_netTrace.bmp){height=350 fig-align="center"}
+
+:::{.notes}
+Sampled trace network
+:::
+
+### **边际网络样本**
+
+* **操作方式**：
+    * 确定网络的一个或多个边界区域，然后抽取这些区域内的节点和边作为样本。
+    * 这种方法常用于研究网络的特定部分或子群体。
+* **特点**：
+    * 适用于研究网络边缘或具有明显界限的社群。
+    * 可以提供有关网络特定区域的深入见解。
+    * 可能无法反映整个网络的全貌。
+
+![](https://drhuyue.site:10002/sammo3182/figure/sna_illustrated_netBoundary.bmp){height=350 fig-align="center"}
+
+:::{.notes}
+Sampled boundary network
+:::
+
+### **滚雪球样本**
+
+* **操作方式**：
+    * 从一个或几个起始节点开始，收集这些节点的联系人，然后再收集这些联系人的联系人，逐步扩大样本。
+    * 这种方法可以持续进行，直到达到所需的样本大小或网络深度。
+* **特点**：
+    * 适合于难以获取全网数据的情况，尤其是在隐藏或难以访问的网络中。
+    * 可以逐渐展现网络的结构和社群。
+    * 抽样起点的选择可能对样本的代表性有显著影响，可能导致选择偏差。
+
+![](https://drhuyue.site:10002/sammo3182/figure/sna_snowballSampling.png){height=350 fig-align="center"}
+
+:::{.notes}
+Sampled trace network
+:::
+:::
+
+# 怎么做：社会网络[分析]{.navy}
+
+## 怎么做：网络的数据结构-表达什么？
+
+::::{.columns style="text-align:left; margin-top: 2em"}
+:::{.column width="50%" .fragment}
+
+节点（Nodes）
+
+  * **标识（Identity）**：每个节点应有唯一的标识，如姓名、ID号或其他唯一标识符。
+  * **属性（Attributes）**：节点的特征或属性，如年龄、性别、职位、地理位置等。
+
+
+:::
+
+:::{.column width="50%" .fragment}
+
+边（Edges）
+
+* **连接关系（Connections）**：表示节点之间的联系，边可以是朋友关系、合作关系、通信交流等。
+* **方向（Direction）**：对于有向网络，需要明确边的方向，指出关系的起点和终点。
+* **权重（Weight）**：对于加权网络，边的权重表示关系的强度或其他量化指标，如交易金额、通信频率等。
+* **类型（Type）**：边的类型，如社交关系、信息流、金融交易等，特别是在多种类型的关系共存的网络中。
+
+:::
+::::
+
+## 怎么做：网络的数据结构-怎么表达？
+
+:::{.panel-tabset}
+### 邻接矩阵（Adjacency Matrix）
+
+![](https://drhuyue.site:10002/sammo3182/figure/sna_adjacency.png){height=350 fig-align="center"}
+
+行和列代表网络中的节点，而矩阵中的元素值则表示这些节点之间是否存在连接。
+
+* **无向网络**：在无向网络的邻接矩阵中，如果节点i和节点j之间有连接，则矩阵的(i, j)和(j, i)位置上的元素值为1；如果没有连接，则为0。这样的邻接矩阵是对称的。
+* **有向网络**：在有向网络中，邻接矩阵的(i, j)元素表示从节点i到节点j的边。如果存在这样的边，则相应的元素值为1（或表示边的权重，如果是加权网络）；如果不存在，则为0。这里，矩阵不一定是对称的。
+* **加权网络**：对于加权网络，邻接矩阵中的元素值表示边的权重，而不仅仅是0和1。权重可以表示连接的强度、容量或成本。
+
+### 边列表（Edge List）
+
+边列表是另一种表示网络的方式，每一行代表一个连接（或边），列出了连接的两个节点。
+
+* 在无向网络的边列表中，每行两个节点表示它们之间存在连接，而不考虑顺序。
+* 在有向网络中，边列表通常按照“源节点”和“目标节点”的顺序来记录，表明连接的方向。
+* 边列表还可以包含额外的列来描述边的其他属性，如权重、类型或边建立的时间等。
+
+![](https://drhuyue.site:10002/sammo3182/figure/sna_edgeList.png){height=350 fig-align="center"}
+:::
+
+## 示例数据-Marvel Comic Book Universe(Marvel Chronology Project)
+
+:::{.panel-tabset}
+
+### 数据下载
+
+此文件包含 Marvel 漫画宇宙中角色关系的网络数据（从1961年开始，到1999/2000年左右结束？），数据库对漫威漫画宇宙中每个重要角色的每次出场进行了分类。
+
+Nodes: 327;
+
+Edges: 9,891; weighted; undirected
+
+![](https://drhuyue.site:10002/Adrian/figure/MarvelQRCode.png){height=300 fig-align="center"}
+
+### 数据读取
+
+```{r, echo=TRUE}
+
+# 读取节点数据
+nodes <- read.csv("/home/OpenSourceData/Adrian/data/course/rworkshop/network_analysis/sample-social-network-datasets-master/sample-datasets/marvel/marvel-unimodal-nodes.csv")
+
+# 读取边数据
+edges <- read.csv("/home/OpenSourceData/Adrian/data/course/rworkshop/network_analysis/sample-social-network-datasets-master/sample-datasets/marvel/marvel-unimodal-edges.csv")
+
+library(igraph)
+
+# 创建图对象
+graph <- graph_from_data_frame(d=edges, vertices=nodes, directed=FALSE)
+
+# 绘制网络图
+plot(graph)
+
+# 使用Fruchterman-Reingold布局算法改善布局
+layout <- layout_with_fr(graph)
+
+# 设置节点大小和边的颜色
+plot(graph, layout=layout, vertex.size=5, vertex.label.cex=0.7,
+     edge.color="gray", vertex.color="skyblue")
+
+```
+
+:::
+
+## 怎么做：网络描述
+
+::::{.columns style="text-align:center; margin-top: 2em"}
+:::{.column width="50%" .fragment}
+
+### 规模
+
++ 量级（Size）
++ 密度（Density）
+
+### 相似性/同质性（Homophily）
+
+:::
+
+:::{.column width="50%" .fragment}
+### (未)连结性
+
++ 结构洞（Structural Holes）
++ 掮客（Brokerage）
+
+### 聚合性
+
++ 向心性（Centrality）
++ 小团体（Subgroups）
+:::
+::::
+
+## 规模
+
+:::{.panel-tabset}
+### 量级（Size）
+
+```{r, echo=TRUE}
+
+# 计算网络规模（量级，即节点数）
+network_size <- vcount(graph)
+
+```
+
+### 密度（Density）
+
+```{r, echo=TRUE}
+
+# 计算网络密度
+network_density <- edge_density(graph)
+
+```
+
+### 相关研究
+
+Security Egonets (Maoz 2010)
+
++ 数据源：新独立国家独立五年内和已独立国家发生MID五年内的国际环境。
++ 测量： Strategic Reference Group (SRG)，[以国家为Ego]{.red}，测量与其产生敌对关系、冲突的国家及国家联盟
++ 观点：国家的SRG越大，其越有可能在外交政策中施用争端性政策工具（如介入MID或战争）
+
+:::
+
+## 相似性/同质性（Homophily）
+
+:::{.panel-tabset}
+
+### 概念
+
+[Similarity breeds connection.]{.red}相似的个体更有可能彼此连接
+
+![](https://drhuyue.site:10002/sammo3182/figure/sna_homophily.bmp){height=800 fig-align="center"}
+
+### 如何计算网络的同质性
+
+#### 定义和测量同质性
+
+* **属性选择**：确定哪些个体属性用于分析同质性，如年龄、性别、教育背景、职业等。
+* **相似性度量**：量化个体间属性的相似性。这可以通过简单的二元指标（如同性别为1，异性别为0）或更复杂的度量（如基于多个属性的相似性得分）来实现。
+
+#### 分析网络结构
+
+* **节点和边的分析**：观察具有相似属性的个体是否倾向于形成网络中的连接。这可以通过计算网络中同质连接与随机期望连接的比率来评估。
+* **子群体分析**：识别网络中的子群体，看它们是否围绕特定的相似属性聚集。这可以使用社区检测算法或聚类分析来完成。
+
+#### 计算同质性指标
+
+* **同质性比率**：计算网络中同质连接（如，同性别连接）占所有连接的比例。
+* **网络聚合指数**：使用如E-I指数（External-Internal Index）来测量网络中的群体内连接与群体间连接的比例。
+
+### 用R计算网络的同质性
+
+```{r, echo=TRUE}
+
+# 假设节点属性中有一个名为'attribute'的特征，可以是性别、年龄等
+
+# 计算基于特定属性的同质性
+homophily <- edge_density(graph, pairs = V(graph)[V(graph)$attribute == V(graph)$attribute])
+
+```
+
+:::
+
+## (未)连结性-结构洞 (Structural Holes)
+
+结构洞指的是网络中未连接节点之间的空隙。个体或组织可以通过桥接这些空隙来获取信息优势和控制力。
+
+![](https://drhuyue.site:10002/sammo3182/figure/sna_structuralHole.jpg){height=700 fig-align="center"}
+
+## (未)连结性-掮客 (Brokerage)
+
+掮客指的是在网络中连接不同群体或个体的角色，掮客通过桥接结构洞来协调和传递资源和信息。
+Coordinator, consultant, representative, gatekeeper, liaison
+
+## 聚合性
+
++ 小团体：局部聚合性
++ 向心性：总体聚合性
+
+## 度中心性
+
+:::{.panel-tabset}
+
+### 概念
+
+- 衡量一个节点连接到多少其他节点。度高意味着节点具有更多直接联系。
+
+- 揭示了哪些角色在Marvel宇宙中最活跃，与其他角色有最多的联系。
+
+### R Codes
+
+```{r, echo=TRUE}
+
+# 计算度中心性
+degree_centrality <- degree(graph)
+
+```
+:::
+
+## 介数中心性
+
+:::{.panel-tabset}
+
+### 概念
+
+- 衡量一个节点在网络中连接不同节点对路径上的频率。高介数中心性的节点在网络中起到重要的中介或桥接作用。
+
+- 显示哪些角色在不同角色或群体间起到了桥接作用，可能代表关键的转折点或联系人物。
+
+### R Codes
+
+```{r, echo=TRUE}
+
+# 计算介数中心性
+betweenness_centrality <- betweenness(graph)
+
+```
+:::
+
+## 接近中心性
+
+:::{.panel-tabset}
+
+### 概念
+
+- 衡量一个节点到达网络中所有其他节点的路径长度。高接近中心性的节点可以更快地访问网络中的其他节点。
+
+- 反映角色与整个网络中其他角色的接近程度，表明角色的影响力和信息获取能力。
+
+### R Codes
+
+```{r, echo=TRUE}
+
+# 计算接近中心性
+closeness_centrality <- closeness(graph)
+
+
+```
+:::
+
+## 集群系数
+
+:::{.panel-tabset}
+
+### 概念
+
+- 度量网络中节点的紧密程度，高集群系数意味着节点的邻居之间也相互连接。
+
+- 揭示角色间的团体结构，高集群系数可能表示存在密切的小团体或社区。
+
+### R Codes
+
+```{r, echo=TRUE}
+
+# 计算集群系数
+clustering_coefficient <- transitivity(graph)
+
+# 使用快速社区检测算法
+community <- cluster_fast_greedy(graph)
+
+# 打印社区的数量
+cat("Number of communities:", length(sizes(community)), "\n")
+
+# 查看每个社区的节点
+membership(community)
+
+
+```
+:::
 
 
