@@ -87,8 +87,13 @@ set.seed(313)
 - Beijing, China
 
 ![](https://drhuyue.site:10002/Adrian/figure/Hika_firstmeet.jpg){height=300 fig-align="left"}
-:::
 
+:::
+:::{.notes}
+
+- I was born in Zhengzhou, Henan Province, China, and I am currently living in Beijing with my girlfriend and dog Hika. He is just by my side now.
+
+:::
 ::::
 
 ## Junior Scholar
@@ -101,13 +106,13 @@ set.seed(313)
 
   - Github Campus Expert
   
-  - R Workshop Lecturer
+  - R Workshop Lecturer: 4 years, 2000 + students
   
 :::{.notes}
 
-- As a political scientist, my research interests include political discourse, local governance in China (also focusing on the politics of Hong Kong, Macau and Taiwan) and political psychology. I specialize in using data science to study social science issues, and I am a “Github Campus Expert”. 
+- As a Junior Scholar on political science, my research interests include political discourse, local governance in China (also focusing on the politics of Hong Kong, Macau and Taiwan) and political psychology. 
 
-- help students without programming background to enjoy the convenience and efficiency programming, 4 years, 2000 students
+- And I am a big fan of programming, especially R. My mentor and I, as Github Campus Experts, have been running R workshops at Tsinghua University for four years, helping students with no math background to learn and use programming languages. Our courses cover from basic data structures to machine learning.
 
 :::
 
@@ -139,6 +144,16 @@ set.seed(313)
 :::
 
 ::::
+
+:::{.notes}
+
+- I really enjoy traveling, especially cross-cultural trips. （I find they help a lot in understanding comparative politics. For example, I couldn't grasp why traffic accidents are an important proxy for measuring a country's enforcement capacity until I saw the motorcycles on the streets of Vietnam.）
+
+- As part of the Covid Generation, we experienced strict travel restrictions during the three years of Covid. I tried to make up for this, and after Covid, I traveled to dozens of countries.
+
+- Last year, I was fortunate to travel around Japan on the Shinkansen, from Fukuoka to Wakkanai in the north. Along the way, I saw many beautiful sights and met friendly people, making Japan one of my favorite countries. This experience is the original motivation for my desire to visit the University of Tokyo.
+
+:::
 
 # Projects Introduction
 
@@ -179,12 +194,36 @@ Diffusion of political discourse: From Chinese central government to Hong Kong g
 
 - Effect: Validity, Legality
 
+- Discourse is a flowing institution
+
+- Policy Diffusion + Discursive Institutionalism = **Political Discourse Diffusion**
+
 :::
 ::::
 
 :::{.fragment}
 
 [Why]{.red} ,[how]{.red} does the Hong Kong government use the official discourse of the Chinese central government? What's the [effect]{.red}?
+
+:::
+
+:::{.notes}
+
+- These two paragraphs from the Hong Kong leader's New Year address serve as an good introduction to my dissertation.
+
+- In 2001, the discourse used by Hong Kong's leader was very civic, but in 2022, there was a significant direct citation of Xi's words.
+
+- Further analysis reveals that these changes in discourse are comprehensive and systematic, not only appearing in the speeches of Hong Kong's leaders but also in government documents at all levels in Hong Kong and even in public propaganda.
+
+Moreover, this change has been rapid; in the years following 2019, there has been a significant impact on the discourse system of Hong Kong.
+
+- The change is differential; different institutions and different discourse contents do not use the central discourse strategy in the same way.
+
+- Discourse is not just text; it is a flowing institution.
+
+- Borrowing from existing theories of policy diffusion and discursive institutionalism, I term this process as "political discourse diffusion."
+
+- My dissertation talk about the reasons, mechanisms, and impact on the legitimacy of the Hong Kong government of this process.
 
 :::
 
@@ -256,6 +295,47 @@ Diffusion of political discourse: From Chinese central government to Hong Kong g
 
 :::::
 
+:::{.notes}
+
+
+
+- In addition to my main research, I am also involved in some related projects. One is about the impact of political discourse on support for sustainable development goals (SDGs). Through experimental studies, we examine how different promotional discourses (specifically, United Nations discourse and the party's discourse) affect public support for SDGs. Interestingly, we found that using the party's discourse can effectively increase public support for the same goals.
+
+- Another project is foundational work supported by Tsinghua University, where we are compiling a database of significant statements from Chinese government and party leaders and organizations. Building on this, we hope to develop an R package that can detect similarities in political discourse style within texts.
+
+
+
+
+
+- I have also been interested in the special communication method between Chinese local governments and the public: open letters. These were once posted on community bulletin boards and are now spread through social media.
+
+- We gathered 23,583 open letters issued by various levels of local governments in China during the initial phase of the COVID-19 pandemic (January to March 2020). Using latent semantic analysis, we analyzed the political discourse features and impacts of these open letters.
+
+
+
+
+
+In the field of political psychology, my colleagues and I are studying how to motivate people to participate in co-production with the government. 
+
+We found that, unlike in Western contexts, the Chinese public is particularly sensitive to incentives based on collectivism.
+
+
+
+
+This is an interesting project I've been working on recently where we attempt to use localized large language models to simulate survey responses.
+
+Specifically, I input the personal information of respondents into the large language model to try and mimic their answers. Then, I compare these simulated responses with the actual answers given by the respondents to assess the effectiveness of the large language model.
+
+From our preliminary data collection, we've found that even with limited personal information input, we can obtain "not bad" results.
+
+
+
+
+
+I am also responsible for writing two chapters of a textbook, one of which includes content on natural language processing (NLP).
+
+:::
+
 # Visiting Research Proposal
 
 ## Research Proposal{.small}
@@ -268,13 +348,32 @@ Diffusion of political discourse: From Chinese central government to Hong Kong g
   
 - Open-minded
 
+:::{.notes}
+
+For my Visiting Research Proposal, I have drafted an abstract based on my dissertation. However, I am keeping an open mind regarding the visiting research. I heard that you are conducting research use NLP, and I am very interested in incorporating that into my visiting research plan.
+
+Certainly, if you're interested, I would also be happy to bring the R workshop to ISS.
+
+:::
+
+:::{.fragment}
+
 - R workshop in ISS ? (🐶)
+
+:::
 
 # Funding Scheme
 
 ## Funding Scheme
 
 1,000 USD / month * 6 months by Tsinghua University
+
+:::{.notes}
+
+
+Tsinghua University will support a visiting fund of $1,000 per month for a duration of six months. I will cover the additional costs myself, as I understand that renting accommodation in Tokyo can be quite expensive.
+
+:::
 
 ## Application
 
@@ -295,6 +394,14 @@ Diffusion of political discourse: From Chinese central government to Hong Kong g
 - Recommendation Letter
 
 - Visa materials
+
+:::{.notes}
+
+For the Tsinghua University application, I may need you to provide a recommendation letter. I will draft an initial version for you, but the application deadline is quite tight, in early April.
+
+According to the requirements of ISS, I need to submit an application form. If possible, I may need your assistance to obtain this form.
+
+:::
 
 :::::
 
