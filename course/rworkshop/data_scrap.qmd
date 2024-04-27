@@ -1,0 +1,487 @@
+---
+title: "数据爬取"
+subtitle: "R Workshop 2024 Spring"
+
+author: "孙宇飞（Adrian）"
+institute: "清华大学政治学系" 
+
+knitr: 
+    opts_chunk: 
+      eval: false
+
+format: 
+  revealjs:
+    css: https://drhuyue.site:10002/Adrian/data/style_basic.css
+    theme: ../../tiffany.scss
+    logo: https://gitlab.com/sammo3182/backup/raw/85b3c1ad4b459d7a9f901f124b936428eda5fcaf/logo_zzxx.png?inline=true
+    scrollable: true
+    slide-number: true
+    incremental: true
+    preview-links: true # open an iframe for a link
+    link-external-newwindow: true
+    chalkboard: true # allwoing chalk board B, notes canvas C
+    footer: "Adrian Sun"
+    progress: true
+    hide-inactive-cursor: true
+    hide-cursor-timeout: 1000
+    
+    show-slide-number: all # `speaker` only print in pdf, `all` shows all the time
+    width: 1600
+    height: 900
+    title-slide-attributes:
+      data-background-image: https://adriansun.drhuyue.site/img/logo.jpg
+      data-background-size: 100px   
+      data-background-position: top 10% right 5%
+---
+
+```{r setup}
+#| include = FALSE
+
+library(pacman)
+
+p_load(
+  knitr,
+  RColorBrewer,
+  dotwhisker,
+  interplot,
+  modelsummary,
+  # dependency
+  stringr,
+  haven,
+  purrr,
+  broom,
+  
+  tidyr,
+  tidyverse,
+  
+  igraph,
+  rvest
+) # data wrangling # data wrangling
+
+# Functions preload
+set.seed(313)
+```
+
+## Outline
+
+- 初窥门径：爬虫基础知识
+
+- 利刃出鞘：我们的爬虫工具箱
+
+- 小试牛刀：如何使用R来抓取网页
+
+# 初窥门径：爬虫基础知识
+
+## 什么是爬虫？
+
+在广袤的互联网中，有这样一种"爬虫生物"，穿梭于万维网中，将承载信息的网页吞食，然后交由搜索引擎进行转化，吸收，并最终"孵化"出结构化的数据，供人快速查找，展示。
+
+这种"生物"，其名曰"网络蜘蛛"（又被称为网页蜘蛛，网络机器人）。网络蜘蛛虽以数据为食，但是数据的生产者-网站，也需要借助爬虫的帮助，将网页提交给搜索引擎。
+
+![](https://drhuyue.site:10002/Adrian/figure/webscrap.webp){height=300 fig-align="center"}
+
+::: {.fragment}
+
+爬虫就是自动程式来**访问网络**，**上传请求**和**提取信息**的过程。
+
+:::
+
+## 访问网络
+
+访问网络可以理解成闪送骑手上门取货的过程
+
+:::{.panel-tabset}
+
+### 用户发起**访问**
+
+:::{.callout-note .fragment}
+
+# 问题时间到🙋
+
+到朋友家取包裹的第一步是什么？
+
+:::
+
+- URL：取货地址
+
+  - Universar Resource Locator(URL)，统一资源**定位**符
+  
+  - URI: URL + URN(ISBN)
+  
+- URL举例
+
+  - https://www.baidu.com/
+  
+  - https://github.com/syfyufei/Rworkshop2022/blob/main/WebCrawler/WebCrawler.html
+  
+  - http://166.111.105.29:8787/
+  
+:::{.callout-note .fragment}
+
+# 问题时间到🙋
+
+从上边的内容你能总结出URL都有哪几个部分组成？
+
+:::
+
+- URL的基本格式
+
+  - schema： 协议（例如：http，https，ftp）
+  
+  - host：服务器的IP或域名
+  
+  - port(可选)：服务器的端口，HTTP默认端口是80，HTTPS默认端口是443
+  
+  - path：访问资源的路径
+  
+  - 查询字符串（可选）：以问号（?）开头，后跟一个或多个参数。这些参数通常用于向服务器发送额外信息，例如，在https://www.example.com/page?query=1中，query=1是查询字符串，用于向服务器传达特定的请求信息。
+  
+  - schema://host[:port#]/path/…/
+  
+:::{.callout-note .fragment}
+
+- 文本传输协议
+  - http
+  - https
+  - ftp
+  - sftp
+
+
+HTTP（Hyper Text Transfer Protocol)超文本传输协议，用于从网络传输超文本数据到本地浏览器的传输协议，能保证高效而准确的传送超文本文档。由万维网协会（World Wide Web Consortium）和Internet工作小组IETF（Internet Engineering Task Force）共同合作和制定的规范。
+
+HTTPS（Hyper Test Transfer protocol over .red[Secure Socket Layer]）是以安全为目标的HTTP通道，简单讲是HTTP的安全版，即HTTP下加入SSL层，简称为HTTPS，安全基础是SSL，因此通过它传输的内容都是经过SSL加密。
+
+:::
+  
+:::{.callout-note .fragment}
+
+# 问题时间到🙋
+
+请帮我分析这个URL的各个组成部分：
+
+https://quarto.org/docs/presentations/revealjs/
+
+如果要指明端口号，请在合适的位置加上端口号。在哪？多少？
+
+:::
+
+### 域名解析
+
+- 什么是域名？
+
+  - 域名是互联网上某个服务器或计算机的人类可读地址。它是IP地址的代表，使得用户不必记忆复杂的数字序列来访问网站。
+  
+  - 域名由多个部分组成，通常包括一个顶级域名（TLD，如.com、.org、.net）和一个或多个子域名（如www）。例如，在www.example.com中，com是顶级域名，example是二级域名，www是三级域名或子域名。
+  
+- 解析成什么？
+
+  - IP 地址（互联网协议地址）是分配给每个连接到互联网的设备的唯一数字标识符。它是设备与互联网上其他设备通信的基础。
+
+  - 版本
+  
+    - IPv4：最常用的IP版本，由四组0到255之间的数字组成，用点分隔，例如192.168.1.1。
+    
+    - IPv6：由于IPv4地址的耗尽，IPv6被设计出来，它包含8组由冒号分隔的四个十六进制数字，例如2001:0db8:85a3:0000:0000:8a2e:0370:7334。
+    
+- 怎么解析？
+
+  - DNS（Domain Name System）：域名系统是互联网的命名系统，用于将域名解析为IP地址。当用户在浏览器中输入域名时，浏览器会向DNS服务器发送请求，以获取与该域名对应的IP地址。
+  
+![](https://piaosanlang.gitbooks.io/spiders/content/photos/01-webdns.jpg)
+### 发送**请求**到服务器
+
+当浏览器获取到目标服务器的IP地址后，它会向该地址发送一个网络请求，请求类型通常是HTTP或HTTPS。
+
+- 请求行
+  - 方法：请求使用的方法，例如GET、POST、PUT等
+  - 请求URI：统一资源标识符，指定请求的资源
+  - HTTP版本：指示消息使用的HTTP版本，例如HTTP/1.1
+- 请求头（Headers）：包含请求的元数据
+  - Host：请求的服务器地址。
+  - User-Agent：发出请求的客户端信息，比如浏览器类型和版本。
+  - Accept：客户端能够接收的媒体类型。
+  - Accept-Language：优先的语言。
+  - Content-Type：请求体的媒体类型（主要用于POST和PUT请求）。
+  - Authorization：认证信息，用于访问需要验证的资源。
+- 空行:请求头和请求体之间必须有一个空行，用于分隔这两部分内容。
+- 请求体（Body）
+  - 可选部分，仅在请求方法需要时存在，如POST或PUT。包含要发送给服务器的数据，比如表单数据或文件内容。请求体的格式和内容取决于Content-Type头部。
+  
+:::{.callout-note .fragment}
+# 问题时间到🙋
+
+请帮我分析这个请求
+
+```{HTTP}
+
+GET / HTTP/1.1
+Host: www.example.com
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Connection: keep-alive
+
+
+```
+
+How about this one?
+
+```{HTTP}
+
+POST /submit-form HTTP/1.1
+Host: www.example.com
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 27
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36
+Connection: keep-alive
+
+name=John+Doe&age=30&submit=Submit
+
+
+
+```
+
+:::
+
+### 服务器**响应**
+
+- 状态行
+  - HTTP版本：显示响应使用的HTTP协议版本，如HTTP/1.1。
+  - 状态码：一个三位数字，表示请求的处理结果。状态码的第一个数字定义了响应的类别，例如2xx表示成功，4xx表示客户端错误，5xx表示服务器错误。
+    - 200	正常
+
+    - 301	本网页永久性转移达到另一个地址
+    
+    - 400	请求出现语法错误
+    
+    - 403	客户端未能获得授权
+    
+    - 404	在指定位置不存在所申请的资源
+    
+    - 500	服务器遇到了意料不到的情况
+
+    - 503	服务器由于维护或者负载过重未能应答
+    
+- 响应头（Headers）：包含响应的元数据
+  - Content-Type：响应体的媒体类型，例如text/html表示HTML文档。
+  - Content-Length：响应体的长度，以字节为单位。
+  - Server：提供服务器的信息，如服务器软件名称和版本。
+  - Date：响应生成的日期和时间。
+  - Set-Cookie：如果服务器要求设置cookie，会使用这个头部。
+- 空行
+- 响应体（Body）：HTML文档、图像数据、JSON对象、XML文档等
+
+:::{.callout-note .fragment}
+
+问题时间到🙋
+
+```{HTTP}
+
+HTTP/1.1 200 OK
+Content-Type: text/html; charset=UTF-8
+Content-Length: 138
+Connection: keep-alive
+Server: Apache/2.4.1 (Unix)
+
+<html>
+<head>
+    <title>Example Page</title>
+</head>
+<body>
+    <p>Hello, World!</p>
+</body>
+</html>
+
+
+```
+
+请帮我解释这个响应
+
+:::
+
+### 渲染页面
+
+浏览器解析服务器返回的HTML、CSS和JavaScript等内容，渲染出用户可交互的网页视图。
+
+### HTML
+
+:::{.fragment}
+
+- 你的内容用什么来包装？
+
+超文本标记语言（**H**yper **T**ext **M**arkup **L**anguage，简称*HTML*）编写的。
+
+```html
+<html>
+<head>
+  <title>页面的标题</title>
+</head>
+<body>
+  <h1 id='header1'>一级标题</h1>
+  <h1 id='header2'>二级标题</h1>
+  <p>一些普通文本 &amp; <b>一些加粗的文本。</b></p>
+  <img src='source_of_the_image.png' width='200' height='200'>
+</body>
+```
+  - 常见元素
+    - `<html>` 元素：一般包括两个子元素 `<head>`和 `<body>`；
+    - **块级元素** 
+        - `<h1>`: 一级标题
+        - `<section>`: 章节
+        - `<p>`: 段落，我们抓取的很多内容都是在`<p>`中的
+        - `<ol>`: 有序列表
+        - `<ul>`：无序列表
+    - **行内元素**
+        - `<b>`: 加粗
+        - `<i>`: 斜体
+        - `<a>`: 链接
+
+  - 属性
+  
+:::
+
+::::
+
+## 网络访问的过程
+
+:::{.fragment}
+
+当我们在浏览器中输入一个url后回车，后台会发生什么？
+
+简单来说这段过程发生了以下四个步骤：
+
+- 查找域名对应的IP地址。
+
+- 向IP对应的服务器发送请求。
+
+- 服务器响应请求，发回网页内容。
+
+- 浏览器解析网页内容。
+
+> “网站是把个人计算机连上网络的过程，爬虫就是通过网络到别人计算机下载数据”
+
+爬虫是模拟用户在浏览器或者某个应用上的操作，把操作的过程、实现自动化的程序。
+
+那让我们手动访问一个网站试试吧～https://www.tsinghua.edu.cn
+
+:::
+
+# 利刃出鞘：我们的爬虫工具箱
+
+## 使用R Vest来爬取数据
+
+::::{.panel-tabset .fragment}
+
+### Rvest
+
+```{r, echo=TRUE}
+
+install.packages("rvest")
+
+library(rvest)
+
+
+```
+
+### 读取网页
+
+```{r, echo=TRUE}
+
+url <- "https://peace.tsinghua.edu.cn/xwdt.htm"
+web_page <- read_html(url)
+
+```
+
+### 提取信息
+
+- 提取文本
+
+使用html_text()函数提取网页中的文本。你需要指定想要提取文本的标签或者类。
+
+```{r, echo=TRUE}
+
+# 提取标题
+titles <- web_page %>% html_nodes("h5") %>% html_text()
+
+# 提取某个类的文本
+content <- web_page %>% html_nodes(".content") %>% html_text()
+
+
+```
+
+- 提取属性
+
+```{r, echo=TRUE}
+
+# 提取链接
+links <- web_page %>% html_nodes("a") %>% html_attr("href")
+
+list
+
+for (pages in list) {
+  read_html(pages)
+  for (links in vector) {
+    read_html() 
+  }
+}
+
+```
+
+- 提取表格
+
+```{r, echo=TRUE}
+
+# 提取第一个表格
+table <- web_page %>% html_nodes("table") %>% html_table()
+
+
+```
+
+::::
+
+# 小试牛刀：如何使用R来抓取网页
+
+## 一个实际的例子
+
+::::{.panel-tabset .fragment}
+
+### Rvest
+
+### 读取网页
+
+```{r, echo=TRUE}
+
+library(rvest)
+
+# 定义Wikipedia页面的URL
+url <- "https://en.wikipedia.org/wiki/List_of_countries_by_GDP_(nominal)"
+
+# 读取网页内容
+web_page <- read_html(url)
+
+
+```
+
+### 提取信息
+
+```{r, echo=TRUE}
+
+# 提取表格
+gdp_table <- web_page %>%
+  html_nodes("table") %>%
+  .[which(html_nodes(web_page, "table") %>% html_attr("class") == "wikitable sortable")] %>%
+  html_table()
+
+# 假设gdp_table是我们需要的表格
+gdp_data <- gdp_table[[1]]  # 如果页面有多个表格，选择正确的一个
+
+# 数据清洗和转换（根据需要执行）
+gdp_data$GDP <- as.numeric(gsub("[^0-9.]", "", gdp_data$GDP))  # 清理GDP列的数据
+
+
+
+```
+
+
+::::
+    

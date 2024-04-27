@@ -1,0 +1,21 @@
+title: Letter Format Template
+author: Mickaël Canouil
+version: 1.0.0
+quarto-required: ">=1.2.280"
+contributes:
+  formats:
+    common:
+      date: today
+      date-format: long
+    pdf:
+      documentclass: letter
+      geometry:
+        - "margin=1in"
+        - "bottom=1in"
+        - "left=1in"
+        - "right=1in"
+      colorlinks: true
+      template-partials:
+        - "partials/before-body.tex"
+        - "partials/after-body.tex"
+        - "partials/_authors.tex"

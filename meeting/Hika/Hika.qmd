@@ -1,0 +1,232 @@
+---
+title: "给Hika干爹干妈们的指南"
+
+author: "Yufei Sun（Adrian）"
+# institute: "Department of Political Science, Tsinghua University" 
+
+knitr: 
+    opts_chunk: 
+      eval: false
+
+format: 
+  revealjs:
+    css: https://drhuyue.site:10002/Adrian/data/style_basic.css
+    theme: ../../tiffany.scss
+    logo: https://gitlab.com/sammo3182/backup/raw/85b3c1ad4b459d7a9f901f124b936428eda5fcaf/logo_zzxx.png?inline=true
+    slide-number: true
+    incremental: true
+    preview-links: true # open an iframe for a link
+    link-external-newwindow: true
+    chalkboard: true # allwoing chalk board B, notes canvas C
+    footer: "Adrian Sun"
+    progress: true
+    hide-inactive-cursor: true
+    hide-cursor-timeout: 1000
+    
+    show-slide-number: all # `speaker` only print in pdf, `all` shows all the time
+    width: 1600
+    height: 900
+    title-slide-attributes:
+      data-background-image: https://adriansun.drhuyue.site/img/logo.jpg
+      data-background-size: 100px   
+      data-background-position: top 10% right 5%
+---
+
+```{r setup}
+#| include = FALSE
+
+library(pacman)
+
+p_load(
+  knitr,
+  RColorBrewer,
+  dotwhisker,
+  interplot,
+  modelsummary,
+  # dependency
+  stringr,
+  haven,
+  purrr,
+  broom,
+  
+  tidyr,
+  tidyverse,
+  
+  igraph
+) # data wrangling # data wrangling
+
+# Functions preload
+set.seed(313)
+```
+
+## Outline
+
+**重要，隐私相关**：卧室窗台上有监控设施，请您按需拔掉插头或遮挡，出门前请帮忙重新连接
+
+**重要，隐私相关**：Hika脖子上有一个用于定位的Airtag，我可以看到他的实时定位。当然，如果你们在一起，亦会透露您的定位，如果您不愿意分享位置，可以联系我关闭
+
+- 如何抵达
+
+- 吃饭
+
+- 装备
+
+- 遛Hika
+
+- 喂食
+
+- 秦皇岛出游
+
+# For 董 的part，牙牙/大壮妈可直接[跳转]()
+
+## 如何抵达
+
+::::{.columns style="text-align:left; margin-top: 2em"}
+:::{.column width="50%" .fragment}
+
+地址：**西坝河东里社区西区57号楼2403室**
+
+- 摩托车可走东四环望京桥右转基本没有警察
+
+![](https://drhuyue.site:10002/Adrian/figure/mapXibahe.png){height=300 fig-align="left"}
+
+
+:::
+
+:::{.column width="50%" .fragment}
+
+- 摩托车和电动车可走**西北一门**进入
+
+- 步行可走北门进入
+
+![](https://drhuyue.site:10002/Adrian/figure/entranceXibahe.png){height=300 fig-align="left"}
+
+:::
+:::{.notes}
+
+:::
+::::
+
+## 吃饭
+
+- 冰箱里有2份餐可以吃，加热可以使用厨房的微波炉
+
+- 冰箱里的饮料也请您随意使用
+
+- 咖啡机在卧室的窗台上，您可以在冰箱左侧的零食柜找到咖啡胶囊/茶（好像还有您的茶）
+
+- 饮用水在厨房右侧地上，您可以自行取用；烧水壶也在卧室的窗台上
+
+## 装备
+
+- Hika妈交接的时候有准备一个狗狗包裹
+
+  - 5天的狗粮&喂粮勺
+  
+  - 狗狗沐浴露（已经洗过澡，如果在海边玩的太脏可以给他简单洗个澡，因为小狗和人皮肤的酸碱性不同，所以请不要用人类的沐浴露～）
+  
+  - 小狗毛巾/擦脚巾
+  
+  - 小狗水杯
+  
+  - 遛狗绳
+  
+  - 小狗尿垫
+  
+  - 羊奶膏（零食用）
+  
+  - 捡屎袋
+
+## 遛Hika
+
+- Hika每天要遛两次，早晚各一次
+
+- 担心他会自己开门，所以出门前请把他关在卧室内并反锁卧室门
+
+- 最近北京查狗较为严重，因此最好不要带他去公园/商业区
+
+::::{.columns style="text-align:left; margin-top: 2em"}
+:::{.column width="50%" .fragment}
+
+早上最多可以憋尿到9:30
+
+- 简单溜他即可，主要是尿尿和拉屎
+
+- 10分钟左右搞定
+
+- 建议遛狗场所（小区内花园，下电梯左转）
+
+![](https://drhuyue.site:10002/Adrian/figure/gardenXibahe.png){height=300 fig-align="left"}
+
+
+:::
+
+:::{.column width="50%" .fragment}
+
+晚上最好晚一点溜他，这样憋尿比较久，7点后为宜
+
+- 可以带他玩玩跑跑
+
+- 建议遛狗场所（西坝河对岸），此地每天7-10点有大量狗狗聚集，都是Hika的好朋友
+
+![](https://drhuyue.site:10002/Adrian/figure/lawnXibahe.png){height=300 fig-align="left"}
+
+
+:::
+:::{.notes}
+
+:::
+::::
+
+:::{.fragment style="text-align:center; margin-top: 2em"}
+
+[遛狗时**无论何时**请不要解开狗绳]{.red}
+
+:::
+
+## 喂食
+
+Hika一天会吃两顿
+
+- 每次一个喂粮勺，勺子在狗粮袋里，给他放在笼子里边的绿色狗粮盆里就行
+
+- 表现好的时候可以给他吃一点羊奶膏，5cm左右即可
+
+每次喂食后和出门前请记得给他换水
+
+- 请将**饮用水**放在笼子左侧挂着的白色小狗饮水槽中
+
+- 当然，如果没水喝它也会自己在笼子边的水盆里抗议
+
+## 秦皇岛出游
+
+::::{.columns style="text-align:left; margin-top: 2em"}
+:::{.column width="50%" .fragment}
+
+- 祖山
+
+宠物友好景区，可带小狗爬山
+
+推荐天女小镇-丹栗客栈
+
+:::
+
+:::{.column width="50%" .fragment}
+
+蓝顶温泉酒店
+
+- 旁边就是免费开放的浴场
+
+- 有小院可以泡汤
+
+- 有还不错的海鲜自助
+
+
+:::
+:::{.notes}
+
+:::
+::::
+
+
+

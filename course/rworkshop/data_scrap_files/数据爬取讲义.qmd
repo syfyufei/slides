@@ -1,0 +1,203 @@
+---
+title: "数据爬取讲义"
+format: html
+editor: visual
+---
+
+```{r setup}
+#| include = FALSE
+
+library(pacman)
+
+p_load(
+  knitr,
+  RColorBrewer,
+  dotwhisker,
+  interplot,
+  modelsummary,
+  # dependency
+  stringr,
+  haven,
+  purrr,
+  broom,
+  
+  tidyr,
+  tidyverse,
+  
+  igraph,
+  rvest
+) # data wrangling # data wrangling
+
+# Functions preload
+set.seed(313)
+```
+
+## 爬虫&网络访问基础知识
+
+见Slides-dataScrap
+
+## 如何使用R来抓取网页
+
+使用函数：`rvest::read_html`
+
+### 读取网页：`rvest::read_html`
+
+```{r}
+
+library(rvest)
+
+url <- "https://www.tsinghua.edu.cn/news/xsky.htm"
+
+html_file <- read_html(url)
+
+html_file
+
+```
+
+### 选择nodes：`rvest::html_nodes`
+
+![](https://drhuyue.site:10002/Adrian/figure/SeletorGadget.png)
+
+```{r}
+
+nodes <- html_nodes(html_file, ".zttj_img_li .bt")
+
+nodes
+
+```
+
+### 提取信息：`rvest::html_text`
+
+```{r}
+
+text <- html_text(nodes)
+
+text
+
+```
+
+### 完整代码
+
+```{r}
+
+text <- read_html("https://www.tsinghua.edu.cn/news/xsky.htm") %>%
+  html_nodes(".zttj_img_li .bt") %>%
+  html_text()
+
+```
+
+### 循环爬取
+
+首先，观察url构造特点，组合构建url池子：
+
+第一页：https://www.tsinghua.edu.cn/news/xsky.htm
+
+第二页：https://www.tsinghua.edu.cn/news/xsky/505.htm
+
+第三页：https://www.tsinghua.edu.cn/news/xsky/504.htm
+
+第n页：https://www.tsinghua.edu.cn/news/xsky/(505-n).htm
+
+要构造一个URL池子，我们可以使用R语言的基本功能来生成一个URL列表。以下是如何用R语言构造这个URL池子的方法：
+
+- 首先，定义基础URL和变化的部分。
+
+- 使用一个循环或者应用函数生成完整的URL列表。
+
+- 假设我们想要生成从第1页到第2页的URL列表，我们可以这样做：
+
+```{r}
+
+# 基础URL
+base_url <- "https://www.tsinghua.edu.cn/news/xsky"
+
+# 页码变化，例如从1到10
+pages <- 1:2  # 可以根据需要更改n的值
+
+# 生成URL池子
+url_pool <- sapply(pages, function(page) {
+  if (page == 1) {
+    return(paste0(base_url, ".htm"))  # 第一页的URL格式
+  } else {
+    return(paste0(base_url, "/", 505 - page + 1, ".htm"))  # 其他页的URL格式
+  }
+})
+
+# 查看生成的URL池子
+print(url_pool)
+
+
+```
+
+之后我们循环爬取每一个网页的所有新闻链接
+
+要爬取多个页面的信息，并将每个页面的数据收集起来，我们可以在R中使用`for`循环或者`lapply`函数来实现。下面是使用`for`循环的一个例子，假设您想要爬取前2页的数据：
+
+```{r}
+
+# 初始化一个列表来保存所有的新闻链接
+all_links <- list()
+
+# 遍历URL池子
+for (url in url_pool) {
+  # 读取网页内容
+  text <- read_html(url)
+  
+  # 爬取特定节点的信息
+  links <- text %>%
+    html_nodes(".zttj_img_li a") %>%
+    html_attr("href")  # 确定链接所在的属性，通常是 'href'
+
+  # 将结果添加到列表中
+  all_links <- c(all_links, links)  # 使用 c() 来合并列表
+}
+
+# 查看爬取的链接
+all_links
+
+# 根据相对链接组合完整的链接
+
+all_links <- gsub("\\.\\.", "", all_links)  # 删除相对链接中的".."
+
+all_links <- paste0("https://www.tsinghua.edu.cn", all_links) 
+
+```
+
+之后，循环爬取所有网页中的所有内容：
+
+1. 遍历`all_links`中的每个URL。
+2. 对每个URL使用`rvest`包来爬取页面上特定节点的内容。
+3. 将每个页面的第一段内容和URL存储在数据框中。
+
+以下是实现这个过程的R代码：
+
+```{r}
+
+# 初始化一个空的数据框来存储结果
+news_data <- data.frame(url = character(), first_paragraph = character(), stringsAsFactors = FALSE)
+
+# 遍历所有链接
+for (url in all_links) {
+  # 读取网页内容
+  page_content <- read_html(url)
+  
+  # 爬取特定节点的信息，假设第一段内容位于.vsbcontent_start节点
+  first_paragraph <- page_content %>%
+    html_nodes(".vsbcontent_start") %>%
+    html_text() %>%
+    trimws()  # 去除文本前后的空格
+  
+  # 只取第一个匹配项，因为我们只需要第一段内容
+  if (length(first_paragraph) > 0) {
+    first_paragraph <- first_paragraph[1]
+  } else {
+    first_paragraph <- NA  # 如果没有找到内容，用NA填充
+  }
+  
+  # 将URL和第一段内容添加到数据框中
+  news_data <- rbind(news_data, data.frame(url = url, first_paragraph = first_paragraph, stringsAsFactors = FALSE))
+}
+
+# 查看爬取的数据
+print(news_data$first_paragraph)
+```

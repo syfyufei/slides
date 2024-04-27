@@ -1,0 +1,29 @@
+---
+author:
+  - name: Yue Hu
+    affiliation:
+      - name: Dummy org
+        department: Cool Dep
+        address: Somewhere
+        city: Magic city
+        country: best one
+        postal-code: 9999
+        email: yuehu@mail.tsinghua.edu.cn
+subject: collaboration
+subject-title: "Subject"
+opening: "Dear Director's Office of ISS,"
+closing: "Sincerely,"
+format: letter-pdf
+---
+
+
+
+I am Associate Professor Yue Hu, Yufei Sun’s doctoral supervisor in the Department of Political Science at Tsinghua University. I am writing this letter to wholeheartedly support Yufei Sun’s application for the “ISS Visiting Research Fellow” program at the Institute of Social Science (ISS), University of Tokyo.
+
+Yufei, currently an ABD, is focusing on political discourse in governance and democratization in Hong Kong for his dissertation. His interests extend to social media, policy diffusion, and the use of experimental and computational methods. Over the past four years, he has proven to be exceptionally talented and dedicated, working closely with me.
+
+The opportunity to participate in the “ISS Visiting Research Fellow” program would greatly enhance Yufei’s research and professional development. It would allow him to engage with renowned experts in their field, access valuable resources, and gain unique international perspectives that are essential in the global academic landscape.
+
+Please feel free to contact me if you need further information or clarification regarding Yufei’s application. I am confident that Yufei will make an outstanding contribution to the ISS and will uphold the high standards of both our institution and the University of Tokyo.
+
+Thank you for considering this application.
