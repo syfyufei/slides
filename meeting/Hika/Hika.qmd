@@ -77,7 +77,7 @@ set.seed(313)
 
 - 秦皇岛出游
 
-# For 董 的part，牙牙/大壮妈可直接[跳转]()
+# For 董 的part，牙牙/大壮妈可直接[跳转](https://adriansun.drhuyue.site/slides/meeting/Hika/Hika.html#/%E8%A3%85%E5%A4%87)
 
 ## 如何抵达
 
