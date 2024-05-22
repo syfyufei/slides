@@ -1,0 +1,836 @@
+---
+title: "自然语言处理：文本分类分析"
+subtitle: "R Workshop 2024 Spring"
+
+author: "孙宇飞（Adrian）"
+institute: "清华大学政治学系" 
+
+knitr: 
+    opts_chunk: 
+      eval: false
+
+format: 
+  revealjs:
+    css: https://drhuyue.site:10002/Adrian/data/style_basic.css
+    theme: ../../tiffany.scss
+    logo: https://gitlab.com/sammo3182/backup/raw/85b3c1ad4b459d7a9f901f124b936428eda5fcaf/logo_zzxx.png?inline=true
+    slide-number: true
+    incremental: true
+    preview-links: true # open an iframe for a link
+    link-external-newwindow: true
+    chalkboard: true # allwoing chalk board B, notes canvas C
+    footer: "Adrian Sun"
+    progress: true
+    hide-inactive-cursor: true
+    hide-cursor-timeout: 1000
+    
+    show-slide-number: all # `speaker` only print in pdf, `all` shows all the time
+    width: 1600
+    height: 900
+    title-slide-attributes:
+      data-background-image: https://adriansun.drhuyue.site/img/logo.jpg
+      data-background-size: 100px   
+      data-background-position: top 10% right 5%
+---
+
+```{r setup}
+#| include = FALSE
+
+library(pacman)
+
+p_load(
+  knitr,
+  RColorBrewer,
+  dotwhisker,
+  interplot,
+  modelsummary,
+  # dependency
+  stringr,
+  haven,
+  purrr,
+  broom,
+  
+  tidyr,
+  tidyverse,
+  
+  igraph,
+  quanteda,
+  quanteda.textmodels,
+  caret,
+  quanteda.corpora,
+  quanteda.textplots
+)
+
+# Functions preload
+set.seed(313)
+```
+
+## Let`s Quiz Before!
+
+<div style="display: flex; justify-content: center;">
+  <a href="https://quizizz.com/admin/quiz/664497ae68db73b183ca02ca?source=live_dash_game_complete&gameType=live&players=0" target="_blank">Open the shared page</a>
+</div>
+
+## 概要
+
+是什么
+
+为什么
+
+怎么做
+
+## 是什么：什么是文本分类
+
+<div style="display: flex; justify-content: center;">
+<iframe src="https://ai.baidu.com/tech/nlp_apply/topictagger" width="1200" height="800"></iframe>
+</div>
+
+## 文本分类 V.S. 文本聚类
+
+::: {.callout-note}
+
+# 问题时间到🙋
+
+文本分类和文本聚类有什么区别？
+
+:::
+
+::::{.columns style="text-align:left; margin-top: 2em"}
+:::{.column width="50%" .fragment}
+
+### 文本分类
+
+- 文本分类是一种**有监督**学习方法，它根据预定义的标签将文本数据分配到不同的类别中。
+
+- 特点
+
+  - 有监督学习： 文本分类依赖于已标注的数据集进行训练。
+  
+  - 预定义类别： 分类器需要预先定义好所有可能的类别。
+  
+  - 目标明确： 目标是将每个文本准确地分配到一个特定的类别。
+
+- 常见应用
+
+  - 垃圾邮件检测
+  - 情感分析（正面、负面、中性）
+  - 主题分类（新闻文章分类为政治、体育、娱乐等）
+
+
+:::
+
+:::{.column width="50%" .fragment}
+
+### 文本聚类
+
+- 文本聚类是一种**无监督**学习方法，它根据文本内容的相似性将文本数据分组，没有预定义的标签。
+
+- 特点
+
+  - 无监督学习： 文本聚类不需要已标注的数据集进行训练。
+  - 动态分组： 聚类算法自动发现和创建类别。
+  - 目标探索： 目标是发现数据中的潜在模式或主题。
+
+- 常见应用
+
+  - 文本数据探索
+  - 文档相似性分析
+  - 自动主题提取
+
+:::
+::::
+
+## 文本分类 V.S. 文本聚类
+
+- 学习方式： 文本分类是有监督学习，需要标注数据；文本聚类是无监督学习，不需要标注数据。
+
+- 输出形式： 文本分类输出的是预定义的类别标签；文本聚类输出的是动态生成的类别。
+
+- 应用场景： 文本分类适用于明确的分类任务；文本聚类适用于探索数据结构和发现潜在模式。
+
+## 为什么：文本分类的社会科学应用
+
+:::{.panel-tabset}
+
+### **政治科学**
+
+- **选举分析**：通过对候选人演讲、竞选广告和媒体报道进行分类，可以分析不同候选人的议题倾向、公众反馈和媒体偏向。例如，文本分类可以帮助识别出哪些议题在选民中引起了更多的关注。
+
+- **意识形态分析**：通过对政党宣言、演讲和社交媒体发言进行分类，可以研究不同政党和政治团体的意识形态特征和变化趋势。
+
+### **公共管理**
+
+- 公共政策研究：通过分析社交媒体、新闻报道和论坛中的文本，可以了解公众对某一政策的态度和看法。例如，利用文本分类技术，可以快速识别出对某一政策持支持、反对或中立态度的文本，从而帮助决策者了解民意。
+
+- 危机管理：在突发事件发生时，通过对大量社交媒体数据进行分类，可以及时了解公众的反应，识别谣言和错误信息，帮助政府和相关机构做出及时应对。
+
+### **社会学**
+
+- 文化研究：文本分类可以帮助研究不同文化群体在语言、价值观和社会规范方面的差异。例如，通过对文学作品、电影评论和社交媒体内容的分类，可以揭示不同文化群体的兴趣和关注点。
+
+- 社会运动分析：通过对社交媒体和新闻报道的文本分类，可以研究社会运动的形成、发展和影响。例如，分析某一社会运动的支持者和反对者的言论，可以了解其动机和诉求。
+
+### **教育学**
+
+- 情感分析：通过对学生的作文、课程评估和社交媒体发言进行分类，可以了解学生的情感状态和学习态度，从而为教育决策提供参考。
+
+- 课程内容分析：通过对教育资源（如教科书、讲义和在线课程）的文本分类，可以评估不同课程的主题分布和内容质量，优化教育资源的配置。
+    
+:::
+
+## 为什么：文本分类的社会科学应用
+
+::: {.callout-note}
+
+# 问题时间到🙋
+
+在你的学科中，文本分类能够做什么应用？
+
+:::
+
+## 怎么做
+
+- R based
+
+- API/SDK based
+
+- LLM based
+
+
+## API/SDK based：以百度大脑AI开放平台为例
+
+https://www.zaobao.com.sg/realtime/china/story20240515-3667089
+
+<div style="display: flex; justify-content: center;">
+<iframe src="https://ai.baidu.com/ai-doc/NLP/wk6z52gxe" width="1200" height="800"></iframe>
+</div>
+
+## API/SDK based：R代码示例
+
+```{r, echo=TRUE}
+
+# 加载所需的库
+library(httr)       # 用于HTTP请求
+library(jsonlite)   # 用于JSON处理
+
+# 定义API密钥和密钥
+API_KEY <- "pMQ0IxucKuFzbt3DEVITnuHe"
+SECRET_KEY <- "lMF8vRQuoCPxuxRlMWWITg3bMHyZUVPG"
+
+# 获取访问令牌的函数
+get_access_token <- function() {
+  # Baidu API的访问令牌URL
+  url <- "https://aip.baidubce.com/oauth/2.0/token"
+  
+  # 访问令牌请求的参数
+  params <- list(
+    grant_type = "client_credentials", # 授权类型
+    client_id = API_KEY,               # API密钥
+    client_secret = SECRET_KEY         # 密钥
+  )
+  
+  # 发送POST请求以获取访问令牌
+  response <- POST(url, query = params)
+  
+  # 解析响应内容
+  content <- content(response, "parsed", encoding = "UTF-8")
+  
+  # 检查是否成功获取访问令牌并返回
+  if (!is.null(content$access_token)) {
+    return(content$access_token)
+  } else {
+    # 获取令牌失败，抛出错误
+    stop("Failed to get access token")
+  }
+}
+
+# 主函数
+main <- function() {
+  # 获取访问令牌
+  access_token <- get_access_token()
+  
+  # 打印访问令牌以进行调试
+  print(paste("Access token:", access_token))
+  
+  # 生成请求URL
+  url <- paste0("https://aip.baidubce.com/rpc/2.0/nlp/v1/topic?charset=UTF-8&access_token=", access_token)
+  
+  # 定义请求的有效载荷
+  payload <- toJSON(list(
+    content = "中国科技公司字节跳动正式发布豆包大模型，价格比市场其他模型便宜99.3%。\n\n综合澎湃新闻和证券时报报道，字节跳动星期三（5月15日）在2024春季火山引擎Force原动力大会上正式发布豆包大模型。\n\n火山引擎是字节跳动旗下云服务平台，据火山引擎总裁谭待介绍，目前豆包日均处理1200亿Tokens文本，生成3000万张图片。\n\n谭待说，“大的使用量，才能打磨出好模型，也能大幅降低模型推理的单位成本。豆包主力模型在企业市场的定价只有0.0008元/千Tokens，0.8厘就能处理1500多个汉字，比行业便宜99.3%”。\n\n他认为，大模型从以分计价到以厘计价，将助力企业以更低成本加速业务创新。\n\n据火山引擎公布的价格计算，1元（人民币，0.19新元）就能买到豆包主力模型的125万Tokens，大约是200万个汉字，相当于三本《三国演义》。\n\n谭待认为，降低成本是推动大模型快进到“价值创造阶段”的一个关键因素。大模型降价，不能只提供低价的轻量化版本，主力模型和最先进的模型也要够便宜，才能真正满足企业的复杂业务场景需求，充分验证大模型的应用价值，从而催化出超越现有产品和组织模式的创新。",
+    title = "字节跳动发布豆包大模型 价格比市场便宜99%"
+  ), auto_unbox = TRUE)
+  
+  # 发送POST请求
+  response <- POST(url, body = payload, encode = "json", content_type_json())
+  
+  # 检查请求是否成功并打印响应
+  if (response$status_code == 200) {
+    # 请求成功，打印响应内容
+    print("Request successful!")
+    print(content(response, "text", encoding = "UTF-8"))
+  } else {
+    # 请求失败，打印状态码和响应内容
+    print(paste("Request failed with status code:", response$status_code))
+    print(content(response, "text", encoding = "UTF-8"))
+  }
+}
+
+# 检查是否在交互模式下运行，并调用主函数
+if (!interactive()) {
+  main()
+} else {
+  main()
+}
+
+```
+
+## LLM based: chatGPT 4o
+
+<div style="display: flex; justify-content: center;">
+  <a href="https://chat.openai.com/share/38242f53-a8bd-4ab7-bef0-302c4ac02a26" target="_blank">Open the shared page</a>
+</div>
+
+
+## LLM based: 豆包
+
+<div style="display: flex; justify-content: center;">
+<iframe src="https://www.doubao.com/chat/39803602278402" width="1200" height="800"></iframe>
+</div>
+
+## R based: 以quanteda为例
+
+- 朴素贝叶斯
+
+- word score
+
+- newsmap
+
+- LSS
+
+## 朴素贝叶斯：什么是贝叶斯？
+
+<div style="display: flex; justify-content: center;">
+<iframe width="1200" height="800" src="https://www.youtube.com/embed/RqvIVZHVS1I" title="网上热搜：警察抓酒鬼的概率如何求？体检的意义何在？李永乐老师讲贝叶斯公式！" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+</div>
+
+贝叶斯定理是一种概率计算方法，用来根据新获得的信息更新一个事件发生的可能性。简单来说，它帮助我们在已知某些条件的情况下，重新评估某个事件发生的概率。
+
+## 朴素贝叶斯
+
+-   贝叶斯定理：$P(A|B) = [P(B|A) * P(A)] / P(B)$
+        -   该定理用于在给定特征（或多个特征）的情况下找到某个标签（label）的概率，并用于最终分类。
+-   朴素（naive）：假设数据中的所有特征（例如，文本分类中的文档内词语）彼此独立。
+        -   该假设经常被违反，但由于其简洁高效，仍然被广泛使用。
+        
+## 朴素贝叶斯：怎么实现？
+
+Naive Bayes 是一种监督学习模型，通常用于将文档分类为两类或多类。我们使用附有类别标签的文档来训练分类器，并预测新未标记文档的最可能类别。
+
+:::{.panel-tabset}
+
+### 包
+
+```{r, echo=TRUE}
+require(quanteda)             # 加载 quanteda 包
+require(quanteda.textmodels)  # 加载 quanteda.textmodels 包
+require(caret)                # 加载 caret 包
+```
+
+`data_corpus_moviereviews` 来自 **quanteda.textmodels** 包，包含 2000 条电影评论，被分类为“正面”或“负面”。
+
+### 语料
+
+```{r, echo=TRUE}
+# 加载电影评论语料库
+corp_movies <- data_corpus_moviereviews
+# 显示语料库的前5个文档的摘要信息
+summary(corp_movies, 5)
+```
+
+### 生成训练集和测试集
+
+变量“Sentiment”表示电影评论是正面还是负面。在本例中，我们将使用 1500 条评论作为训练集，并基于这个子集构建Naive Bayes分类器。在第二步中，我们将预测剩余评论（我们的测试集）的情感。
+
+由于前1000条评论是负面的，剩余的评论是正面的，我们需要对文档进行随机抽样。
+
+```{r, echo=TRUE}
+# 生成1500个不重复的随机数
+set.seed(300)
+id_train <- sample(1:2000, 1500, replace = FALSE)
+# 显示前10个随机数
+head(id_train, 10)
+
+# 创建带有 ID 的文档变量
+corp_movies$id_numeric <- 1:ndoc(corp_movies)
+
+# 对文本进行标记化，去除标点符号和数字，并去除停用词和词干化
+toks_movies <- tokens(corp_movies, remove_punct = TRUE, remove_number = TRUE) %>% 
+               tokens_remove(pattern = stopwords("en")) %>% 
+               tokens_wordstem()
+# 创建文档-特征矩阵
+dfmt_movie <- dfm(toks_movies)
+
+# 获取训练集
+dfmat_training <- dfm_subset(dfmt_movie, id_numeric %in% id_train)
+
+# 获取测试集（不在 id_train 中的文档）
+dfmat_test <- dfm_subset(dfmt_movie, !id_numeric %in% id_train)
+```
+
+### 模型训练
+
+接下来，我们将使用 `textmodel_nb()` 训练 Naive Bayes 分类器。
+
+```{r, echo=TRUE}
+# 使用训练集训练 Naive Bayes 模型
+tmod_nb <- textmodel_nb(dfmat_training, dfmat_training$sentiment)
+# 查看模型摘要信息
+summary(tmod_nb)
+```
+
+Naive Bayes 只能考虑在训练集和测试集中都出现的特征，但我们可以使用 `dfm_match()` 使特征相同。
+
+```{r, echo=TRUE}
+# 使测试集的特征与训练集相匹配
+dfmat_matched <- dfm_match(dfmat_test, features = featnames(dfmat_training))
+```
+
+### 交叉表评估
+
+让我们检查分类效果如何。
+
+```{r, echo=TRUE}
+# 获取实际类别
+actual_class <- dfmat_matched$sentiment
+# 预测类别
+predicted_class <- predict(tmod_nb, newdata = dfmat_matched)
+# 创建实际类别与预测类别的交叉表
+tab_class <- table(actual_class, predicted_class)
+# 显示交叉表
+tab_class
+```
+
+交叉表显示了实际类别与预测类别的对比情况。具体来说，它显示了在测试集中，模型正确和错误分类的情况。
+
+- neg 表示负面评论
+- pos 表示正面评论
+
+从交叉表中可以看到：
+
+- 实际为负面的评论中，有 213 条被正确预测为负面，有 45 条被错误预测为正面。
+- 实际为正面的评论中，有 205 条被正确预测为正面，有 37 条被错误预测为负面。
+
+从交叉表中我们可以看到，错误的正类和负类数量相似。分类器在两个方向上都犯了错误，但似乎没有高估或低估某一类。
+
+### 混淆矩阵评估
+
+我们可以使用 **caret** 包中的 `confusionMatrix()` 函数来评估分类性能。
+
+```{r, echo=TRUE}
+# 使用混淆矩阵评估分类性能
+confusionMatrix(tab_class, mode = "everything", positive = "pos")
+```
+
+### 混淆矩阵系数
+
+混淆矩阵是评估分类模型性能的重要工具，通过它我们可以计算出一系列指标，帮助我们理解模型的表现
+
+- **准确率 (Accuracy)**：
+    
+    * 表示模型预测正确的比例。
+    * 计算公式：Accuracy=TP+TNTP+TN+FP+FN\text{Accuracy} = \frac{TP + TN}{TP + TN + FP + FN}Accuracy=TP+TN+FP+FNTP+TN​
+    * 在我们的例子中，准确率是 0.836，表示模型在 83.6% 的情况下正确分类了评论。
+    
+- **召回率 (Recall)**：
+    
+    * 表示真正例被正确预测的比例。
+    * 计算公式：Sensitivity=TPTP+FN\text{Sensitivity} = \frac{TP}{TP + FN}Sensitivity=TP+FNTP​
+    * 在我们的例子中，灵敏度是 0.8200，表示正类评论中有 82% 被正确预测为正类。
+    
+- **F1 分数 (F1 Score)**：
+    
+    * 表示精准率和召回率的调和平均数。
+    * 计算公式：F1=2×Precision×RecallPrecision+Recall\text{F1} = \frac{2 \times \text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}}F1=Precision+Recall2×Precision×Recall​
+    * 在我们的例子中，F1 分数是 0.8333，表示模型在平衡精准率和召回率方面表现较好。
+    
+:::
+
+## Wordscores
+
+:::{.panel-tabset}
+
+### 包
+
+Wordscores 是一种用于估计在预先指定维度上位置的标度模型，主要用于政治行为者的定位。Wordscores 由 Laver、Benoit 和 Garry 在 2003 年提出，并被政治学家广泛使用。
+
+```{r, echo=TRUE}
+require(quanteda)           # 加载 quanteda 包
+require(quanteda.textmodels) # 加载 quanteda.textmodels 包
+require(quanteda.textplots)  # 加载 quanteda.textplots 包
+require(quanteda.corpora)    # 加载 quanteda.corpora 包
+```
+
+### 语料
+
+训练 Wordscores 模型需要对已知政策立场的文本进行参考评分，之后 Wordscores 可以估计剩余“未知”文本的位置。
+
+在本例中，我们将使用 2013 年和 2017 年德国联邦选举的宣言。对于 2013 年的选举，我们将使用 2014 年 [Chapel Hill Expert Survey](https://www.chesdata.eu/) 对五大政党的平均专家评估，以预测 2017 年宣言的党派位置。
+
+```{r, echo=TRUE}
+# 下载德国宣言语料库
+tem <- url("https://drhuyue.site:10002/Adrian/data/course/rworkshop/NLP_classification/GermanManifestosCorpus.rds", "rb")
+corp_ger <- readRDS(tem)
+close(tem)
+
+# 查看语料库摘要信息
+summary(corp_ger)
+```
+
+### 数据清洗
+
+现在我们可以将 Wordscores 算法应用于文档-特征矩阵。
+
+```{r, echo=TRUE}
+# 对文本进行标记化，去除标点符号
+toks_ger <- tokens(corp_ger, remove_punct = TRUE)
+
+# 创建文档-特征矩阵，去除德语停用词
+dfmat_ger <- dfm(toks_ger) %>% 
+             dfm_remove(pattern = stopwords("de"))
+
+# 将 Wordscores 算法应用于文档-特征矩阵
+# y 是参考评分，smooth 参数用于平滑处理
+tmod_ws <- textmodel_wordscores(dfmat_ger, y = corp_ger$ref_score, smooth = 1)
+
+# 查看模型摘要信息
+summary(tmod_ws)
+```
+
+### 预测
+
+接下来，我们将预测未知文本的 Wordscores。
+
+```{r, echo=TRUE}
+# 预测未知文本的 Wordscores，se.fit = TRUE 表示计算标准误
+pred_ws <- predict(tmod_ws, se.fit = TRUE, newdata = dfmat_ger)
+```
+
+最后，我们可以使用 **quanteda** 的 `textplot_scale1d()` 函数绘制拟合的标度模型。
+
+```{r, echo=TRUE}
+# 绘制 Wordscores 标度模型
+textplot_scale1d(pred_ws)
+```
+
+:::
+
+## Newsmap
+
+Newsmap 是一种用于地理文档分类的半监督模型。与全监督模型需要人工分类数据不同，这种半监督模型利用字典中的“种子词”进行学习。
+
+“地理文档分类”是指根据文档内容将其归类到不同的地理区域或地点。这种分类可以根据文档中提到的地名、国家、城市等地理信息进行。例如，一篇新闻文章中如果多次提到“美国”或“纽约”，则这篇文章可以被分类为与美国或纽约相关的文档。
+
+这种分类在以下方面非常有用：
+
+1. **新闻分析**：帮助媒体或研究人员分析不同地区的新闻分布和关注度。例如，了解全球各地新闻报道的主题和频率。
+2. **地理信息系统 (GIS)**：将文本数据整合到地理信息系统中，从而进行空间分析和可视化。
+3. **市场研究**：企业可以根据不同地区的市场动态和消费者行为进行分析，从而优化其市场策略。
+4. **社交媒体监测**：监控和分析社交媒体上不同地区的讨论和热点话题。
+
+在 Newsmap 中，地理文档分类的过程大致如下：
+
+1. **文档预处理**：去除标点符号、停用词等噪音数据，提取有意义的词汇。
+2. **使用种子词典**：利用包含国家和城市名称的种子词典，识别文档中的地理实体。
+3. **特征提取**：识别并提取与地理实体相关的特征词汇。
+4. **模型训练**：使用半监督学习方法，基于种子词典和特征词汇，训练地理分类模型。
+5. **分类和预测**：将新的文档输入模型，预测其所属的地理区域。
+
+通过上述步骤，文档可以被有效地分类到相应的地理位置，从而实现地理文档分类的目标。
+
+## Newsmap
+
+:::{.panel-tabset}
+
+### 包
+
+首先，从 CRAN 安装 **newsmap** 包。
+
+```{r, echo=TRUE}
+
+install.packages("newsmap")
+
+require(quanteda)
+require(quanteda.corpora)
+require(newsmap)
+require(maps)
+require(ggplot2)
+
+```
+
+### 语料
+
+`corp_news` 包含了 2014 年从 Yahoo News 下载的 10,000 篇新闻摘要
+
+```{r, echo=TRUE}
+tem <- url("https://drhuyue.site:10002/Adrian/data/course/rworkshop/NLP_classification/YahooNewsCorpus.rds", "rb")
+corp_news <- readRDS(tem)
+close(tem)
+ndoc(corp_news)
+range(corp_news$date)
+```
+
+### 清洗文本
+
+在地理分类中，专有名词是最有用的文档特征。但并不是所有大写的单词都是专有名词，因此我们需要定义自定义停用词。
+
+```{r, echo=TRUE}
+
+month <- c("January", "February", "March", "April", "May", "June",
+           "July", "August", "September", "October", "November", "December")
+day <- c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
+agency <- c("AP", "AFP", "Reuters")
+
+toks_news <- tokens(corp_news, remove_punct = TRUE) %>% 
+             tokens_remove(pattern = c(stopwords("en"), month, day, agency), 
+                           valuetype = "fixed", padding = TRUE)
+
+```
+
+### 种子地理词典
+
+**newsmap** 包含多种语言的 [种子地理词典](https://github.com/koheiw/newsmap/tree/master/dict)，包括英语、德语、西班牙语、日语和俄语。`data_dictionary_newsmap_en` 是用于英文文本的种子词典。
+
+```{r, echo=TRUE}
+# 从种子词典中查找标记，指定第三级（国家）
+toks_label <- tokens_lookup(toks_news, dictionary = data_dictionary_newsmap_en, levels = 3) 
+
+# 将标记转换为文档-特征矩阵，不转换为小写
+dfmat_label <- dfm(toks_label, tolower = FALSE)
+
+# 创建原始标记的文档-特征矩阵，不转换为小写
+dfmat_feat <- dfm(toks_news, tolower = FALSE)
+
+# 选择以大写字母开头的特征，忽略大小写，最小词频为10
+dfmat_feat_select <- dfm_select(dfmat_feat, pattern = "^[A-Z][A-Za-z0-9]+", 
+                                valuetype = "regex", case_insensitive = FALSE) %>% 
+                     dfm_trim(min_termfreq = 10)
+
+# 使用特征矩阵和标签训练 Newsmap 模型
+tmod_nm <- textmodel_newsmap(dfmat_feat_select, y = dfmat_label)
+
+```
+
+种子词典仅包含国家和首都的名称，但模型还会提取与这些国家相关的特征。这些国家代码在 [ISO 3166-1](https://zh.wikipedia.org/wiki/ISO_3166-1) 中定义。
+
+```{r, echo=TRUE}
+# 查看模型中与特定国家（美国、英国、法国、巴西、日本）相关的前15个特征
+coef(tmod_nm, n = 15)[c("US", "GB", "FR", "BR", "JP")]
+```
+
+### 预测
+
+可以使用 `predict()` 函数预测最强关联的国家，并使用 `table()` 统计频率。
+
+```{r, echo=TRUE}
+# 使用训练好的 Newsmap 模型进行预测
+pred_nm <- predict(tmod_nm)
+# 显示前20个预测结果
+head(pred_nm, 20)
+```
+
+使用因子水平设置零计数，以便未出现在语料库中的国家也能显示出来。
+
+```{r, echo=TRUE}
+# 创建一个包含所有国家（因子水平）的频率表，按降序排列
+count <- sort(table(factor(pred_nm, levels = colnames(dfmat_label))), decreasing = TRUE)
+# 显示频率最高的前20个国家
+head(count, 20)
+```
+
+### 可视化
+
+可以使用 `geom_map()` 可视化全球新闻关注度的分布。
+
+```{r, echo=TRUE}
+# 将频率表转换为数据框
+dat_country <- as.data.frame(count, stringsAsFactors = FALSE)
+# 重命名数据框的列
+colnames(dat_country) <- c("id", "frequency")
+
+# 获取世界地图数据
+world_map <- map_data(map = "world")
+# 将地图中的国家名称转换为 ISO 代码
+world_map$region <- iso.alpha(world_map$region) 
+
+# 使用 ggplot2 绘制地图
+ggplot(dat_country, aes(map_id = id)) +
+      # 根据频率填充地图区域
+      geom_map(aes(fill = frequency), map = world_map) +
+      # 扩展绘图区域以包含世界地图的所有经纬度
+      expand_limits(x = world_map$long, y = world_map$lat) +
+      # 设置填充颜色的连续刻度，名称为“Frequency”
+      scale_fill_continuous(name = "Frequency") +
+      # 使用空白主题，移除所有背景和轴
+      theme_void() +
+      # 使用固定比例绘制地图
+      coord_fixed()
+```
+
+:::
+
+## 潜在语义尺度 (Latent Semantic Scaling, LSS)
+
+LSS是一种灵活且成本效益高的半监督文档标度技术，依赖于词嵌入，用户只需提供少量的“种子词”即可定位特定维度上的文档。
+
+:::{.panel-tabset}
+
+### 包
+
+```{r, echo=TRUE}
+
+# 从 GitHub 安装 quanteda.corpora 包
+devtools::install_github("quanteda/quanteda.corpora")
+
+# 加载 quanteda 包，提供文本处理和分析功能
+require(quanteda)
+
+# 加载 quanteda.corpora 包，提供预处理过的文本数据集
+require(quanteda.corpora)
+
+# 加载 LSX 包，提供潜在语义分析和情感分析功能
+require(LSX)
+
+
+```
+
+### 语料
+
+```{r, echo=TRUE}
+tem <- url("https://drhuyue.site:10002/Adrian/data/course/rworkshop/NLP_classification/GuardianCorpus.rds", "rb")
+corp_news <- readRDS(tem)
+close(tem)
+```
+
+### 数据清洗
+
+```{r, echo=TRUE}
+
+# 创建一个指向 GuardianCorpus.rds 文件的 URL 连接
+tem <- url("https://drhuyue.site:10002/Adrian/data/course/rworkshop/NLP_classification/GuardianCorpus.rds", "rb")
+
+# 从 URL 连接读取 RDS 文件并存储到 corp_news 对象
+corp_news <- readRDS(tem)
+
+# 关闭 URL 连接
+close(tem)
+
+# 将新闻语料库重构为句子级别的语料库，to 参数指定重构为句子
+corp_sent <- corpus_reshape(corp_news, to = "sentences")
+
+# 对句子级别的语料库进行标记处理
+toks_sent <- corp_sent %>% 
+    tokens(
+        remove_punct = TRUE,  # 移除标点符号
+        remove_symbols = TRUE,  # 移除符号
+        remove_numbers = TRUE,  # 移除数字
+        remove_url = TRUE  # 移除 URL
+    ) %>% 
+    tokens_remove(stopwords("en", source = "marimo")) %>%  # 移除停用词，来源是 marimo
+    tokens_remove(c("*-time", "*-timeUpdated", "GMT", "BST", "*.com"))  # 移除特定模式的词
+
+# 将标记后的数据转换为文档-特征矩阵
+dfmat_sent <- toks_sent %>% 
+    dfm() %>% 
+    dfm_remove(pattern = "") %>%  # 移除空模式
+    dfm_trim(min_termfreq = 5)  # 移除出现频率低于5次的词项
+
+# 输出频率最高的前20个特征
+topfeatures(dfmat_sent, 20)
+
+# 使用 data_dictionary_sentiment 生成种子词
+seed <- as.seedwords(data_dictionary_sentiment)
+print(seed)  # 打印种子词
+
+
+```
+
+### LSS模型
+
+```{r, echo=TRUE}
+
+# 确定与经济相关的上下文词，pattern 参数指定匹配模式为 "econom*"，p 参数指定 p 值阈值为 0.05
+eco <- char_context(toks_sent, pattern = "econom*", p = 0.05)
+
+# 运行 LSS 模型
+tmod_lss <- textmodel_lss(
+    dfmat_sent,  # 输入的文档-特征矩阵
+    seeds = seed,  # 使用的种子词
+    terms = eco,  # 使用的上下文词
+    k = 300,  # LSA 中的维度数
+    cache = TRUE  # 是否缓存计算结果
+)
+
+```
+
+### 可视化
+
+```{r, echo=TRUE}
+# 输出模型中最正向的前20个词
+head(coef(tmod_lss), 20)
+
+# 输出模型中最负向的前20个词
+tail(coef(tmod_lss), 20)
+
+# 可视化负向情感词，使用 manually compiled sentiment dictionary (data_dictionary_LSD2015)
+textplot_terms(tmod_lss, data_dictionary_LSD2015["negative"])
+
+```
+
+### 预测极性
+
+```{r, echo=TRUE}
+
+# 使用 dfm_group() 重新构建原始文章
+dfmat_doc <- dfm_group(dfmat_sent)
+
+# 获取文档变量
+dat <- docvars(dfmat_doc)
+
+# 预测情感极性
+dat$fit <- predict(tmod_lss, newdata = dfmat_doc)
+
+```
+
+### 可视化
+
+```{r, echo=TRUE}
+
+# 使用 smooth_lss() 对文档的情感极性得分进行平滑处理，engine 参数指定平滑引擎为 "locfit"
+dat_smooth <- smooth_lss(dat, engine = "locfit")
+head(dat_smooth)  # 打印平滑处理后的数据
+
+# 可视化文档的情感极性趋势
+plot(
+    dat$date,  # x 轴数据为日期
+    dat$fit,  # y 轴数据为情感极性得分
+    col = rgb(0, 0, 0, 0.05),  # 数据点的颜色和透明度
+    pch = 16,  # 数据点的形状
+    ylim = c(-0.5, 0.5),  # y 轴的范围
+    xlab = "Time",  # x 轴标签
+    ylab = "Economic sentiment"  # y 轴标签
+)
+lines(dat_smooth$date, dat_smooth$fit, type = "l")  # 添加平滑曲线
+lines(dat_smooth$date, dat_smooth$fit + dat_smooth$se.fit * 1.96, type = "l", lty = 3)  # 添加95%置信区间上限
+lines(dat_smooth$date, dat_smooth$fit - dat_smooth$se.fit * 1.96, type = "l", lty = 3)  # 添加95%置信区间下限
+abline(h = 0, lty = c(1, 2))  # 添加水平线，表示情感极性为零的基准线
+
+```
+
+:::
+
+## Let`s quiz after!
+
+<div style="display: flex; justify-content: center;">
+  <a href="https://quizizz.com/admin/quiz/66449b5903f7431c18acc829" target="_blank">Open the shared page</a>
+</div>

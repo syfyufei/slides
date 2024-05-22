@@ -1,0 +1,1553 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<script src="NLP_Classifacation_files/libs/clipboard/clipboard.min.js"></script>
+<script src="NLP_Classifacation_files/libs/quarto-html/tabby.min.js"></script>
+<script src="NLP_Classifacation_files/libs/quarto-html/popper.min.js"></script>
+<script src="NLP_Classifacation_files/libs/quarto-html/tippy.umd.min.js"></script>
+<link href="NLP_Classifacation_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="NLP_Classifacation_files/libs/quarto-html/light-border.css" rel="stylesheet">
+<link href="NLP_Classifacation_files/libs/quarto-html/quarto-html.min.css" rel="stylesheet" data-mode="light">
+<link href="NLP_Classifacation_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.4.533">
+
+  <meta name="author" content="孙宇飞（Adrian）">
+  <title>自然语言处理：文本分类分析</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="NLP_Classifacation_files/libs/revealjs/dist/reset.css">
+  <link rel="stylesheet" href="NLP_Classifacation_files/libs/revealjs/dist/reveal.css">
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      { color: #003b4f; background-color: #f1f3f5; }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #003b4f; } /* Normal */
+    code span.al { color: #ad0000; } /* Alert */
+    code span.an { color: #5e5e5e; } /* Annotation */
+    code span.at { color: #657422; } /* Attribute */
+    code span.bn { color: #ad0000; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #003b4f; } /* ControlFlow */
+    code span.ch { color: #20794d; } /* Char */
+    code span.cn { color: #8f5902; } /* Constant */
+    code span.co { color: #5e5e5e; } /* Comment */
+    code span.cv { color: #5e5e5e; font-style: italic; } /* CommentVar */
+    code span.do { color: #5e5e5e; font-style: italic; } /* Documentation */
+    code span.dt { color: #ad0000; } /* DataType */
+    code span.dv { color: #ad0000; } /* DecVal */
+    code span.er { color: #ad0000; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #ad0000; } /* Float */
+    code span.fu { color: #4758ab; } /* Function */
+    code span.im { color: #00769e; } /* Import */
+    code span.in { color: #5e5e5e; } /* Information */
+    code span.kw { color: #003b4f; } /* Keyword */
+    code span.op { color: #5e5e5e; } /* Operator */
+    code span.ot { color: #003b4f; } /* Other */
+    code span.pp { color: #ad0000; } /* Preprocessor */
+    code span.sc { color: #5e5e5e; } /* SpecialChar */
+    code span.ss { color: #20794d; } /* SpecialString */
+    code span.st { color: #20794d; } /* String */
+    code span.va { color: #111111; } /* Variable */
+    code span.vs { color: #20794d; } /* VerbatimString */
+    code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="NLP_Classifacation_files/libs/revealjs/dist/theme/quarto.css">
+  <link rel="stylesheet" href="https://drhuyue.site:10002/Adrian/data/style_basic.css">
+  <link href="NLP_Classifacation_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
+  <link href="NLP_Classifacation_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
+  <link href="NLP_Classifacation_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
+  <link href="NLP_Classifacation_files/libs/revealjs/plugin/reveal-chalkboard/font-awesome/css/all.css" rel="stylesheet">
+  <link href="NLP_Classifacation_files/libs/revealjs/plugin/reveal-chalkboard/style.css" rel="stylesheet">
+  <link href="NLP_Classifacation_files/libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
+  <style type="text/css">
+
+  .callout {
+    margin-top: 1em;
+    margin-bottom: 1em;  
+    border-radius: .25rem;
+  }
+
+  .callout.callout-style-simple { 
+    padding: 0em 0.5em;
+    border-left: solid #acacac .3rem;
+    border-right: solid 1px silver;
+    border-top: solid 1px silver;
+    border-bottom: solid 1px silver;
+    display: flex;
+  }
+
+  .callout.callout-style-default {
+    border-left: solid #acacac .3rem;
+    border-right: solid 1px silver;
+    border-top: solid 1px silver;
+    border-bottom: solid 1px silver;
+  }
+
+  .callout .callout-body-container {
+    flex-grow: 1;
+  }
+
+  .callout.callout-style-simple .callout-body {
+    font-size: 1rem;
+    font-weight: 400;
+  }
+
+  .callout.callout-style-default .callout-body {
+    font-size: 0.9rem;
+    font-weight: 400;
+  }
+
+  .callout.callout-titled.callout-style-simple .callout-body {
+    margin-top: 0.2em;
+  }
+
+  .callout:not(.callout-titled) .callout-body {
+      display: flex;
+  }
+
+  .callout:not(.no-icon).callout-titled.callout-style-simple .callout-content {
+    padding-left: 1.6em;
+  }
+
+  .callout.callout-titled .callout-header {
+    padding-top: 0.2em;
+    margin-bottom: -0.2em;
+  }
+
+  .callout.callout-titled .callout-title  p {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+  }
+    
+  .callout.callout-titled.callout-style-simple .callout-content  p {
+    margin-top: 0;
+  }
+
+  .callout.callout-titled.callout-style-default .callout-content  p {
+    margin-top: 0.7em;
+  }
+
+  .callout.callout-style-simple div.callout-title {
+    border-bottom: none;
+    font-size: .9rem;
+    font-weight: 600;
+    opacity: 75%;
+  }
+
+  .callout.callout-style-default  div.callout-title {
+    border-bottom: none;
+    font-weight: 600;
+    opacity: 85%;
+    font-size: 0.9rem;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+  }
+
+  .callout.callout-style-default div.callout-content {
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+  }
+
+  .callout.callout-style-simple .callout-icon::before {
+    height: 1rem;
+    width: 1rem;
+    display: inline-block;
+    content: "";
+    background-repeat: no-repeat;
+    background-size: 1rem 1rem;
+  }
+
+  .callout.callout-style-default .callout-icon::before {
+    height: 0.9rem;
+    width: 0.9rem;
+    display: inline-block;
+    content: "";
+    background-repeat: no-repeat;
+    background-size: 0.9rem 0.9rem;
+  }
+
+  .callout-title {
+    display: flex
+  }
+    
+  .callout-icon::before {
+    margin-top: 1rem;
+    padding-right: .5rem;
+  }
+
+  .callout.no-icon::before {
+    display: none !important;
+  }
+
+  .callout.callout-titled .callout-body > .callout-content > :last-child {
+    padding-bottom: 0.5rem;
+    margin-bottom: 0;
+  }
+
+  .callout.callout-titled .callout-icon::before {
+    margin-top: .5rem;
+    padding-right: .5rem;
+  }
+
+  .callout:not(.callout-titled) .callout-icon::before {
+    margin-top: 1rem;
+    padding-right: .5rem;
+  }
+
+  /* Callout Types */
+
+  div.callout-note {
+    border-left-color: #4582ec !important;
+  }
+
+  div.callout-note .callout-icon::before {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAIKADAAQAAAABAAAAIAAAAACshmLzAAAEU0lEQVRYCcVXTWhcVRQ+586kSUMMxkyaElstCto2SIhitS5Ek8xUKV2poatCcVHtUlFQk8mbaaziwpWgglJwVaquitBOfhQXFlqlzSJpFSpIYyXNjBNiTCck7x2/8/LeNDOZxDuEkgOXe++553zfefee+/OYLOXFk3+1LLrRdiO81yNqZ6K9cG0P3MeFaMIQjXssE8Z1JzLO9ls20MBZX7oG8w9GxB0goaPrW5aNMp1yOZIa7Wv6o2ykpLtmAPs/vrG14Z+6d4jpbSKuhdcSyq9wGMPXjonwmESXrriLzFGOdDBLB8Y6MNYBu0dRokSygMA/mrun8MGFN3behm6VVAwg4WR3i6FvYK1T7MHo9BK7ydH+1uurECoouk5MPRyVSBrBHMYwVobG2aOXM07sWrn5qgB60rc6mcwIDJtQrnrEr44kmy+UO9r0u9O5/YbkS9juQckLed3DyW2XV/qWBBB3ptvI8EUY3I9p/67OW+g967TNr3Sotn3IuVlfMLVnsBwH4fsnebJvyGm5GeIUA3jljERmrv49SizPYuq+z7c2H/jlGC+Ghhupn/hcapqmcudB9jwJ/3jvnvu6vu5lVzF1fXyZuZZ7U8nRmVzytvT+H3kilYvH09mLWrQdwFSsFEsxFVs5fK7A0g8gMZjbif4ACpKbjv7gNGaD8bUrlk8x+KRflttr22JEMRUbTUwwDQScyzPgedQHZT0xnx7ujw2jfVfExwYHwOsDTjLdJ2ebmeQIlJ7neo41s/DrsL3kl+W2lWvAga0tR3zueGr6GL78M3ifH0rGXrBC2aAR8uYcIA5gwV8zIE8onoh8u0Fca/ciF7j1uOzEnqcIm59sEXoGc0+z6+H45V1CvAvHcD7THztu669cnp+L0okAeIc6zjbM/24LgGM1gZk7jnRu1aQWoU9sfUOuhrmtaPIO3YY1KLLWZaEO5TKUbMY5zx8W9UJ6elpLwKXbsaZ4EFl7B4bMtDv0iRipKoDQT2sNQI9b1utXFdYisi+wzZ/ri/1m7QfDgEuvgUUEIJPq3DhX/5DWNqIXDOweC2wvIR90Oq3lDpdMIgD2r0dXvGdsEW5H6x6HLRJYU7C69VefO1x8Gde1ZFSJLfWS1jbCnhtOPxmpfv2LXOA2Xk2tvnwKKPFuZ/oRmwBwqRQDcKNeVQkYcOjtWVBuM/JuYw5b6isojIkYxyYAFn5K7ZBF10fea52y8QltAg6jnMqNHFBmGkQ1j+U43HMi2xMar1Nv0zGsf1s8nUsmUtPOOrbFIR8bHFDMB5zL13Gmr/kGlCkUzedTzzmzsaJXhYawnA3UmARpiYj5ooJZiUoxFRtK3X6pgNPv+IZVPcnwbOl6f+aBaO1CNvPW9n9LmCp01nuSaTRF2YxHqZ8DYQT6WsXT+RD6eUztwYLZ8rM+rcPxamv1VQzFUkzFXvkiVrySGQgJNvXHJAxiU3/NwiC03rSf05VBaPtu/Z7/B8Yn/w7eguloAAAAAElFTkSuQmCC');
+  }
+
+  div.callout-note.callout-style-default .callout-title {
+    background-color: #dae6fb
+  }
+
+  div.callout-important {
+    border-left-color: #d9534f !important;
+  }
+
+  div.callout-important .callout-icon::before {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAIKADAAQAAAABAAAAIAAAAACshmLzAAAEKklEQVRYCcVXTWhcVRS+575MJym48A+hSRFr00ySRQhURRfd2HYjk2SSTokuBCkU2o0LoSKKraKIBTcuFCoidGFD08nkBzdREbpQ1EDNIv8qSGMFUboImMSZd4/f9zJv8ibJMC8xJQfO3HPPPef7zrvvvnvviIkpC9nsw0UttFunbUhpFzFtarSd6WJkStVMw5xyVqYTvkwfzuf/5FgtkVoB0729j1rjXwThS7Vio+Mo6DNnvLfahoZ+i/o32lULuJ3NNiz7q6+pyAUkJaFF6JwaM2lUJlV0MlnQn5aTRbEu0SEqHUa0A4AdiGuB1kFXRfVyg5d87+Dg4DL6m2TLAub60ilj7A1Ec4odSAc8X95sHh7+ZRPCFo6Fnp7HfU/fBng/hi10CjCnWnJjsxvDNxWw0NfV6Rv5GgP3I3jGWXumdTD/3cbEOP2ZbOZp69yniG3FQ9z1jD7bnBu9Fc2tKGC2q+uAJOQHBDRiZX1x36o7fWBs7J9ownbtO+n0/qWkvW7UPIfc37WgT6ZGR++EOJyeQDSb9UB+DZ1G6DdLDzyS+b/kBCYGsYgJbSQHuThGKRcw5xdeQf8YdNHsc6ePXrlSYMBuSIAFTGAtQo+VuALo4BX83N190NWZWbynBjhOHsmNfFWLeL6v+ynsA58zDvvAC8j5PkbOcXCMg2PZFk3q8MjI7WAG/Dp9AwP7jdGBOOQkAvlFUB+irtm16I1Zw9YBcpGTGXYmk3kQIC/Cds55l+iMI3jqhjAuaoe+am2Jw5GT3Nbz3CkE12NavmzN5+erJW7046n/CH1RO/RVa8lBLozXk9uqykkGAyRXLWlLv5jyp4RFsG5vGVzpDLnIjTWgnRy2Rr+tDKvRc7Y8AyZq10jj8DqXdnIRNtFZb+t/ZRtXcDiVnzpqx8mPcDWxgARUqx0W1QB9MeUZiNrV4qP+Ehc+BpNgATsTX8ozYKL2NtFYAHc84fG7ndxUPr+AR/iQSns7uSUufAymwDOb2+NjK27lEFocm/EE2WpyIy/Hi66MWuMKJn8RvxIcj87IM5Vh9663ziW36kR0HNenXuxmfaD8JC7tfKbrhFr7LiZCrMjrzTeGx+PmkosrkNzW94ObzwocJ7A1HokLolY+AvkTiD/q1H0cN48c5EL8Crkttsa/AXQVDmutfyku0E7jShx49XqV3MFK8IryDhYVbj7Sj2P2eBxwcXoe8T8idsKKPRcnZw1b+slFTubwUwhktrfnAt7J++jwQtLZcm3sr9LQrjRzz6cfMv9aLvgmnAGvpoaGLxM4mAEaLV7iAzQ3oU0IvD5x9ix3yF2RAAuYAOO2f7PEFWCXZ4C9Pb2UsgDeVnFSpbFK7/IWu7TPTvBqzbGdCHOJQSxiEjt6IyZmxQyEJHv6xyQsYk//moVFsN2zP6fRImjfq7/n/wFDguUQFNEwugAAAABJRU5ErkJggg==');
+  }
+
+  div.callout-important.callout-style-default .callout-title {
+    background-color: #f7dddc
+  }
+
+  div.callout-warning {
+    border-left-color: #f0ad4e !important;
+  }
+
+  div.callout-warning .callout-icon::before {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAIKADAAQAAAABAAAAIAAAAACshmLzAAAETklEQVRYCeVWW2gcVRg+58yaTUnizqbipZeX4uWhBEniBaoUX1Ioze52t7sRq6APio9V9MEaoWlVsFasRq0gltaAPuxms8lu0gcviE/FFOstVbSIxgcv6SU7EZqmdc7v9+9mJtNks51NTUH84ed889/PP+cmxP+d5FIbMJmNbpREu4WUkiTtCicKny0l1pIKmBzovF2S+hIJHX8iEu3hZJ5lNZGqyRrGSIQpq15AzF28jgpeY6yk6GVdrfFqdrD6Iw+QlB8g0YS2g7dyQmXM/IDhBhT0UCiRf59lfqmmDvzRt6kByV/m4JjtzuaujMUM2c5Z2d6JdKrRb3K2q6mA+oYVz8JnDdKPmmNthzkAk/lN63sYPgevrguc72aZX/L9C6x09GYyxBgCX4NlvyGUHOKELlm5rXeR1kchuChJt4SSwyddZRXgvwMGvYo4QSlk3/zkHD8UHxwVJA6zjZZqP8v8kK8OWLnIZtLyCAJagYC4rTGW/9Pqj92N/c+LUaAj27movwbi19tk/whRCIE7Q9vyI6yvRpftAKVTdUjOW40X3h5OXsKCdmFcx0xlLJoSuQngnrJe7Kcjm4OMq9FlC7CMmScQANuNvjfP3PjGXDBaUQmbp296S5L4DrpbrHN1T87ZVEZVCzg1FF0Ft+dKrlLukI+/c9ENo+TvlTDbYFvuKPtQ9+l052rXrgKoWkDAFnvh0wTOmYn8R5f4k/jN/fZiCM1tQx9jQQ4ANhqG4hiL0qIFTGViG9DKB7GYzgubnpofgYRwO+DFjh0Zin2m4b/97EDkXkc+f6xYAPX0KK2I/7fUQuwzuwo/L3AkcjugPNixC8cHf0FyPjWlItmLxWw4Ou9YsQCr5fijMGoD/zpdRy95HRysyXA74MWOnscpO4j2y3HAVisw85hX5+AFBRSHt4ShfLFkIMXTqyKFc46xdzQM6XbAi702a7sy04J0+feReMFKp5q9esYLCqAZYw/k14E/xcLLsFElaornTuJB0svMuJINy8xkIYuL+xPAlWRceH6+HX7THJ0djLUom46zREu7tTkxwmf/FdOZ/sh6Q8qvEAiHpm4PJ4a/doJe0gH1t+aHRgCzOvBvJedEK5OFE5jpm4AGP2a8Dxe3gGJ/pAutug9Gp6he92CsSsWBaEcxGx0FHytmIpuqGkOpldqNYQK8cSoXvd+xLxXADw0kf6UkJNFtdo5MOgaLjiQOQHcn+A6h5NuL2s0qsC2LOM75PcF3yr5STuBSAcGG+meA14K/CI21HcS4LBT6tv0QAh8Dr5l93AhZzG5ZJ4VxAqdZUEl9z7WJ4aN+svMvwHHL21UKTd1mqvChH7/Za5xzXBBKrUcB0TQ+Ulgkfbi/H/YT5EptrGzsEK7tR1B7ln9BBwckYfMiuSqklSznIuoIIOM42MQO+QnduCoFCI0bpkzjCjddHPN/F+2Yu+sd9bKNpVwHhbS3LluK/0zgfwD0xYI5dXuzlQAAAABJRU5ErkJggg==');
+  }
+
+  div.callout-warning.callout-style-default .callout-title {
+    background-color: #fcefdc
+  }
+
+  div.callout-tip {
+    border-left-color: #02b875 !important;
+  }
+
+  div.callout-tip .callout-icon::before {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAIKADAAQAAAABAAAAIAAAAACshmLzAAADr0lEQVRYCe1XTWgTQRj9ZjZV8a9SPIkKgj8I1bMHsUWrqYLVg4Ue6v9BwZOxSYsIerFao7UiUryIqJcqgtpimhbBXoSCVxUFe9CTiogUrUp2Pt+3aUI2u5vdNh4dmMzOzHvvezuz8xNFM0mjnbXaNu1MvFWRXkXEyE6aYOYJpdW4IXuA4r0fo8qqSMDBU0v1HJUgVieAXxzCsdE/YJTdFcVIZQNMyhruOMJKXYFoLfIfIvVIMWdsrd+Rpd86ZmyzzjJmLStqRn0v8lzkb4rVIXvnpScOJuAn2ACC65FkPzEdEy4TPWRLJ2h7z4cArXzzaOdKlbOvKKX25Wl00jSnrwVxAg3o4dRxhO13RBSdNvH0xSARv3adTXbBdTf64IWO2vH0LT+cv4GR1DJt+DUItaQogeBX/chhbTBxEiZ6gftlDNXTrvT7co4ub5A6gp9HIcHvzTa46OS5fBeP87Qm0fQkr4FsYgVQ7Qg+ZayaDg9jhg1GkWj8RG6lkeSacrrHgDaxdoBiZPg+NXV/KifMuB6//JmYH4CntVEHy/keA6x4h4CU5oFy8GzrBS18cLJMXcljAKB6INjWsRcuZBWVaS3GDrqB7rdapVIeA+isQ57Eev9eCqzqOa81CY05VLd6SamW2wA2H3SiTbnbSxmzfp7WtKZkqy4mdyAlGx7ennghYf8voqp9cLSgKdqNfa6RdRsAAkPwRuJZNbpByn+RrJi1RXTwdi8RQF6ymDwGMAtZ6TVE+4uoKh+MYkcLsT0Hk8eAienbiGdjJHZTpmNjlbFJNKDVAp2fJlYju6IreQxQ08UJDNYdoLSl6AadO+fFuCQqVMB1NJwPm69T04Wv5WhfcWyfXQB+wXRs1pt+nCknRa0LVzSA/2B+a9+zQJadb7IyyV24YAxKp2Jqs3emZTuNnKxsah+uabKbMk7CbTgJx/zIgQYErIeTKRQ9yD9wxVof5YolPHqaWo7TD6tJlh7jQnK5z2n3+fGdggIOx2kaa2YI9QWarc5Ce1ipNWMKeSG4DysFF52KBmTNMmn5HqCFkwy34rDg05gDwgH3bBi+sgFhN/e8QvRn8kbamCOhgrZ9GJhFDgfcMHzFb6BAtjKpFhzTjwv1KCVuxHvCbsSiEz4CANnj84cwHdFXAbAOJ4LTSAawGWFn5tDhLMYz6nWeU2wJfIhmIJBefcd/A5FWQWGgrWzyORZ3Q6HuV+Jf0Bj+BTX69fm1zWgK7By1YTXchFDORywnfQ7GpzOo6S+qECrsx2ifVQAAAABJRU5ErkJggg==');
+  }
+
+  div.callout-tip.callout-style-default .callout-title {
+    background-color: #ccf1e3
+  }
+
+  div.callout-caution {
+    border-left-color: #fd7e14 !important;
+  }
+
+  div.callout-caution .callout-icon::before {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAIKADAAQAAAABAAAAIAAAAACshmLzAAACV0lEQVRYCdVWzWoUQRCuqp2ICBLJXgITZL1EfQDBW/bkzUMUD7klD+ATSHBEfAIfQO+iXsWDxJsHL96EHAwhgzlkg8nBg25XWb0zIb0zs9muYYWkoKeru+vn664fBqElyZNuyh167NXJ8Ut8McjbmEraKHkd7uAnAFku+VWdb3reSmRV8PKSLfZ0Gjn3a6Xlcq9YGb6tADjn+lUfTXtVmaZ1KwBIvFI11rRXlWlatwIAAv2asaa9mlB9wwygiDX26qaw1yYPzFXg2N1GgG0FMF8Oj+VIx7E/03lHx8UhvYyNZLN7BwSPgekXXLribw7w5/c8EF+DBK5idvDVYtEEwMeYefjjLAdEyQ3M9nfOkgnPTEkYU+sxMq0BxNR6jExrAI31H1rzvLEfRIdgcv1XEdj6QTQAS2wtstEALLG1yEZ3QhH6oDX7ExBSFEkFINXH98NTrme5IOaaA7kIfiu2L8A3qhH9zRbukdCqdsA98TdElyeMe5BI8Rs2xHRIsoTSSVFfCFCWGPn9XHb4cdobRIWABNf0add9jakDjQJpJ1bTXOJXnnRXHRf+dNL1ZV1MBRCXhMbaHqGI1JkKIL7+i8uffuP6wVQAzO7+qVEbF6NbS0LJureYcWXUUhH66nLR5rYmva+2tjRFtojkM2aD76HEGAD3tPtKM309FJg5j/K682ywcWJ3PASCcycH/22u+Bh7Aa0ehM2Fu4z0SAE81HF9RkB21c5bEn4Dzw+/qNOyXr3DCTQDMBOdhi4nAgiFDGCinIa2owCEChUwD8qzd03PG+qdW/4fDzjUMcE1ZpIAAAAASUVORK5CYII=');
+  }
+
+  div.callout-caution.callout-style-default .callout-title {
+    background-color: #ffe5d0
+  }
+
+  </style>
+  <style type="text/css">
+    .reveal div.sourceCode {
+      margin: 0;
+      overflow: auto;
+    }
+    .reveal div.hanging-indent {
+      margin-left: 1em;
+      text-indent: -1em;
+    }
+    .reveal .slide:not(.center) {
+      height: 100%;
+    }
+    .reveal .slide.scrollable {
+      overflow-y: auto;
+    }
+    .reveal .footnotes {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide .absolute {
+      position: absolute;
+      display: block;
+    }
+    .reveal .footnotes ol {
+      counter-reset: ol;
+      list-style-type: none; 
+      margin-left: 0;
+    }
+    .reveal .footnotes ol li:before {
+      counter-increment: ol;
+      content: counter(ol) ". "; 
+    }
+    .reveal .footnotes ol li > p:first-child {
+      display: inline-block;
+    }
+    .reveal .slide ul,
+    .reveal .slide ol {
+      margin-bottom: 0.5em;
+    }
+    .reveal .slide ul li,
+    .reveal .slide ol li {
+      margin-top: 0.4em;
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide ul[role="tablist"] li {
+      margin-bottom: 0;
+    }
+    .reveal .slide ul li > *:first-child,
+    .reveal .slide ol li > *:first-child {
+      margin-block-start: 0;
+    }
+    .reveal .slide ul li > *:last-child,
+    .reveal .slide ol li > *:last-child {
+      margin-block-end: 0;
+    }
+    .reveal .slide .columns:nth-child(3) {
+      margin-block-start: 0.8em;
+    }
+    .reveal blockquote {
+      box-shadow: none;
+    }
+    .reveal .tippy-content>* {
+      margin-top: 0.2em;
+      margin-bottom: 0.7em;
+    }
+    .reveal .tippy-content>*:last-child {
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide > img.stretch.quarto-figure-center,
+    .reveal .slide > img.r-stretch.quarto-figure-center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-left,
+    .reveal .slide > img.r-stretch.quarto-figure-left  {
+      display: block;
+      margin-left: 0;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-right,
+    .reveal .slide > img.r-stretch.quarto-figure-right  {
+      display: block;
+      margin-left: auto;
+      margin-right: 0; 
+    }
+  </style>
+</head>
+<body class="quarto-light">
+  <div class="reveal">
+    <div class="slides">
+
+<section id="title-slide" data-background-image="https://adriansun.drhuyue.site/img/logo.jpg" data-background-position="top 10% right 5%" data-background-size="100px" class="quarto-title-block center">
+  <h1 class="title">自然语言处理：文本分类分析</h1>
+  <p class="subtitle">R Workshop 2024 Spring</p>
+
+<div class="quarto-title-authors">
+<div class="quarto-title-author">
+<div class="quarto-title-author-name">
+孙宇飞（Adrian） 
+</div>
+        <p class="quarto-title-affiliation">
+            清华大学政治学系
+          </p>
+    </div>
+</div>
+
+</section>
+<section id="lets-quiz-before" class="slide level2">
+<h2>Let`s Quiz Before!</h2>
+<div style="display: flex; justify-content: center;">
+<p><a href="https://quizizz.com/admin/quiz/664497ae68db73b183ca02ca?source=live_dash_game_complete&amp;gameType=live&amp;players=0" target="_blank">Open the shared page</a></p>
+</div>
+</section>
+<section id="概要" class="slide level2">
+<h2>概要</h2>
+<p>是什么</p>
+<p>为什么</p>
+<p>怎么做</p>
+</section>
+<section id="是什么什么是文本分类" class="slide level2">
+<h2>是什么：什么是文本分类</h2>
+<div style="display: flex; justify-content: center;">
+<iframe src="https://ai.baidu.com/tech/nlp_apply/topictagger" width="1200" height="800">
+</iframe>
+</div>
+</section>
+<section id="文本分类-v.s.-文本聚类" class="slide level2">
+<h2>文本分类 V.S. 文本聚类</h2>
+<div class="callout callout-note callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>问题时间到🙋</strong></p>
+</div>
+<div class="callout-content">
+<p>文本分类和文本聚类有什么区别？</p>
+</div>
+</div>
+</div>
+<div class="columns" style="text-align:left; margin-top: 2em">
+<div class="column fragment" style="width:50%;">
+<!-- -->
+<h3 id="文本分类">文本分类</h3>
+<ul>
+<li class="fragment"><p>文本分类是一种<strong>有监督</strong>学习方法，它根据预定义的标签将文本数据分配到不同的类别中。</p></li>
+<li class="fragment"><p>特点</p>
+<ul>
+<li class="fragment"><p>有监督学习： 文本分类依赖于已标注的数据集进行训练。</p></li>
+<li class="fragment"><p>预定义类别： 分类器需要预先定义好所有可能的类别。</p></li>
+<li class="fragment"><p>目标明确： 目标是将每个文本准确地分配到一个特定的类别。</p></li>
+</ul></li>
+<li class="fragment"><p>常见应用</p>
+<ul>
+<li class="fragment">垃圾邮件检测</li>
+<li class="fragment">情感分析（正面、负面、中性）</li>
+<li class="fragment">主题分类（新闻文章分类为政治、体育、娱乐等）</li>
+</ul></li>
+</ul>
+</div><div class="column fragment" style="width:50%;">
+<!-- -->
+<h3 id="文本聚类">文本聚类</h3>
+<ul>
+<li class="fragment"><p>文本聚类是一种<strong>无监督</strong>学习方法，它根据文本内容的相似性将文本数据分组，没有预定义的标签。</p></li>
+<li class="fragment"><p>特点</p>
+<ul>
+<li class="fragment">无监督学习： 文本聚类不需要已标注的数据集进行训练。</li>
+<li class="fragment">动态分组： 聚类算法自动发现和创建类别。</li>
+<li class="fragment">目标探索： 目标是发现数据中的潜在模式或主题。</li>
+</ul></li>
+<li class="fragment"><p>常见应用</p>
+<ul>
+<li class="fragment">文本数据探索</li>
+<li class="fragment">文档相似性分析</li>
+<li class="fragment">自动主题提取</li>
+</ul></li>
+</ul>
+</div>
+</div>
+</section>
+<section id="文本分类-v.s.-文本聚类-1" class="slide level2">
+<h2>文本分类 V.S. 文本聚类</h2>
+<ul>
+<li class="fragment"><p>学习方式： 文本分类是有监督学习，需要标注数据；文本聚类是无监督学习，不需要标注数据。</p></li>
+<li class="fragment"><p>输出形式： 文本分类输出的是预定义的类别标签；文本聚类输出的是动态生成的类别。</p></li>
+<li class="fragment"><p>应用场景： 文本分类适用于明确的分类任务；文本聚类适用于探索数据结构和发现潜在模式。</p></li>
+</ul>
+</section>
+<section id="为什么文本分类的社会科学应用" class="slide level2">
+<h2>为什么：文本分类的社会科学应用</h2>
+<div class="panel-tabset">
+<ul id="tabset-1" class="panel-tabset-tabby"><li><a data-tabby-default="" href="#tabset-1-1"><strong>政治科学</strong></a></li><li><a href="#tabset-1-2"><strong>公共管理</strong></a></li><li><a href="#tabset-1-3"><strong>社会学</strong></a></li><li><a href="#tabset-1-4"><strong>教育学</strong></a></li></ul>
+<div class="tab-content">
+<div id="tabset-1-1">
+<ul>
+<li class="fragment"><p><strong>选举分析</strong>：通过对候选人演讲、竞选广告和媒体报道进行分类，可以分析不同候选人的议题倾向、公众反馈和媒体偏向。例如，文本分类可以帮助识别出哪些议题在选民中引起了更多的关注。</p></li>
+<li class="fragment"><p><strong>意识形态分析</strong>：通过对政党宣言、演讲和社交媒体发言进行分类，可以研究不同政党和政治团体的意识形态特征和变化趋势。</p></li>
+</ul>
+</div>
+<div id="tabset-1-2">
+<ul>
+<li class="fragment"><p>公共政策研究：通过分析社交媒体、新闻报道和论坛中的文本，可以了解公众对某一政策的态度和看法。例如，利用文本分类技术，可以快速识别出对某一政策持支持、反对或中立态度的文本，从而帮助决策者了解民意。</p></li>
+<li class="fragment"><p>危机管理：在突发事件发生时，通过对大量社交媒体数据进行分类，可以及时了解公众的反应，识别谣言和错误信息，帮助政府和相关机构做出及时应对。</p></li>
+</ul>
+</div>
+<div id="tabset-1-3">
+<ul>
+<li class="fragment"><p>文化研究：文本分类可以帮助研究不同文化群体在语言、价值观和社会规范方面的差异。例如，通过对文学作品、电影评论和社交媒体内容的分类，可以揭示不同文化群体的兴趣和关注点。</p></li>
+<li class="fragment"><p>社会运动分析：通过对社交媒体和新闻报道的文本分类，可以研究社会运动的形成、发展和影响。例如，分析某一社会运动的支持者和反对者的言论，可以了解其动机和诉求。</p></li>
+</ul>
+</div>
+<div id="tabset-1-4">
+<ul>
+<li class="fragment"><p>情感分析：通过对学生的作文、课程评估和社交媒体发言进行分类，可以了解学生的情感状态和学习态度，从而为教育决策提供参考。</p></li>
+<li class="fragment"><p>课程内容分析：通过对教育资源（如教科书、讲义和在线课程）的文本分类，可以评估不同课程的主题分布和内容质量，优化教育资源的配置。</p></li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<section id="为什么文本分类的社会科学应用-1" class="slide level2">
+<h2>为什么：文本分类的社会科学应用</h2>
+<div class="callout callout-note callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>问题时间到🙋</strong></p>
+</div>
+<div class="callout-content">
+<p>在你的学科中，文本分类能够做什么应用？</p>
+</div>
+</div>
+</div>
+</section>
+<section id="怎么做" class="slide level2">
+<h2>怎么做</h2>
+<ul>
+<li class="fragment"><p>R based</p></li>
+<li class="fragment"><p>API/SDK based</p></li>
+<li class="fragment"><p>LLM based</p></li>
+</ul>
+</section>
+<section id="apisdk-based以百度大脑ai开放平台为例" class="slide level2">
+<h2>API/SDK based：以百度大脑AI开放平台为例</h2>
+<p>https://www.zaobao.com.sg/realtime/china/story20240515-3667089</p>
+<div style="display: flex; justify-content: center;">
+<iframe src="https://ai.baidu.com/ai-doc/NLP/wk6z52gxe" width="1200" height="800">
+</iframe>
+</div>
+</section>
+<section id="apisdk-basedr代码示例" class="slide level2">
+<h2>API/SDK based：R代码示例</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href=""></a><span class="co"># 加载所需的库</span></span>
+<span id="cb1-2"><a href=""></a><span class="fu">library</span>(httr)       <span class="co"># 用于HTTP请求</span></span>
+<span id="cb1-3"><a href=""></a><span class="fu">library</span>(jsonlite)   <span class="co"># 用于JSON处理</span></span>
+<span id="cb1-4"><a href=""></a></span>
+<span id="cb1-5"><a href=""></a><span class="co"># 定义API密钥和密钥</span></span>
+<span id="cb1-6"><a href=""></a>API_KEY <span class="ot">&lt;-</span> <span class="st">"pMQ0IxucKuFzbt3DEVITnuHe"</span></span>
+<span id="cb1-7"><a href=""></a>SECRET_KEY <span class="ot">&lt;-</span> <span class="st">"lMF8vRQuoCPxuxRlMWWITg3bMHyZUVPG"</span></span>
+<span id="cb1-8"><a href=""></a></span>
+<span id="cb1-9"><a href=""></a><span class="co"># 获取访问令牌的函数</span></span>
+<span id="cb1-10"><a href=""></a>get_access_token <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb1-11"><a href=""></a>  <span class="co"># Baidu API的访问令牌URL</span></span>
+<span id="cb1-12"><a href=""></a>  url <span class="ot">&lt;-</span> <span class="st">"https://aip.baidubce.com/oauth/2.0/token"</span></span>
+<span id="cb1-13"><a href=""></a>  </span>
+<span id="cb1-14"><a href=""></a>  <span class="co"># 访问令牌请求的参数</span></span>
+<span id="cb1-15"><a href=""></a>  params <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb1-16"><a href=""></a>    <span class="at">grant_type =</span> <span class="st">"client_credentials"</span>, <span class="co"># 授权类型</span></span>
+<span id="cb1-17"><a href=""></a>    <span class="at">client_id =</span> API_KEY,               <span class="co"># API密钥</span></span>
+<span id="cb1-18"><a href=""></a>    <span class="at">client_secret =</span> SECRET_KEY         <span class="co"># 密钥</span></span>
+<span id="cb1-19"><a href=""></a>  )</span>
+<span id="cb1-20"><a href=""></a>  </span>
+<span id="cb1-21"><a href=""></a>  <span class="co"># 发送POST请求以获取访问令牌</span></span>
+<span id="cb1-22"><a href=""></a>  response <span class="ot">&lt;-</span> <span class="fu">POST</span>(url, <span class="at">query =</span> params)</span>
+<span id="cb1-23"><a href=""></a>  </span>
+<span id="cb1-24"><a href=""></a>  <span class="co"># 解析响应内容</span></span>
+<span id="cb1-25"><a href=""></a>  content <span class="ot">&lt;-</span> <span class="fu">content</span>(response, <span class="st">"parsed"</span>, <span class="at">encoding =</span> <span class="st">"UTF-8"</span>)</span>
+<span id="cb1-26"><a href=""></a>  </span>
+<span id="cb1-27"><a href=""></a>  <span class="co"># 检查是否成功获取访问令牌并返回</span></span>
+<span id="cb1-28"><a href=""></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(content<span class="sc">$</span>access_token)) {</span>
+<span id="cb1-29"><a href=""></a>    <span class="fu">return</span>(content<span class="sc">$</span>access_token)</span>
+<span id="cb1-30"><a href=""></a>  } <span class="cf">else</span> {</span>
+<span id="cb1-31"><a href=""></a>    <span class="co"># 获取令牌失败，抛出错误</span></span>
+<span id="cb1-32"><a href=""></a>    <span class="fu">stop</span>(<span class="st">"Failed to get access token"</span>)</span>
+<span id="cb1-33"><a href=""></a>  }</span>
+<span id="cb1-34"><a href=""></a>}</span>
+<span id="cb1-35"><a href=""></a></span>
+<span id="cb1-36"><a href=""></a><span class="co"># 主函数</span></span>
+<span id="cb1-37"><a href=""></a>main <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb1-38"><a href=""></a>  <span class="co"># 获取访问令牌</span></span>
+<span id="cb1-39"><a href=""></a>  access_token <span class="ot">&lt;-</span> <span class="fu">get_access_token</span>()</span>
+<span id="cb1-40"><a href=""></a>  </span>
+<span id="cb1-41"><a href=""></a>  <span class="co"># 打印访问令牌以进行调试</span></span>
+<span id="cb1-42"><a href=""></a>  <span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">"Access token:"</span>, access_token))</span>
+<span id="cb1-43"><a href=""></a>  </span>
+<span id="cb1-44"><a href=""></a>  <span class="co"># 生成请求URL</span></span>
+<span id="cb1-45"><a href=""></a>  url <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"https://aip.baidubce.com/rpc/2.0/nlp/v1/topic?charset=UTF-8&amp;access_token="</span>, access_token)</span>
+<span id="cb1-46"><a href=""></a>  </span>
+<span id="cb1-47"><a href=""></a>  <span class="co"># 定义请求的有效载荷</span></span>
+<span id="cb1-48"><a href=""></a>  payload <span class="ot">&lt;-</span> <span class="fu">toJSON</span>(<span class="fu">list</span>(</span>
+<span id="cb1-49"><a href=""></a>    <span class="at">content =</span> <span class="st">"中国科技公司字节跳动正式发布豆包大模型，价格比市场其他模型便宜99.3%。</span><span class="sc">\n\n</span><span class="st">综合澎湃新闻和证券时报报道，字节跳动星期三（5月15日）在2024春季火山引擎Force原动力大会上正式发布豆包大模型。</span><span class="sc">\n\n</span><span class="st">火山引擎是字节跳动旗下云服务平台，据火山引擎总裁谭待介绍，目前豆包日均处理1200亿Tokens文本，生成3000万张图片。</span><span class="sc">\n\n</span><span class="st">谭待说，“大的使用量，才能打磨出好模型，也能大幅降低模型推理的单位成本。豆包主力模型在企业市场的定价只有0.0008元/千Tokens，0.8厘就能处理1500多个汉字，比行业便宜99.3%”。</span><span class="sc">\n\n</span><span class="st">他认为，大模型从以分计价到以厘计价，将助力企业以更低成本加速业务创新。</span><span class="sc">\n\n</span><span class="st">据火山引擎公布的价格计算，1元（人民币，0.19新元）就能买到豆包主力模型的125万Tokens，大约是200万个汉字，相当于三本《三国演义》。</span><span class="sc">\n\n</span><span class="st">谭待认为，降低成本是推动大模型快进到“价值创造阶段”的一个关键因素。大模型降价，不能只提供低价的轻量化版本，主力模型和最先进的模型也要够便宜，才能真正满足企业的复杂业务场景需求，充分验证大模型的应用价值，从而催化出超越现有产品和组织模式的创新。"</span>,</span>
+<span id="cb1-50"><a href=""></a>    <span class="at">title =</span> <span class="st">"字节跳动发布豆包大模型 价格比市场便宜99%"</span></span>
+<span id="cb1-51"><a href=""></a>  ), <span class="at">auto_unbox =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb1-52"><a href=""></a>  </span>
+<span id="cb1-53"><a href=""></a>  <span class="co"># 发送POST请求</span></span>
+<span id="cb1-54"><a href=""></a>  response <span class="ot">&lt;-</span> <span class="fu">POST</span>(url, <span class="at">body =</span> payload, <span class="at">encode =</span> <span class="st">"json"</span>, <span class="fu">content_type_json</span>())</span>
+<span id="cb1-55"><a href=""></a>  </span>
+<span id="cb1-56"><a href=""></a>  <span class="co"># 检查请求是否成功并打印响应</span></span>
+<span id="cb1-57"><a href=""></a>  <span class="cf">if</span> (response<span class="sc">$</span>status_code <span class="sc">==</span> <span class="dv">200</span>) {</span>
+<span id="cb1-58"><a href=""></a>    <span class="co"># 请求成功，打印响应内容</span></span>
+<span id="cb1-59"><a href=""></a>    <span class="fu">print</span>(<span class="st">"Request successful!"</span>)</span>
+<span id="cb1-60"><a href=""></a>    <span class="fu">print</span>(<span class="fu">content</span>(response, <span class="st">"text"</span>, <span class="at">encoding =</span> <span class="st">"UTF-8"</span>))</span>
+<span id="cb1-61"><a href=""></a>  } <span class="cf">else</span> {</span>
+<span id="cb1-62"><a href=""></a>    <span class="co"># 请求失败，打印状态码和响应内容</span></span>
+<span id="cb1-63"><a href=""></a>    <span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">"Request failed with status code:"</span>, response<span class="sc">$</span>status_code))</span>
+<span id="cb1-64"><a href=""></a>    <span class="fu">print</span>(<span class="fu">content</span>(response, <span class="st">"text"</span>, <span class="at">encoding =</span> <span class="st">"UTF-8"</span>))</span>
+<span id="cb1-65"><a href=""></a>  }</span>
+<span id="cb1-66"><a href=""></a>}</span>
+<span id="cb1-67"><a href=""></a></span>
+<span id="cb1-68"><a href=""></a><span class="co"># 检查是否在交互模式下运行，并调用主函数</span></span>
+<span id="cb1-69"><a href=""></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">interactive</span>()) {</span>
+<span id="cb1-70"><a href=""></a>  <span class="fu">main</span>()</span>
+<span id="cb1-71"><a href=""></a>} <span class="cf">else</span> {</span>
+<span id="cb1-72"><a href=""></a>  <span class="fu">main</span>()</span>
+<span id="cb1-73"><a href=""></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="llm-based-chatgpt-4o" class="slide level2">
+<h2>LLM based: chatGPT 4o</h2>
+<div style="display: flex; justify-content: center;">
+<p><a href="https://chat.openai.com/share/38242f53-a8bd-4ab7-bef0-302c4ac02a26" target="_blank">Open the shared page</a></p>
+</div>
+</section>
+<section id="llm-based-豆包" class="slide level2">
+<h2>LLM based: 豆包</h2>
+<div style="display: flex; justify-content: center;">
+<iframe src="https://www.doubao.com/chat/39803602278402" width="1200" height="800">
+</iframe>
+</div>
+</section>
+<section id="r-based-以quanteda为例" class="slide level2">
+<h2>R based: 以quanteda为例</h2>
+<ul>
+<li class="fragment"><p>朴素贝叶斯</p></li>
+<li class="fragment"><p>word score</p></li>
+<li class="fragment"><p>newsmap</p></li>
+<li class="fragment"><p>LSS</p></li>
+</ul>
+</section>
+<section id="朴素贝叶斯什么是贝叶斯" class="slide level2">
+<h2>朴素贝叶斯：什么是贝叶斯？</h2>
+<div style="display: flex; justify-content: center;">
+<iframe width="1200" height="800" src="https://www.youtube.com/embed/RqvIVZHVS1I" title="网上热搜：警察抓酒鬼的概率如何求？体检的意义何在？李永乐老师讲贝叶斯公式！" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen="">
+</iframe>
+</div>
+<p>贝叶斯定理是一种概率计算方法，用来根据新获得的信息更新一个事件发生的可能性。简单来说，它帮助我们在已知某些条件的情况下，重新评估某个事件发生的概率。</p>
+</section>
+<section id="朴素贝叶斯" class="slide level2">
+<h2>朴素贝叶斯</h2>
+<ul>
+<li class="fragment">贝叶斯定理：<span class="math inline">\(P(A|B) = [P(B|A) * P(A)] / P(B)\)</span> - 该定理用于在给定特征（或多个特征）的情况下找到某个标签（label）的概率，并用于最终分类。</li>
+<li class="fragment">朴素（naive）：假设数据中的所有特征（例如，文本分类中的文档内词语）彼此独立。 - 该假设经常被违反，但由于其简洁高效，仍然被广泛使用。</li>
+</ul>
+</section>
+<section id="朴素贝叶斯怎么实现" class="slide level2">
+<h2>朴素贝叶斯：怎么实现？</h2>
+<p>Naive Bayes 是一种监督学习模型，通常用于将文档分类为两类或多类。我们使用附有类别标签的文档来训练分类器，并预测新未标记文档的最可能类别。</p>
+<div class="panel-tabset">
+<ul id="tabset-2" class="panel-tabset-tabby"><li><a data-tabby-default="" href="#tabset-2-1">包</a></li><li><a href="#tabset-2-2">语料</a></li><li><a href="#tabset-2-3">生成训练集和测试集</a></li><li><a href="#tabset-2-4">模型训练</a></li><li><a href="#tabset-2-5">交叉表评估</a></li><li><a href="#tabset-2-6">混淆矩阵评估</a></li><li><a href="#tabset-2-7">混淆矩阵系数</a></li></ul>
+<div class="tab-content">
+<div id="tabset-2-1">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href=""></a><span class="fu">require</span>(quanteda)             <span class="co"># 加载 quanteda 包</span></span>
+<span id="cb2-2"><a href=""></a><span class="fu">require</span>(quanteda.textmodels)  <span class="co"># 加载 quanteda.textmodels 包</span></span>
+<span id="cb2-3"><a href=""></a><span class="fu">require</span>(caret)                <span class="co"># 加载 caret 包</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><code>data_corpus_moviereviews</code> 来自 <strong>quanteda.textmodels</strong> 包，包含 2000 条电影评论，被分类为“正面”或“负面”。</p>
+</div>
+<div id="tabset-2-2">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href=""></a><span class="co"># 加载电影评论语料库</span></span>
+<span id="cb3-2"><a href=""></a>corp_movies <span class="ot">&lt;-</span> data_corpus_moviereviews</span>
+<span id="cb3-3"><a href=""></a><span class="co"># 显示语料库的前5个文档的摘要信息</span></span>
+<span id="cb3-4"><a href=""></a><span class="fu">summary</span>(corp_movies, <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<div id="tabset-2-3">
+<p>变量“Sentiment”表示电影评论是正面还是负面。在本例中，我们将使用 1500 条评论作为训练集，并基于这个子集构建Naive Bayes分类器。在第二步中，我们将预测剩余评论（我们的测试集）的情感。</p>
+<p>由于前1000条评论是负面的，剩余的评论是正面的，我们需要对文档进行随机抽样。</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href=""></a><span class="co"># 生成1500个不重复的随机数</span></span>
+<span id="cb4-2"><a href=""></a><span class="fu">set.seed</span>(<span class="dv">300</span>)</span>
+<span id="cb4-3"><a href=""></a>id_train <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2000</span>, <span class="dv">1500</span>, <span class="at">replace =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb4-4"><a href=""></a><span class="co"># 显示前10个随机数</span></span>
+<span id="cb4-5"><a href=""></a><span class="fu">head</span>(id_train, <span class="dv">10</span>)</span>
+<span id="cb4-6"><a href=""></a></span>
+<span id="cb4-7"><a href=""></a><span class="co"># 创建带有 ID 的文档变量</span></span>
+<span id="cb4-8"><a href=""></a>corp_movies<span class="sc">$</span>id_numeric <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">ndoc</span>(corp_movies)</span>
+<span id="cb4-9"><a href=""></a></span>
+<span id="cb4-10"><a href=""></a><span class="co"># 对文本进行标记化，去除标点符号和数字，并去除停用词和词干化</span></span>
+<span id="cb4-11"><a href=""></a>toks_movies <span class="ot">&lt;-</span> <span class="fu">tokens</span>(corp_movies, <span class="at">remove_punct =</span> <span class="cn">TRUE</span>, <span class="at">remove_number =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-12"><a href=""></a>               <span class="fu">tokens_remove</span>(<span class="at">pattern =</span> <span class="fu">stopwords</span>(<span class="st">"en"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-13"><a href=""></a>               <span class="fu">tokens_wordstem</span>()</span>
+<span id="cb4-14"><a href=""></a><span class="co"># 创建文档-特征矩阵</span></span>
+<span id="cb4-15"><a href=""></a>dfmt_movie <span class="ot">&lt;-</span> <span class="fu">dfm</span>(toks_movies)</span>
+<span id="cb4-16"><a href=""></a></span>
+<span id="cb4-17"><a href=""></a><span class="co"># 获取训练集</span></span>
+<span id="cb4-18"><a href=""></a>dfmat_training <span class="ot">&lt;-</span> <span class="fu">dfm_subset</span>(dfmt_movie, id_numeric <span class="sc">%in%</span> id_train)</span>
+<span id="cb4-19"><a href=""></a></span>
+<span id="cb4-20"><a href=""></a><span class="co"># 获取测试集（不在 id_train 中的文档）</span></span>
+<span id="cb4-21"><a href=""></a>dfmat_test <span class="ot">&lt;-</span> <span class="fu">dfm_subset</span>(dfmt_movie, <span class="sc">!</span>id_numeric <span class="sc">%in%</span> id_train)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<div id="tabset-2-4">
+<p>接下来，我们将使用 <code>textmodel_nb()</code> 训练 Naive Bayes 分类器。</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href=""></a><span class="co"># 使用训练集训练 Naive Bayes 模型</span></span>
+<span id="cb5-2"><a href=""></a>tmod_nb <span class="ot">&lt;-</span> <span class="fu">textmodel_nb</span>(dfmat_training, dfmat_training<span class="sc">$</span>sentiment)</span>
+<span id="cb5-3"><a href=""></a><span class="co"># 查看模型摘要信息</span></span>
+<span id="cb5-4"><a href=""></a><span class="fu">summary</span>(tmod_nb)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Naive Bayes 只能考虑在训练集和测试集中都出现的特征，但我们可以使用 <code>dfm_match()</code> 使特征相同。</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href=""></a><span class="co"># 使测试集的特征与训练集相匹配</span></span>
+<span id="cb6-2"><a href=""></a>dfmat_matched <span class="ot">&lt;-</span> <span class="fu">dfm_match</span>(dfmat_test, <span class="at">features =</span> <span class="fu">featnames</span>(dfmat_training))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<div id="tabset-2-5">
+<p>让我们检查分类效果如何。</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href=""></a><span class="co"># 获取实际类别</span></span>
+<span id="cb7-2"><a href=""></a>actual_class <span class="ot">&lt;-</span> dfmat_matched<span class="sc">$</span>sentiment</span>
+<span id="cb7-3"><a href=""></a><span class="co"># 预测类别</span></span>
+<span id="cb7-4"><a href=""></a>predicted_class <span class="ot">&lt;-</span> <span class="fu">predict</span>(tmod_nb, <span class="at">newdata =</span> dfmat_matched)</span>
+<span id="cb7-5"><a href=""></a><span class="co"># 创建实际类别与预测类别的交叉表</span></span>
+<span id="cb7-6"><a href=""></a>tab_class <span class="ot">&lt;-</span> <span class="fu">table</span>(actual_class, predicted_class)</span>
+<span id="cb7-7"><a href=""></a><span class="co"># 显示交叉表</span></span>
+<span id="cb7-8"><a href=""></a>tab_class</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>交叉表显示了实际类别与预测类别的对比情况。具体来说，它显示了在测试集中，模型正确和错误分类的情况。</p>
+<ul>
+<li class="fragment">neg 表示负面评论</li>
+<li class="fragment">pos 表示正面评论</li>
+</ul>
+<p>从交叉表中可以看到：</p>
+<ul>
+<li class="fragment">实际为负面的评论中，有 213 条被正确预测为负面，有 45 条被错误预测为正面。</li>
+<li class="fragment">实际为正面的评论中，有 205 条被正确预测为正面，有 37 条被错误预测为负面。</li>
+</ul>
+<p>从交叉表中我们可以看到，错误的正类和负类数量相似。分类器在两个方向上都犯了错误，但似乎没有高估或低估某一类。</p>
+</div>
+<div id="tabset-2-6">
+<p>我们可以使用 <strong>caret</strong> 包中的 <code>confusionMatrix()</code> 函数来评估分类性能。</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href=""></a><span class="co"># 使用混淆矩阵评估分类性能</span></span>
+<span id="cb8-2"><a href=""></a><span class="fu">confusionMatrix</span>(tab_class, <span class="at">mode =</span> <span class="st">"everything"</span>, <span class="at">positive =</span> <span class="st">"pos"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<div id="tabset-2-7">
+<p>混淆矩阵是评估分类模型性能的重要工具，通过它我们可以计算出一系列指标，帮助我们理解模型的表现</p>
+<ul>
+<li class="fragment"><p><strong>准确率 (Accuracy)</strong>：</p>
+<ul>
+<li class="fragment">表示模型预测正确的比例。</li>
+<li class="fragment">计算公式：Accuracy=TP+TNTP+TN+FP+FN = Accuracy=TP+TN+FP+FNTP+TN​</li>
+<li class="fragment">在我们的例子中，准确率是 0.836，表示模型在 83.6% 的情况下正确分类了评论。</li>
+</ul></li>
+<li class="fragment"><p><strong>召回率 (Recall)</strong>：</p>
+<ul>
+<li class="fragment">表示真正例被正确预测的比例。</li>
+<li class="fragment">计算公式：Sensitivity=TPTP+FN = Sensitivity=TP+FNTP​</li>
+<li class="fragment">在我们的例子中，灵敏度是 0.8200，表示正类评论中有 82% 被正确预测为正类。</li>
+</ul></li>
+<li class="fragment"><p><strong>F1 分数 (F1 Score)</strong>：</p>
+<ul>
+<li class="fragment">表示精准率和召回率的调和平均数。</li>
+<li class="fragment">计算公式：F1=2×Precision×RecallPrecision+Recall = F1=Precision+Recall2×Precision×Recall​</li>
+<li class="fragment">在我们的例子中，F1 分数是 0.8333，表示模型在平衡精准率和召回率方面表现较好。</li>
+</ul></li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<section id="wordscores" class="slide level2">
+<h2>Wordscores</h2>
+<div class="panel-tabset">
+<ul id="tabset-3" class="panel-tabset-tabby"><li><a data-tabby-default="" href="#tabset-3-1">包</a></li><li><a href="#tabset-3-2">语料</a></li><li><a href="#tabset-3-3">数据清洗</a></li><li><a href="#tabset-3-4">预测</a></li></ul>
+<div class="tab-content">
+<div id="tabset-3-1">
+<p>Wordscores 是一种用于估计在预先指定维度上位置的标度模型，主要用于政治行为者的定位。Wordscores 由 Laver、Benoit 和 Garry 在 2003 年提出，并被政治学家广泛使用。</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href=""></a><span class="fu">require</span>(quanteda)           <span class="co"># 加载 quanteda 包</span></span>
+<span id="cb9-2"><a href=""></a><span class="fu">require</span>(quanteda.textmodels) <span class="co"># 加载 quanteda.textmodels 包</span></span>
+<span id="cb9-3"><a href=""></a><span class="fu">require</span>(quanteda.textplots)  <span class="co"># 加载 quanteda.textplots 包</span></span>
+<span id="cb9-4"><a href=""></a><span class="fu">require</span>(quanteda.corpora)    <span class="co"># 加载 quanteda.corpora 包</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<div id="tabset-3-2">
+<p>训练 Wordscores 模型需要对已知政策立场的文本进行参考评分，之后 Wordscores 可以估计剩余“未知”文本的位置。</p>
+<p>在本例中，我们将使用 2013 年和 2017 年德国联邦选举的宣言。对于 2013 年的选举，我们将使用 2014 年 <a href="https://www.chesdata.eu/">Chapel Hill Expert Survey</a> 对五大政党的平均专家评估，以预测 2017 年宣言的党派位置。</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href=""></a><span class="co"># 下载德国宣言语料库</span></span>
+<span id="cb10-2"><a href=""></a>tem <span class="ot">&lt;-</span> <span class="fu">url</span>(<span class="st">"https://drhuyue.site:10002/Adrian/data/course/rworkshop/NLP_classification/GermanManifestosCorpus.rds"</span>, <span class="st">"rb"</span>)</span>
+<span id="cb10-3"><a href=""></a>corp_ger <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(tem)</span>
+<span id="cb10-4"><a href=""></a><span class="fu">close</span>(tem)</span>
+<span id="cb10-5"><a href=""></a></span>
+<span id="cb10-6"><a href=""></a><span class="co"># 查看语料库摘要信息</span></span>
+<span id="cb10-7"><a href=""></a><span class="fu">summary</span>(corp_ger)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<div id="tabset-3-3">
+<p>现在我们可以将 Wordscores 算法应用于文档-特征矩阵。</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href=""></a><span class="co"># 对文本进行标记化，去除标点符号</span></span>
+<span id="cb11-2"><a href=""></a>toks_ger <span class="ot">&lt;-</span> <span class="fu">tokens</span>(corp_ger, <span class="at">remove_punct =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb11-3"><a href=""></a></span>
+<span id="cb11-4"><a href=""></a><span class="co"># 创建文档-特征矩阵，去除德语停用词</span></span>
+<span id="cb11-5"><a href=""></a>dfmat_ger <span class="ot">&lt;-</span> <span class="fu">dfm</span>(toks_ger) <span class="sc">%&gt;%</span> </span>
+<span id="cb11-6"><a href=""></a>             <span class="fu">dfm_remove</span>(<span class="at">pattern =</span> <span class="fu">stopwords</span>(<span class="st">"de"</span>))</span>
+<span id="cb11-7"><a href=""></a></span>
+<span id="cb11-8"><a href=""></a><span class="co"># 将 Wordscores 算法应用于文档-特征矩阵</span></span>
+<span id="cb11-9"><a href=""></a><span class="co"># y 是参考评分，smooth 参数用于平滑处理</span></span>
+<span id="cb11-10"><a href=""></a>tmod_ws <span class="ot">&lt;-</span> <span class="fu">textmodel_wordscores</span>(dfmat_ger, <span class="at">y =</span> corp_ger<span class="sc">$</span>ref_score, <span class="at">smooth =</span> <span class="dv">1</span>)</span>
+<span id="cb11-11"><a href=""></a></span>
+<span id="cb11-12"><a href=""></a><span class="co"># 查看模型摘要信息</span></span>
+<span id="cb11-13"><a href=""></a><span class="fu">summary</span>(tmod_ws)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<div id="tabset-3-4">
+<p>接下来，我们将预测未知文本的 Wordscores。</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href=""></a><span class="co"># 预测未知文本的 Wordscores，se.fit = TRUE 表示计算标准误</span></span>
+<span id="cb12-2"><a href=""></a>pred_ws <span class="ot">&lt;-</span> <span class="fu">predict</span>(tmod_ws, <span class="at">se.fit =</span> <span class="cn">TRUE</span>, <span class="at">newdata =</span> dfmat_ger)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>最后，我们可以使用 <strong>quanteda</strong> 的 <code>textplot_scale1d()</code> 函数绘制拟合的标度模型。</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href=""></a><span class="co"># 绘制 Wordscores 标度模型</span></span>
+<span id="cb13-2"><a href=""></a><span class="fu">textplot_scale1d</span>(pred_ws)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="newsmap" class="slide level2">
+<h2>Newsmap</h2>
+<p>Newsmap 是一种用于地理文档分类的半监督模型。与全监督模型需要人工分类数据不同，这种半监督模型利用字典中的“种子词”进行学习。</p>
+<p>“地理文档分类”是指根据文档内容将其归类到不同的地理区域或地点。这种分类可以根据文档中提到的地名、国家、城市等地理信息进行。例如，一篇新闻文章中如果多次提到“美国”或“纽约”，则这篇文章可以被分类为与美国或纽约相关的文档。</p>
+<p>这种分类在以下方面非常有用：</p>
+<ol type="1">
+<li class="fragment"><strong>新闻分析</strong>：帮助媒体或研究人员分析不同地区的新闻分布和关注度。例如，了解全球各地新闻报道的主题和频率。</li>
+<li class="fragment"><strong>地理信息系统 (GIS)</strong>：将文本数据整合到地理信息系统中，从而进行空间分析和可视化。</li>
+<li class="fragment"><strong>市场研究</strong>：企业可以根据不同地区的市场动态和消费者行为进行分析，从而优化其市场策略。</li>
+<li class="fragment"><strong>社交媒体监测</strong>：监控和分析社交媒体上不同地区的讨论和热点话题。</li>
+</ol>
+<p>在 Newsmap 中，地理文档分类的过程大致如下：</p>
+<ol type="1">
+<li class="fragment"><strong>文档预处理</strong>：去除标点符号、停用词等噪音数据，提取有意义的词汇。</li>
+<li class="fragment"><strong>使用种子词典</strong>：利用包含国家和城市名称的种子词典，识别文档中的地理实体。</li>
+<li class="fragment"><strong>特征提取</strong>：识别并提取与地理实体相关的特征词汇。</li>
+<li class="fragment"><strong>模型训练</strong>：使用半监督学习方法，基于种子词典和特征词汇，训练地理分类模型。</li>
+<li class="fragment"><strong>分类和预测</strong>：将新的文档输入模型，预测其所属的地理区域。</li>
+</ol>
+<p>通过上述步骤，文档可以被有效地分类到相应的地理位置，从而实现地理文档分类的目标。</p>
+</section>
+<section id="newsmap-1" class="slide level2">
+<h2>Newsmap</h2>
+<div class="panel-tabset">
+<ul id="tabset-4" class="panel-tabset-tabby"><li><a data-tabby-default="" href="#tabset-4-1">包</a></li><li><a href="#tabset-4-2">语料</a></li><li><a href="#tabset-4-3">清洗文本</a></li><li><a href="#tabset-4-4">种子地理词典</a></li><li><a href="#tabset-4-5">预测</a></li><li><a href="#tabset-4-6">可视化</a></li></ul>
+<div class="tab-content">
+<div id="tabset-4-1">
+<p>首先，从 CRAN 安装 <strong>newsmap</strong> 包。</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href=""></a><span class="fu">install.packages</span>(<span class="st">"newsmap"</span>)</span>
+<span id="cb14-2"><a href=""></a></span>
+<span id="cb14-3"><a href=""></a><span class="fu">require</span>(quanteda)</span>
+<span id="cb14-4"><a href=""></a><span class="fu">require</span>(quanteda.corpora)</span>
+<span id="cb14-5"><a href=""></a><span class="fu">require</span>(newsmap)</span>
+<span id="cb14-6"><a href=""></a><span class="fu">require</span>(maps)</span>
+<span id="cb14-7"><a href=""></a><span class="fu">require</span>(ggplot2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<div id="tabset-4-2">
+<p><code>corp_news</code> 包含了 2014 年从 Yahoo News 下载的 10,000 篇新闻摘要</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href=""></a>tem <span class="ot">&lt;-</span> <span class="fu">url</span>(<span class="st">"https://drhuyue.site:10002/Adrian/data/course/rworkshop/NLP_classification/YahooNewsCorpus.rds"</span>, <span class="st">"rb"</span>)</span>
+<span id="cb15-2"><a href=""></a>corp_news <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(tem)</span>
+<span id="cb15-3"><a href=""></a><span class="fu">close</span>(tem)</span>
+<span id="cb15-4"><a href=""></a><span class="fu">ndoc</span>(corp_news)</span>
+<span id="cb15-5"><a href=""></a><span class="fu">range</span>(corp_news<span class="sc">$</span>date)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<div id="tabset-4-3">
+<p>在地理分类中，专有名词是最有用的文档特征。但并不是所有大写的单词都是专有名词，因此我们需要定义自定义停用词。</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href=""></a>month <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"January"</span>, <span class="st">"February"</span>, <span class="st">"March"</span>, <span class="st">"April"</span>, <span class="st">"May"</span>, <span class="st">"June"</span>,</span>
+<span id="cb16-2"><a href=""></a>           <span class="st">"July"</span>, <span class="st">"August"</span>, <span class="st">"September"</span>, <span class="st">"October"</span>, <span class="st">"November"</span>, <span class="st">"December"</span>)</span>
+<span id="cb16-3"><a href=""></a>day <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Sunday"</span>, <span class="st">"Monday"</span>, <span class="st">"Tuesday"</span>, <span class="st">"Wednesday"</span>, <span class="st">"Thursday"</span>, <span class="st">"Friday"</span>, <span class="st">"Saturday"</span>)</span>
+<span id="cb16-4"><a href=""></a>agency <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"AP"</span>, <span class="st">"AFP"</span>, <span class="st">"Reuters"</span>)</span>
+<span id="cb16-5"><a href=""></a></span>
+<span id="cb16-6"><a href=""></a>toks_news <span class="ot">&lt;-</span> <span class="fu">tokens</span>(corp_news, <span class="at">remove_punct =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb16-7"><a href=""></a>             <span class="fu">tokens_remove</span>(<span class="at">pattern =</span> <span class="fu">c</span>(<span class="fu">stopwords</span>(<span class="st">"en"</span>), month, day, agency), </span>
+<span id="cb16-8"><a href=""></a>                           <span class="at">valuetype =</span> <span class="st">"fixed"</span>, <span class="at">padding =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<div id="tabset-4-4">
+<p><strong>newsmap</strong> 包含多种语言的 <a href="https://github.com/koheiw/newsmap/tree/master/dict">种子地理词典</a>，包括英语、德语、西班牙语、日语和俄语。<code>data_dictionary_newsmap_en</code> 是用于英文文本的种子词典。</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href=""></a><span class="co"># 从种子词典中查找标记，指定第三级（国家）</span></span>
+<span id="cb17-2"><a href=""></a>toks_label <span class="ot">&lt;-</span> <span class="fu">tokens_lookup</span>(toks_news, <span class="at">dictionary =</span> data_dictionary_newsmap_en, <span class="at">levels =</span> <span class="dv">3</span>) </span>
+<span id="cb17-3"><a href=""></a></span>
+<span id="cb17-4"><a href=""></a><span class="co"># 将标记转换为文档-特征矩阵，不转换为小写</span></span>
+<span id="cb17-5"><a href=""></a>dfmat_label <span class="ot">&lt;-</span> <span class="fu">dfm</span>(toks_label, <span class="at">tolower =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb17-6"><a href=""></a></span>
+<span id="cb17-7"><a href=""></a><span class="co"># 创建原始标记的文档-特征矩阵，不转换为小写</span></span>
+<span id="cb17-8"><a href=""></a>dfmat_feat <span class="ot">&lt;-</span> <span class="fu">dfm</span>(toks_news, <span class="at">tolower =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb17-9"><a href=""></a></span>
+<span id="cb17-10"><a href=""></a><span class="co"># 选择以大写字母开头的特征，忽略大小写，最小词频为10</span></span>
+<span id="cb17-11"><a href=""></a>dfmat_feat_select <span class="ot">&lt;-</span> <span class="fu">dfm_select</span>(dfmat_feat, <span class="at">pattern =</span> <span class="st">"^[A-Z][A-Za-z0-9]+"</span>, </span>
+<span id="cb17-12"><a href=""></a>                                <span class="at">valuetype =</span> <span class="st">"regex"</span>, <span class="at">case_insensitive =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb17-13"><a href=""></a>                     <span class="fu">dfm_trim</span>(<span class="at">min_termfreq =</span> <span class="dv">10</span>)</span>
+<span id="cb17-14"><a href=""></a></span>
+<span id="cb17-15"><a href=""></a><span class="co"># 使用特征矩阵和标签训练 Newsmap 模型</span></span>
+<span id="cb17-16"><a href=""></a>tmod_nm <span class="ot">&lt;-</span> <span class="fu">textmodel_newsmap</span>(dfmat_feat_select, <span class="at">y =</span> dfmat_label)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>种子词典仅包含国家和首都的名称，但模型还会提取与这些国家相关的特征。这些国家代码在 <a href="https://zh.wikipedia.org/wiki/ISO_3166-1">ISO 3166-1</a> 中定义。</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href=""></a><span class="co"># 查看模型中与特定国家（美国、英国、法国、巴西、日本）相关的前15个特征</span></span>
+<span id="cb18-2"><a href=""></a><span class="fu">coef</span>(tmod_nm, <span class="at">n =</span> <span class="dv">15</span>)[<span class="fu">c</span>(<span class="st">"US"</span>, <span class="st">"GB"</span>, <span class="st">"FR"</span>, <span class="st">"BR"</span>, <span class="st">"JP"</span>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<div id="tabset-4-5">
+<p>可以使用 <code>predict()</code> 函数预测最强关联的国家，并使用 <code>table()</code> 统计频率。</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href=""></a><span class="co"># 使用训练好的 Newsmap 模型进行预测</span></span>
+<span id="cb19-2"><a href=""></a>pred_nm <span class="ot">&lt;-</span> <span class="fu">predict</span>(tmod_nm)</span>
+<span id="cb19-3"><a href=""></a><span class="co"># 显示前20个预测结果</span></span>
+<span id="cb19-4"><a href=""></a><span class="fu">head</span>(pred_nm, <span class="dv">20</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>使用因子水平设置零计数，以便未出现在语料库中的国家也能显示出来。</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href=""></a><span class="co"># 创建一个包含所有国家（因子水平）的频率表，按降序排列</span></span>
+<span id="cb20-2"><a href=""></a>count <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">table</span>(<span class="fu">factor</span>(pred_nm, <span class="at">levels =</span> <span class="fu">colnames</span>(dfmat_label))), <span class="at">decreasing =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb20-3"><a href=""></a><span class="co"># 显示频率最高的前20个国家</span></span>
+<span id="cb20-4"><a href=""></a><span class="fu">head</span>(count, <span class="dv">20</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<div id="tabset-4-6">
+<p>可以使用 <code>geom_map()</code> 可视化全球新闻关注度的分布。</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href=""></a><span class="co"># 将频率表转换为数据框</span></span>
+<span id="cb21-2"><a href=""></a>dat_country <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(count, <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb21-3"><a href=""></a><span class="co"># 重命名数据框的列</span></span>
+<span id="cb21-4"><a href=""></a><span class="fu">colnames</span>(dat_country) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"id"</span>, <span class="st">"frequency"</span>)</span>
+<span id="cb21-5"><a href=""></a></span>
+<span id="cb21-6"><a href=""></a><span class="co"># 获取世界地图数据</span></span>
+<span id="cb21-7"><a href=""></a>world_map <span class="ot">&lt;-</span> <span class="fu">map_data</span>(<span class="at">map =</span> <span class="st">"world"</span>)</span>
+<span id="cb21-8"><a href=""></a><span class="co"># 将地图中的国家名称转换为 ISO 代码</span></span>
+<span id="cb21-9"><a href=""></a>world_map<span class="sc">$</span>region <span class="ot">&lt;-</span> <span class="fu">iso.alpha</span>(world_map<span class="sc">$</span>region) </span>
+<span id="cb21-10"><a href=""></a></span>
+<span id="cb21-11"><a href=""></a><span class="co"># 使用 ggplot2 绘制地图</span></span>
+<span id="cb21-12"><a href=""></a><span class="fu">ggplot</span>(dat_country, <span class="fu">aes</span>(<span class="at">map_id =</span> id)) <span class="sc">+</span></span>
+<span id="cb21-13"><a href=""></a>      <span class="co"># 根据频率填充地图区域</span></span>
+<span id="cb21-14"><a href=""></a>      <span class="fu">geom_map</span>(<span class="fu">aes</span>(<span class="at">fill =</span> frequency), <span class="at">map =</span> world_map) <span class="sc">+</span></span>
+<span id="cb21-15"><a href=""></a>      <span class="co"># 扩展绘图区域以包含世界地图的所有经纬度</span></span>
+<span id="cb21-16"><a href=""></a>      <span class="fu">expand_limits</span>(<span class="at">x =</span> world_map<span class="sc">$</span>long, <span class="at">y =</span> world_map<span class="sc">$</span>lat) <span class="sc">+</span></span>
+<span id="cb21-17"><a href=""></a>      <span class="co"># 设置填充颜色的连续刻度，名称为“Frequency”</span></span>
+<span id="cb21-18"><a href=""></a>      <span class="fu">scale_fill_continuous</span>(<span class="at">name =</span> <span class="st">"Frequency"</span>) <span class="sc">+</span></span>
+<span id="cb21-19"><a href=""></a>      <span class="co"># 使用空白主题，移除所有背景和轴</span></span>
+<span id="cb21-20"><a href=""></a>      <span class="fu">theme_void</span>() <span class="sc">+</span></span>
+<span id="cb21-21"><a href=""></a>      <span class="co"># 使用固定比例绘制地图</span></span>
+<span id="cb21-22"><a href=""></a>      <span class="fu">coord_fixed</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="潜在语义尺度-latent-semantic-scaling-lss" class="slide level2">
+<h2>潜在语义尺度 (Latent Semantic Scaling, LSS)</h2>
+<p>LSS是一种灵活且成本效益高的半监督文档标度技术，依赖于词嵌入，用户只需提供少量的“种子词”即可定位特定维度上的文档。</p>
+<div class="panel-tabset">
+<ul id="tabset-5" class="panel-tabset-tabby"><li><a data-tabby-default="" href="#tabset-5-1">包</a></li><li><a href="#tabset-5-2">语料</a></li><li><a href="#tabset-5-3">数据清洗</a></li><li><a href="#tabset-5-4">LSS模型</a></li><li><a href="#tabset-5-5">可视化</a></li><li><a href="#tabset-5-6">预测极性</a></li><li><a href="#tabset-5-7">可视化</a></li></ul>
+<div class="tab-content">
+<div id="tabset-5-1">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href=""></a><span class="co"># 从 GitHub 安装 quanteda.corpora 包</span></span>
+<span id="cb22-2"><a href=""></a>devtools<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">"quanteda/quanteda.corpora"</span>)</span>
+<span id="cb22-3"><a href=""></a></span>
+<span id="cb22-4"><a href=""></a><span class="co"># 加载 quanteda 包，提供文本处理和分析功能</span></span>
+<span id="cb22-5"><a href=""></a><span class="fu">require</span>(quanteda)</span>
+<span id="cb22-6"><a href=""></a></span>
+<span id="cb22-7"><a href=""></a><span class="co"># 加载 quanteda.corpora 包，提供预处理过的文本数据集</span></span>
+<span id="cb22-8"><a href=""></a><span class="fu">require</span>(quanteda.corpora)</span>
+<span id="cb22-9"><a href=""></a></span>
+<span id="cb22-10"><a href=""></a><span class="co"># 加载 LSX 包，提供潜在语义分析和情感分析功能</span></span>
+<span id="cb22-11"><a href=""></a><span class="fu">require</span>(LSX)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<div id="tabset-5-2">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href=""></a>tem <span class="ot">&lt;-</span> <span class="fu">url</span>(<span class="st">"https://drhuyue.site:10002/Adrian/data/course/rworkshop/NLP_classification/GuardianCorpus.rds"</span>, <span class="st">"rb"</span>)</span>
+<span id="cb23-2"><a href=""></a>corp_news <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(tem)</span>
+<span id="cb23-3"><a href=""></a><span class="fu">close</span>(tem)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<div id="tabset-5-3">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href=""></a><span class="co"># 创建一个指向 GuardianCorpus.rds 文件的 URL 连接</span></span>
+<span id="cb24-2"><a href=""></a>tem <span class="ot">&lt;-</span> <span class="fu">url</span>(<span class="st">"https://drhuyue.site:10002/Adrian/data/course/rworkshop/NLP_classification/GuardianCorpus.rds"</span>, <span class="st">"rb"</span>)</span>
+<span id="cb24-3"><a href=""></a></span>
+<span id="cb24-4"><a href=""></a><span class="co"># 从 URL 连接读取 RDS 文件并存储到 corp_news 对象</span></span>
+<span id="cb24-5"><a href=""></a>corp_news <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(tem)</span>
+<span id="cb24-6"><a href=""></a></span>
+<span id="cb24-7"><a href=""></a><span class="co"># 关闭 URL 连接</span></span>
+<span id="cb24-8"><a href=""></a><span class="fu">close</span>(tem)</span>
+<span id="cb24-9"><a href=""></a></span>
+<span id="cb24-10"><a href=""></a><span class="co"># 将新闻语料库重构为句子级别的语料库，to 参数指定重构为句子</span></span>
+<span id="cb24-11"><a href=""></a>corp_sent <span class="ot">&lt;-</span> <span class="fu">corpus_reshape</span>(corp_news, <span class="at">to =</span> <span class="st">"sentences"</span>)</span>
+<span id="cb24-12"><a href=""></a></span>
+<span id="cb24-13"><a href=""></a><span class="co"># 对句子级别的语料库进行标记处理</span></span>
+<span id="cb24-14"><a href=""></a>toks_sent <span class="ot">&lt;-</span> corp_sent <span class="sc">%&gt;%</span> </span>
+<span id="cb24-15"><a href=""></a>    <span class="fu">tokens</span>(</span>
+<span id="cb24-16"><a href=""></a>        <span class="at">remove_punct =</span> <span class="cn">TRUE</span>,  <span class="co"># 移除标点符号</span></span>
+<span id="cb24-17"><a href=""></a>        <span class="at">remove_symbols =</span> <span class="cn">TRUE</span>,  <span class="co"># 移除符号</span></span>
+<span id="cb24-18"><a href=""></a>        <span class="at">remove_numbers =</span> <span class="cn">TRUE</span>,  <span class="co"># 移除数字</span></span>
+<span id="cb24-19"><a href=""></a>        <span class="at">remove_url =</span> <span class="cn">TRUE</span>  <span class="co"># 移除 URL</span></span>
+<span id="cb24-20"><a href=""></a>    ) <span class="sc">%&gt;%</span> </span>
+<span id="cb24-21"><a href=""></a>    <span class="fu">tokens_remove</span>(<span class="fu">stopwords</span>(<span class="st">"en"</span>, <span class="at">source =</span> <span class="st">"marimo"</span>)) <span class="sc">%&gt;%</span>  <span class="co"># 移除停用词，来源是 marimo</span></span>
+<span id="cb24-22"><a href=""></a>    <span class="fu">tokens_remove</span>(<span class="fu">c</span>(<span class="st">"*-time"</span>, <span class="st">"*-timeUpdated"</span>, <span class="st">"GMT"</span>, <span class="st">"BST"</span>, <span class="st">"*.com"</span>))  <span class="co"># 移除特定模式的词</span></span>
+<span id="cb24-23"><a href=""></a></span>
+<span id="cb24-24"><a href=""></a><span class="co"># 将标记后的数据转换为文档-特征矩阵</span></span>
+<span id="cb24-25"><a href=""></a>dfmat_sent <span class="ot">&lt;-</span> toks_sent <span class="sc">%&gt;%</span> </span>
+<span id="cb24-26"><a href=""></a>    <span class="fu">dfm</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb24-27"><a href=""></a>    <span class="fu">dfm_remove</span>(<span class="at">pattern =</span> <span class="st">""</span>) <span class="sc">%&gt;%</span>  <span class="co"># 移除空模式</span></span>
+<span id="cb24-28"><a href=""></a>    <span class="fu">dfm_trim</span>(<span class="at">min_termfreq =</span> <span class="dv">5</span>)  <span class="co"># 移除出现频率低于5次的词项</span></span>
+<span id="cb24-29"><a href=""></a></span>
+<span id="cb24-30"><a href=""></a><span class="co"># 输出频率最高的前20个特征</span></span>
+<span id="cb24-31"><a href=""></a><span class="fu">topfeatures</span>(dfmat_sent, <span class="dv">20</span>)</span>
+<span id="cb24-32"><a href=""></a></span>
+<span id="cb24-33"><a href=""></a><span class="co"># 使用 data_dictionary_sentiment 生成种子词</span></span>
+<span id="cb24-34"><a href=""></a>seed <span class="ot">&lt;-</span> <span class="fu">as.seedwords</span>(data_dictionary_sentiment)</span>
+<span id="cb24-35"><a href=""></a><span class="fu">print</span>(seed)  <span class="co"># 打印种子词</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<div id="tabset-5-4">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href=""></a><span class="co"># 确定与经济相关的上下文词，pattern 参数指定匹配模式为 "econom*"，p 参数指定 p 值阈值为 0.05</span></span>
+<span id="cb25-2"><a href=""></a>eco <span class="ot">&lt;-</span> <span class="fu">char_context</span>(toks_sent, <span class="at">pattern =</span> <span class="st">"econom*"</span>, <span class="at">p =</span> <span class="fl">0.05</span>)</span>
+<span id="cb25-3"><a href=""></a></span>
+<span id="cb25-4"><a href=""></a><span class="co"># 运行 LSS 模型</span></span>
+<span id="cb25-5"><a href=""></a>tmod_lss <span class="ot">&lt;-</span> <span class="fu">textmodel_lss</span>(</span>
+<span id="cb25-6"><a href=""></a>    dfmat_sent,  <span class="co"># 输入的文档-特征矩阵</span></span>
+<span id="cb25-7"><a href=""></a>    <span class="at">seeds =</span> seed,  <span class="co"># 使用的种子词</span></span>
+<span id="cb25-8"><a href=""></a>    <span class="at">terms =</span> eco,  <span class="co"># 使用的上下文词</span></span>
+<span id="cb25-9"><a href=""></a>    <span class="at">k =</span> <span class="dv">300</span>,  <span class="co"># LSA 中的维度数</span></span>
+<span id="cb25-10"><a href=""></a>    <span class="at">cache =</span> <span class="cn">TRUE</span>  <span class="co"># 是否缓存计算结果</span></span>
+<span id="cb25-11"><a href=""></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<div id="tabset-5-5">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href=""></a><span class="co"># 输出模型中最正向的前20个词</span></span>
+<span id="cb26-2"><a href=""></a><span class="fu">head</span>(<span class="fu">coef</span>(tmod_lss), <span class="dv">20</span>)</span>
+<span id="cb26-3"><a href=""></a></span>
+<span id="cb26-4"><a href=""></a><span class="co"># 输出模型中最负向的前20个词</span></span>
+<span id="cb26-5"><a href=""></a><span class="fu">tail</span>(<span class="fu">coef</span>(tmod_lss), <span class="dv">20</span>)</span>
+<span id="cb26-6"><a href=""></a></span>
+<span id="cb26-7"><a href=""></a><span class="co"># 可视化负向情感词，使用 manually compiled sentiment dictionary (data_dictionary_LSD2015)</span></span>
+<span id="cb26-8"><a href=""></a><span class="fu">textplot_terms</span>(tmod_lss, data_dictionary_LSD2015[<span class="st">"negative"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<div id="tabset-5-6">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href=""></a><span class="co"># 使用 dfm_group() 重新构建原始文章</span></span>
+<span id="cb27-2"><a href=""></a>dfmat_doc <span class="ot">&lt;-</span> <span class="fu">dfm_group</span>(dfmat_sent)</span>
+<span id="cb27-3"><a href=""></a></span>
+<span id="cb27-4"><a href=""></a><span class="co"># 获取文档变量</span></span>
+<span id="cb27-5"><a href=""></a>dat <span class="ot">&lt;-</span> <span class="fu">docvars</span>(dfmat_doc)</span>
+<span id="cb27-6"><a href=""></a></span>
+<span id="cb27-7"><a href=""></a><span class="co"># 预测情感极性</span></span>
+<span id="cb27-8"><a href=""></a>dat<span class="sc">$</span>fit <span class="ot">&lt;-</span> <span class="fu">predict</span>(tmod_lss, <span class="at">newdata =</span> dfmat_doc)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<div id="tabset-5-7">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href=""></a><span class="co"># 使用 smooth_lss() 对文档的情感极性得分进行平滑处理，engine 参数指定平滑引擎为 "locfit"</span></span>
+<span id="cb28-2"><a href=""></a>dat_smooth <span class="ot">&lt;-</span> <span class="fu">smooth_lss</span>(dat, <span class="at">engine =</span> <span class="st">"locfit"</span>)</span>
+<span id="cb28-3"><a href=""></a><span class="fu">head</span>(dat_smooth)  <span class="co"># 打印平滑处理后的数据</span></span>
+<span id="cb28-4"><a href=""></a></span>
+<span id="cb28-5"><a href=""></a><span class="co"># 可视化文档的情感极性趋势</span></span>
+<span id="cb28-6"><a href=""></a><span class="fu">plot</span>(</span>
+<span id="cb28-7"><a href=""></a>    dat<span class="sc">$</span>date,  <span class="co"># x 轴数据为日期</span></span>
+<span id="cb28-8"><a href=""></a>    dat<span class="sc">$</span>fit,  <span class="co"># y 轴数据为情感极性得分</span></span>
+<span id="cb28-9"><a href=""></a>    <span class="at">col =</span> <span class="fu">rgb</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="fl">0.05</span>),  <span class="co"># 数据点的颜色和透明度</span></span>
+<span id="cb28-10"><a href=""></a>    <span class="at">pch =</span> <span class="dv">16</span>,  <span class="co"># 数据点的形状</span></span>
+<span id="cb28-11"><a href=""></a>    <span class="at">ylim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">0.5</span>, <span class="fl">0.5</span>),  <span class="co"># y 轴的范围</span></span>
+<span id="cb28-12"><a href=""></a>    <span class="at">xlab =</span> <span class="st">"Time"</span>,  <span class="co"># x 轴标签</span></span>
+<span id="cb28-13"><a href=""></a>    <span class="at">ylab =</span> <span class="st">"Economic sentiment"</span>  <span class="co"># y 轴标签</span></span>
+<span id="cb28-14"><a href=""></a>)</span>
+<span id="cb28-15"><a href=""></a><span class="fu">lines</span>(dat_smooth<span class="sc">$</span>date, dat_smooth<span class="sc">$</span>fit, <span class="at">type =</span> <span class="st">"l"</span>)  <span class="co"># 添加平滑曲线</span></span>
+<span id="cb28-16"><a href=""></a><span class="fu">lines</span>(dat_smooth<span class="sc">$</span>date, dat_smooth<span class="sc">$</span>fit <span class="sc">+</span> dat_smooth<span class="sc">$</span>se.fit <span class="sc">*</span> <span class="fl">1.96</span>, <span class="at">type =</span> <span class="st">"l"</span>, <span class="at">lty =</span> <span class="dv">3</span>)  <span class="co"># 添加95%置信区间上限</span></span>
+<span id="cb28-17"><a href=""></a><span class="fu">lines</span>(dat_smooth<span class="sc">$</span>date, dat_smooth<span class="sc">$</span>fit <span class="sc">-</span> dat_smooth<span class="sc">$</span>se.fit <span class="sc">*</span> <span class="fl">1.96</span>, <span class="at">type =</span> <span class="st">"l"</span>, <span class="at">lty =</span> <span class="dv">3</span>)  <span class="co"># 添加95%置信区间下限</span></span>
+<span id="cb28-18"><a href=""></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))  <span class="co"># 添加水平线，表示情感极性为零的基准线</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="lets-quiz-after" class="slide level2">
+<h2>Let`s quiz after!</h2>
+<div style="display: flex; justify-content: center;">
+<p><a href="https://quizizz.com/admin/quiz/66449b5903f7431c18acc829" target="_blank">Open the shared page</a></p>
+</div>
+
+</section>
+    <div class="quarto-auto-generated-content">
+<p><img src="https://gitlab.com/sammo3182/backup/raw/85b3c1ad4b459d7a9f901f124b936428eda5fcaf/logo_zzxx.png?inline=true" class="slide-logo"></p>
+<div class="footer footer-default">
+<p>Adrian Sun</p>
+</div>
+</div></div>
+  </div>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script>
+  <script src="NLP_Classifacation_files/libs/revealjs/dist/reveal.js"></script>
+  <!-- reveal.js plugins -->
+  <script src="NLP_Classifacation_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.js"></script>
+  <script src="NLP_Classifacation_files/libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
+  <script src="NLP_Classifacation_files/libs/revealjs/plugin/reveal-menu/menu.js"></script>
+  <script src="NLP_Classifacation_files/libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
+  <script src="NLP_Classifacation_files/libs/revealjs/plugin/reveal-chalkboard/plugin.js"></script>
+  <script src="NLP_Classifacation_files/libs/revealjs/plugin/quarto-support/support.js"></script>
+  
+
+  <script src="NLP_Classifacation_files/libs/revealjs/plugin/notes/notes.js"></script>
+  <script src="NLP_Classifacation_files/libs/revealjs/plugin/search/search.js"></script>
+  <script src="NLP_Classifacation_files/libs/revealjs/plugin/zoom/zoom.js"></script>
+  <script src="NLP_Classifacation_files/libs/revealjs/plugin/math/math.js"></script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+'controlsAuto': true,
+'previewLinksAuto': false,
+'pdfSeparateFragments': false,
+'autoAnimateEasing': "ease",
+'autoAnimateDuration': 1,
+'autoAnimateUnmatched': true,
+'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleChalkboard(event)\"><kbd>b</kbd> Toggle Chalkboard</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleNotesCanvas(event)\"><kbd>c</kbd> Toggle Notes Canvas</a></li>\n<li class=\"slide-tool-item\" data-item=\"6\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.downloadDrawings(event)\"><kbd>d</kbd> Download Drawings</a></li>\n<li class=\"slide-tool-item\" data-item=\"7\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
+'chalkboard': {"buttons":true},
+'smaller': false,
+ 
+        // Display controls in the bottom right corner
+        controls: false,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: false,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'edges',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: 'c/t',
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'all',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: true,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: false,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: false,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'linear',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: false,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: true,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'none',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'default',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'none',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        // The "normal" size of the presentation, aspect ratio will be preserved
+        // when the presentation is scaled to fit different resolutions. Can be
+        // specified using percentage units.
+        width: 1600,
+
+        height: 900,
+
+        // Factor of the display size that should remain empty around the content
+        margin: 0.1,
+
+        math: {
+          mathjax: 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js',
+          config: 'TeX-AMS_HTML-full',
+          tex2jax: {
+            inlineMath: [['\\(','\\)']],
+            displayMath: [['\\[','\\]']],
+            balanceBraces: true,
+            processEscapes: false,
+            processRefs: true,
+            processEnvironments: true,
+            preview: 'TeX',
+            skipTags: ['script','noscript','style','textarea','pre','code'],
+            ignoreClass: 'tex2jax_ignore',
+            processClass: 'tex2jax_process'
+          },
+        },
+
+        // reveal.js plugins
+        plugins: [QuartoLineHighlight, PdfExport, RevealMenu, RevealChalkboard, QuartoSupport,
+
+          RevealMath,
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    
+    <script>
+      // htmlwidgets need to know to resize themselves when slides are shown/hidden.
+      // Fire the "slideenter" event (handled by htmlwidgets.js) when the current
+      // slide changes (different for each slide format).
+      (function () {
+        // dispatch for htmlwidgets
+        function fireSlideEnter() {
+          const event = window.document.createEvent("Event");
+          event.initEvent("slideenter", true, true);
+          window.document.dispatchEvent(event);
+        }
+
+        function fireSlideChanged(previousSlide, currentSlide) {
+          fireSlideEnter();
+
+          // dispatch for shiny
+          if (window.jQuery) {
+            if (previousSlide) {
+              window.jQuery(previousSlide).trigger("hidden");
+            }
+            if (currentSlide) {
+              window.jQuery(currentSlide).trigger("shown");
+            }
+          }
+        }
+
+        // hookup for slidy
+        if (window.w3c_slidy) {
+          window.w3c_slidy.add_observer(function (slide_num) {
+            // slide_num starts at position 1
+            fireSlideChanged(null, w3c_slidy.slides[slide_num - 1]);
+          });
+        }
+
+      })();
+    </script>
+
+    <script id="quarto-html-after-body" type="application/javascript">
+    window.document.addEventListener("DOMContentLoaded", function (event) {
+      const toggleBodyColorMode = (bsSheetEl) => {
+        const mode = bsSheetEl.getAttribute("data-mode");
+        const bodyEl = window.document.querySelector("body");
+        if (mode === "dark") {
+          bodyEl.classList.add("quarto-dark");
+          bodyEl.classList.remove("quarto-light");
+        } else {
+          bodyEl.classList.add("quarto-light");
+          bodyEl.classList.remove("quarto-dark");
+        }
+      }
+      const toggleBodyColorPrimary = () => {
+        const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+        if (bsSheetEl) {
+          toggleBodyColorMode(bsSheetEl);
+        }
+      }
+      toggleBodyColorPrimary();  
+      const tabsets =  window.document.querySelectorAll(".panel-tabset-tabby")
+      tabsets.forEach(function(tabset) {
+        const tabby = new Tabby('#' + tabset.id);
+      });
+      const isCodeAnnotation = (el) => {
+        for (const clz of el.classList) {
+          if (clz.startsWith('code-annotation-')) {                     
+            return true;
+          }
+        }
+        return false;
+      }
+      const clipboard = new window.ClipboardJS('.code-copy-button', {
+        text: function(trigger) {
+          const codeEl = trigger.previousElementSibling.cloneNode(true);
+          for (const childEl of codeEl.children) {
+            if (isCodeAnnotation(childEl)) {
+              childEl.remove();
+            }
+          }
+          return codeEl.innerText;
+        }
+      });
+      clipboard.on('success', function(e) {
+        // button target
+        const button = e.trigger;
+        // don't keep focus
+        button.blur();
+        // flash "checked"
+        button.classList.add('code-copy-button-checked');
+        var currentTitle = button.getAttribute("title");
+        button.setAttribute("title", "Copied!");
+        let tooltip;
+        if (window.bootstrap) {
+          button.setAttribute("data-bs-toggle", "tooltip");
+          button.setAttribute("data-bs-placement", "left");
+          button.setAttribute("data-bs-title", "Copied!");
+          tooltip = new bootstrap.Tooltip(button, 
+            { trigger: "manual", 
+              customClass: "code-copy-button-tooltip",
+              offset: [0, -8]});
+          tooltip.show();    
+        }
+        setTimeout(function() {
+          if (tooltip) {
+            tooltip.hide();
+            button.removeAttribute("data-bs-title");
+            button.removeAttribute("data-bs-toggle");
+            button.removeAttribute("data-bs-placement");
+          }
+          button.setAttribute("title", currentTitle);
+          button.classList.remove('code-copy-button-checked');
+        }, 1000);
+        // clear code selection
+        e.clearSelection();
+      });
+        var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+        var mailtoRegex = new RegExp(/^mailto:/);
+          var filterRegex = new RegExp('/' + window.location.host + '/');
+        var isInternal = (href) => {
+            return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+        }
+        // Inspect non-navigation links and adorn them if external
+     	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+        for (var i=0; i<links.length; i++) {
+          const link = links[i];
+          if (!isInternal(link.href)) {
+              // target, if specified
+              link.setAttribute("target", "_blank");
+              if (link.getAttribute("rel") === null) {
+                link.setAttribute("rel", "noopener");
+              }
+          }
+        }
+      function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+        const config = {
+          allowHTML: true,
+          maxWidth: 500,
+          delay: 100,
+          arrow: false,
+          appendTo: function(el) {
+              return el.closest('section.slide') || el.parentElement;
+          },
+          interactive: true,
+          interactiveBorder: 10,
+          theme: 'light-border',
+          placement: 'bottom-start',
+        };
+        if (contentFn) {
+          config.content = contentFn;
+        }
+        if (onTriggerFn) {
+          config.onTrigger = onTriggerFn;
+        }
+        if (onUntriggerFn) {
+          config.onUntrigger = onUntriggerFn;
+        }
+          config['offset'] = [0,0];
+          config['maxWidth'] = 700;
+        window.tippy(el, config); 
+      }
+      const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+      for (var i=0; i<noterefs.length; i++) {
+        const ref = noterefs[i];
+        tippyHover(ref, function() {
+          // use id or data attribute instead here
+          let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+          try { href = new URL(href).hash; } catch {}
+          const id = href.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          return note.innerHTML;
+        });
+      }
+      const findCites = (el) => {
+        const parentEl = el.parentElement;
+        if (parentEl) {
+          const cites = parentEl.dataset.cites;
+          if (cites) {
+            return {
+              el,
+              cites: cites.split(' ')
+            };
+          } else {
+            return findCites(el.parentElement)
+          }
+        } else {
+          return undefined;
+        }
+      };
+      var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+      for (var i=0; i<bibliorefs.length; i++) {
+        const ref = bibliorefs[i];
+        const citeInfo = findCites(ref);
+        if (citeInfo) {
+          tippyHover(citeInfo.el, function() {
+            var popup = window.document.createElement('div');
+            citeInfo.cites.forEach(function(cite) {
+              var citeDiv = window.document.createElement('div');
+              citeDiv.classList.add('hanging-indent');
+              citeDiv.classList.add('csl-entry');
+              var biblioDiv = window.document.getElementById('ref-' + cite);
+              if (biblioDiv) {
+                citeDiv.innerHTML = biblioDiv.innerHTML;
+              }
+              popup.appendChild(citeDiv);
+            });
+            return popup.innerHTML;
+          });
+        }
+      }
+    });
+    </script>
+    
+
+</body></html>
