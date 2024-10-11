@@ -1,0 +1,94 @@
+---
+title: "Hot Keyboard Time"
+output: 
+  learnr::tutorial:
+    language: "en"
+    progressive: true
+    allow_skip: true
+    toc: true
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+chooseCRANmirror(graphics = FALSE, ind = 1)
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE,
+                      out.width="100%")
+
+if (!require(pacman)) install.packages("pacman")
+
+p_load(
+  lubridate,
+  here,
+  rio,
+  tidyverse
+)
+```
+
+1.How to display the help documentation for the `sum()` function? Provide two methods.
+
+```{r filter, exercise=TRUE}
+
+some_name <- 1:5
+some_name
+
+
+
+
+
+```
+
+```{r filter-solution}
+
+nycflights <- filter(nycflights, month == 2)
+
+```
+
+1.Please create a compliant and non-compliant object:
+
+
+```{r objectEg, exercise = TRUE}
+
+# Create a non-compliant object
+# 5var_name <- data_frame($education)
+
+
+```
+
+```{r objectEg-solution}
+
+# Create a compliant object
+
+var_name5 <- data_frame(wvs7$education)
+
+
+```
+
+Select a data in `data` to open and check the variables in it by summary:
+
+```{r mtcars_exercise, exercise=TRUE}
+
+
+```
+
+```{r mtcars_exercise-solution}
+# example
+
+data(uspop)
+summary(uspop)
+```
+
+Try to import a `.RDS`, `.sav`, and `.csv` file:
+
+```{r csv_exercise, exercise=TRUE}
+
+```
+
+```{r csv_exercise-solution}
+
+df_rds <- readRDS("aDataset.rds")
+df_sav <- read_spss("aDataset.sav")
+df_csv <- read.csv("<FileName>.csv")
+
+```

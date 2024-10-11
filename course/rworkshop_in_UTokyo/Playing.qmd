@@ -1,0 +1,721 @@
+---
+title: "Waving Hello to R"
+subtitle: "R Workshop 2024 in UTokyo"
+author: "SUN Yufei（Adrian）"
+institute: "UTokyo & Tsinghua University" 
+
+knitr: 
+    opts_chunk: 
+      eval: false
+
+format: 
+  revealjs:
+    css: https://drhuyue.site:10002/Adrian/data/style_basic.css
+    theme: ../../tiffany.scss
+    logo: https://gitlab.com/sammo3182/backup/raw/85b3c1ad4b459d7a9f901f124b936428eda5fcaf/logo_zzxx.png?inline=true
+    slide-number: true
+    incremental: true
+    preview-links: true # open an iframe for a link
+    link-external-newwindow: true
+    chalkboard: true # allwoing chalk board B, notes canvas C
+    footer: "SUN Yufei（Adrian）"
+    progress: true
+    hide-inactive-cursor: true
+    hide-cursor-timeout: 1000
+    
+    show-slide-number: all # `speaker` only print in pdf, `all` shows all the time
+    width: 1600
+    height: 900
+    title-slide-attributes:
+      data-background-image: https://adriansun.drhuyue.site/img/logo.jpg
+      data-background-size: 100px   
+      data-background-position: top 10% right 5%
+---
+
+```{r setup}
+#| include = FALSE
+
+library(pacman)
+
+p_load(
+  knitr,
+  RColorBrewer,
+  dotwhisker,
+  interplot,
+  modelsummary,
+  # dependency
+  stringr,
+  haven,
+  purrr,
+  broom,
+  
+  tidyr,
+  tidyverse,
+  
+  igraph,
+  quanteda,
+  quanteda.textmodels,
+  caret,
+  quanteda.corpora,
+  quanteda.textplots
+)
+
+# Functions preload
+set.seed(313)
+```
+
+## About Me
+
+:::: {.columns}
+
+::: {.column width="50%"}
+
+- PhD Candidate in Political Science, Tsinghua University
+- Visiting Researcher at ISS
+
+- Research interests: Political Psychology, Natural Language Processing
+- Dissertation: How and why Hong Kong uses CCP discourse, and its empirical impact
+
+:::
+
+::: {.column width="50%"}
+
+- Founder of Tsinghua R Workshop, 5-year R Workshop instructor
+- Github Campus Expert
+
+:::
+
+::::
+
+## About the Workshop
+
+- Week 1: Basic grammar
+- Week 2: Data cleaning & Basic visualization
+- Week 3: Loops and batch processing
+- Week 4: R & Quarto (for HTML, PDF, Word, etc.)
+
+## Outline
+
+- R Basics
+- R Packages
+- Data Import
+- Data Export
+- Data Structure
+- Variable Extraction
+- Variable Characteristics
+- Variable Attributes
+
+
+
+## What is R? <span class="fragment">→ Just like your 📱</span>
+
+## What is R? <span class="fragment">→ Just like your 📱</span>
+
+::: {.column-screen style="font-size: 1.5em; line-height: 1.8em;"}
+::: {.r-stack}
+::: {.fragment .fade-in}
+R → Your Phone
+:::
+:::
+::: {.r-stack}
+::: {.fragment .fade-in}
+R Studio/VS Code → iOS/Android
+:::
+:::
+::: {.r-stack}
+::: {.fragment .fade-in}
+R packages → Apps
+:::
+:::
+::: {.r-stack}
+::: {.fragment .fade-in}
+R Basic → iMessage
+:::
+:::
+::: {.r-stack}
+::: {.fragment .fade-in}
+packages from other source → Line
+:::
+:::
+::: {.r-stack}
+::: {.fragment .fade-in}
+function → Message Sending
+:::
+:::
+:::
+::: {.r-stack}
+::: {.fragment .fade-in}
+object → Contact
+:::
+:::
+:::
+
+## R Studio/VS Code → iOS/Android
+
+IDEs (Integrated Development Environments)
+
+![](https://drhuyue.site:10002/Adrian/figure/rstudio.png){.fragment fig-align="center" height=600}
+
+## R Studio/VS Code → iOS/Android
+
+and ... VS Code/pycharm/[Positron](https://www.r-bloggers.com/2024/07/introducing-positron-a-new-yet-familiar-ide-for-r-and-python/)
+
+
+::: {.columns}
+::: {.column width="50%"}
+![](https://drhuyue.site:10002/Adrian/figure/VSCode.png){.fragment fig-align="center" height=600}
+:::
+::: {.column width="50%"}
+![](https://i0.wp.com/cdn.prod.website-files.com/654fd3ad88635290d9845b9e/6686aaae4901f69deb2db99f_AD_4nXfWhc2sAsZi-D_XiUVhaKtuzJvzk9AoQf2YZKcSLJ-GfqICzYOmvK0SiqOtiQFuZNqIsC98VW9mSQR_JePYzmhLZgoIJrz-miioGJ3_CtlXWtVkDJd5O3evI7pJQ824X1r82bz-rGIs7fGwInoIoqmq1-GK.gif?w=578&ssl=1){.fragment fig-align="center" height=600}
+:::
+:::
+
+::::{.columns}
+:::{.column width="50%"}
+
+
+- latest plugins
+- multiple languages
+
+:::
+:::{.column width="50%"}
+
+- Not customized for R
+- Unstable
+
+:::
+::::
+
+## R packages → Apps
+
+:::: {.columns}
+
+::: {.column width="40%"}
+![](https://drhuyue.site:10002/sammo3182/figure/apps.jpeg){fig-align="center" height=500}
+:::
+
+::: {.column width="60%"}
+
+:::{.fragment}
+### install
+
+```{r installPg, eval=FALSE}
+#| eval: false
+#| echo: true
+
+install.packages("adrianlp")
+remotes::install_github("syfyufei/adrianlp")
+```
+:::
+
+:::{.fragment style="margin-top:1em"}
+### call
+
+```{r usingPg}
+#| eval: false
+#| echo: true
+
+library(adrianlp)
+require(adrianlp)
+adrianlp::tokenlize(text_data)
+```
+:::
+
+:::
+
+::::
+
+## Basic R & Packages
+
+:::: {.columns}
+
+:::{.column width="50%" .fragment}
+
+### R Basic → iMessage
+
+- **Data Manipulation**
+  - Create, subset, and manipulate data frames
+  - Use functions like `subset()`, `merge()`, `apply()`
+
+- **Statistical Analysis**
+  - Perform basic statistical tests
+  - Use functions like `t.test()`, `lm()`, `summary()`
+
+- **Data Visualization**
+  - Create basic plots and charts
+  - Use functions like `plot()`, `hist()`, `boxplot()`
+
+- **Programming**
+  - Write functions and loops
+  - Use control structures like `if`, `for`, `while`
+
+:::
+
+:::{.column width="50%" .fragment}
+
+### Classic R Packages → Line
+
+- **dplyr**
+  - Data manipulation and transformation
+  - Functions: `filter()`, `select()`, `mutate()`, `summarize()`
+
+- **ggplot2**
+  - Data visualization
+  - Functions: `ggplot()`, `geom_point()`, `geom_line()`
+
+- **tidyr**
+  - Data tidying
+  - Functions: `gather()`, `spread()`, `separate()`, `unite()`
+
+- **shiny**
+  - Interactive web applications
+  - Functions: `shinyApp()`, `fluidPage()`, `server()`
+
+:::
+
+::::
+
+
+## function → Message Sending
+
+::::{.columns style="text-align:left; margin-top: 2em"}
+:::{.column width="50%" .fragment}
+
+### Functions in R
+
+- **Built-in Functions**
+  - Predefined functions available in R
+  - Examples: `mean()`, `sum()`, `length()`
+
+- **User-defined Functions**
+  - Custom functions created by users
+  - Syntax: `function_name <- function(arg1, arg2) { ... }`
+
+:::
+
+:::{.column width="50%" .fragment}
+
+### Components of a Function
+
+- **Function Name**
+  - The identifier used to call the function
+  - Example: `my_function`
+
+- **Arguments**
+  - Inputs to the function, specified within parentheses
+  - Example: `function(arg1, arg2)`
+
+- **Body**
+  - The code block that defines the function's operations
+  - Enclosed within curly braces `{ ... }`
+
+- **Return Value**
+  - The output of the function, specified using `return()`
+  - Example: `return(result)`
+
+:::
+::::
+
+## function → Message Sending
+
+::::{.columns style="text-align:left; margin-top: 2em"}
+:::{.column width="50%" .fragment}
+
+### Code to Access `lm()` Help Documentation
+
+- Use `help()` function
+  - Code: `help(lm)`
+
+- Use `?` symbol
+  - Code: `?lm`
+
+:::
+
+:::{.column width="50%" .fragment}
+
+### Usage
+
+Usage
+```{r}
+#| eval: false
+#| echo: true
+
+lm(formula, data, subset, weights, na.action,
+   method = "qr", model = TRUE, x = FALSE, y = FALSE, qr = TRUE,
+   singular.ok = TRUE, contrasts = NULL, offset, ...)
+```
+
+:::
+::::
+
+## Let's Practice (Hot Potato)
+
+::::{.columns style="text-align:left; margin-top: 2em"}
+:::{.column width="50%" .fragment}
+
+![Hot Potato Game](https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj29sIPltW6jAJ4fQ6jcq7Pb3VdQSOu6B0afAepTI1wUD5TGNwviLfQynycdQHwvJ1llF0MWALjNgHCEqUZytYjbR9NnIyEtpW2_1l2D_GeNuX4RhPG-e3Ks9EYcqP3DqRvgbaUMw/w1200-h630-p-k-no-nu/Hot+Potato+Culture.jpg)
+
+Hot Potato("ばくだんゲーム"; “击鼓传花”) but one by one version
+
+::: {.notes}
+
+Hot Potato is a game where players pass an object around in a circle while music plays. When the music stops, the player holding the object is out.
+
+/Bakuda n gēmu/
+
+:::
+
+:::
+
+:::{.column width="50%" .fragment}
+
+![Keyboard](https://cdn.thewirecutter.com/wp-content/media/2024/05/20240515_Mechanical-Keyboard-Infographic-Layout-1_600px@2x.png?auto=webp&quality=75&crop=1.91:1&width=1200)
+
+:::
+::::
+
+## Hot Keyboard Time
+
+::::{.columns style="text-align:left; margin-top: 2em"}
+:::{.column width="50%" .fragment}
+
+### Question
+
+How to display the help documentation for the `sum()` function? Provide two methods.
+
+:::
+
+:::{.column width="50%" .fragment}
+
+### Answer
+
+```{r, eval=FALSE}
+#| eval: false
+#| echo: true
+
+help(sum)
+?sum
+```
+
+:::
+::::
+
+## `<-`
+
+Assignment operator, the shorthand for the `assign()` command
+
+> Syntax: <`variable name`> `<-` <`object`>
+```{r, eval=FALSE, echo=TRUE}
+aValidObject <- 1:5
+aValidObject
+```
+
+### Why `<-`？
+
+- Intuitive
+- Will not be confused with "="
+- Shortcut input
+    - PC: `Alt + -`
+    - Mac: `option + -`
+
+```{r, eval=FALSE, echo=TRUE}
+
+a <- 12
+25 -> b
+
+```
+
+## Naming Rules
+
+1. Don't start with a number (Error: `1stday`).
+1. No special symbols except `.` and `_` (Error: `M&M`).
+1. Case sensitive (`X != x`) `! means "not"/"no", `!=` means "not equal to".
+1. Don't override built-in commands if necessary(avoid: `list <- c(1:5)`).
+
+Hot Keyboard Time!
+
+## Data Input
+
+:::: {.columns}
+
+::: {.column width="50%" .fragment}
+### Built-in Data
+```{r mtcars, eval=FALSE, echo=TRUE}
+data()
+```
+
+Hot Keyboard Time!
+
+###Data Types That Can Be Read Directly
+
+- `.RDS` (single object)
+- `.RData` (multiple objects)
+- `.txt`
+- `.csv`
+
+> Syntax: <`name`>`<-` <`read command`>(<`data path`>)
+
+
+```{r, eval=FALSE, echo=TRUE}
+df_rds <- readRDS("aDataset.rds")
+df_txt <- read.table("D:/aDataset.txt")
+df_csv <- read.csv("./aDataset.csv")
+```
+:::
+
+::: {.column width="50%" .fragment}
+
+### Data Types Need To Call The Package To Read
+
+Call the package through `library` or `require`, and then use the commands in it.
+
+```{r, eval=FALSE, echo=TRUE}
+# SPSS, Stata, SAS
+library(haven)
+df_spss <- read_spss("<FileName>.sav")
+df_stata <- read_dta("<FileName>.dta")
+df_sas <- read_sas("<FileName>.sas7bdat")  
+
+# Quick Import of Forms
+library（reader）
+df_csv <- read.csv("<FileName>.csv")
+df_table <- read.table("<FileName>.csv/txt")
+
+# Excel
+library(readxl)
+df_excel <- read_excel("<FileName>.xls")
+df_excel2 <- read_excel("<FileName>.xlsx")
+
+# JSON (JavaScript Object Notation)
+library(rjson)
+df_json <- fromJSON(file = "<FileName>.json" )
+
+# XML/Html
+library(xml)
+df_xml <- xmlTreeParse("<url>")
+df_html <- readHTMLTable(url, which=3)
+```
+
+Hot Keyboard Time!
+
+:::
+
+::::
+
+## Data Input
+
+The Swiss Army Knife of data reading:`rio`
+
+```{r, eval=FALSE, echo=TRUE}
+library(rio)
+df_anything <- import(<AnyTypeOfData>)
+```
+
+## Data Output
+
+> Syntax: <command>(<data_to_save>, file = <storage_path>)
+
+:::: {.columns}
+
+::: {.column width="50%" .fragment}
+
+### Saving as R Data
+
+```{r saving, eval=FALSE, echo=TRUE}
+saveRDS(df_toy, file = "df_toy.rds")
+save(df_toy, ls_monks, file = "test.rdata")
+```
+
+:::
+
+::: {.column width="50%" .fragment}
+
+### Saving as CSV File
+
+```{r savingCSV, eval=FALSE, echo=TRUE}
+write.csv(df_toy, file = "toy.csv")
+```
+
+> Note: If your data contains CJK characters, you may encounter encoding issues when saving as a CSV file.
+
+:::
+::::
+
+## Data Munging
+
+```{r readdata, eval=FALSE, echo=TRUE}
+
+load("/Users/adrian/Documents/Yufei_Sun/THU/projects/slides/course/rworkshop_in_UTokyo/wvs7.rda")
+
+```
+
+## Data Structure
+
+- Observations
+- Variables
+- Data Structure
+
+## Data Structure
+
+```{r systemView, eval=FALSE, echo=TRUE}
+
+load("/Users/adrian/Documents/Yufei_Sun/THU/projects/slides/course/rworkshop_in_UTokyo/wvs7.rda")
+
+wvs7
+
+nrow(wvs7) # Get the number of rows in the data
+ncol(wvs7) # Get the number of columns in the data
+names(wvs7) # Get the variable/column names
+str(wvs7) # Get variable names, types, number of rows and columns
+```
+
+::: {.notes}
+
+There may be a problem that the number of rows and columns is too large to observe the data characteristics directly. In this case, you can query the number of rows, columns, and variable names of the data frame through several simple functions.
+
+:::
+
+## Variable Extraction
+
+:::: {.columns}
+
+::: {.column width="50%" .fragment} 
+
+To extract a column from a data frame, there are at least two common methods:
+
+`[a,b]`
+
+```{r variable, eval=FALSE, echo=TRUE}
+wvs7[, "country"]
+```
+
+:::
+
+::: {.column width="50%" .fragment}
+`<data frame>$<variable name>`
+
+```{r variable2, eval=FALSE, echo=TRUE}
+wvs7$country
+```
+
+:::
+::::
+
+## Variable Characteristics
+
+:::: {.columns}
+::: {.column width="50%" .fragment}
+
+### numeric variables
+
+ `table`
+
+```{r varCal, eval=FALSE, echo=TRUE}
+table(wvs7$age)
+```
+
+`summary`
+
+```{r varCal2, eval=FALSE, echo=TRUE}
+summary(wvs7$age)
+```
+
+:::
+
+::: {.column width="50%" .fragment}
+
+### Non-numeric Variables: Summary Tables
+
+```{r varCat, eval=FALSE, echo=TRUE}
+table(wvs7$female)
+table(wvs7$marital)
+```
+
+For factor variables, we can also extract their level information
+
+```{r varLevel, eval=FALSE, echo=TRUE}
+levels(wvs7$religious)
+levels(wvs7$marital)
+```
+
+:::
+::::
+
+## Variable Attributes
+
+Attributes are attributes of all types of variables.
+
+```{r varAttr, eval=FALSE, echo=TRUE}
+length(wvs7$age) # Get the length of the variable (here it is the number of rows)
+unique(wvs7$age) # Get the unique values of the variable
+
+summary(wvs7$age) # Get all the above information about the year
+class(wvs7$age) # Check the structure of the year: vector, matrix, array, dataframe, list
+typeof(wvs7$age) # Check the type of the year elements
+```
+
+### Summary
+
+```{r summary, eval=FALSE, echo=TRUE}
+summary(wvs7$age)
+summary(wvs7)
+```
+
+## Take-Home Points
+
+:::: {.columns}
+
+::: {.column width="50%" .fragment}
+
+- R Basics
+  - RStudio/VS Code are like operating systems (IDEs)
+  - R packages are similar to apps
+  - Functions in R are comparable to "Message Sending"
+
+- Loading Packages
+  - `install.packages()`: Installing packages
+  - `library()` or `require()`: Loading packages
+  - `help()` or `?`: Accessing function documentation
+
+- Data Import:
+  - `readRDS()`, `read.table()`, `read.csv()`: Reading various file formats
+- Data Export:
+  - `saveRDS()`, `save()`, `write.csv()`: Saving in different formats
+  - `rio::import()`: The "Swiss Army Knife" for data reading
+
+:::
+
+::: {.column width="50%" .fragment}
+
+- Data Structure:
+  - `nrow()`, `ncol()`: Get number of rows and columns
+names(): Get variable/column names
+  - `str()`: Get variable names, types, number of rows and columns
+
+- Data Extraction:
+  - `dataframe[, "variable"]` or `dataframe$variable`: Extracting variables
+
+- Variable Characteristics:
+  - `table()`, `summary()`: Examining variable characteristics
+  - `levels()`: Understanding factor variables
+
+- Variable Attributes:
+  - `length()`, `unique()`, `class()`, `typeof()`
+
+:::
+
+::::
+
+# Thank you {background="#43464B"}
+
+:::{style="text-align: right; margin-top: 1em"}  
+
+Github Page: https://github.com/syfyufei
+
+Email: sunyf20@mails.tsinghua.edu.cn
+
+Personal Website:https://syfyufei.github.io/
+
+![](https://drhuyue.site:10002/Adrian/figure/IMG_0271.JPG){height=250}
+
+:::

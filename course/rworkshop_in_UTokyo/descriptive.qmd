@@ -1,0 +1,435 @@
+---
+title: "描述性统计分析"
+subtitle: "Descriptive Statistics"
+runtime: shiny_prerendered
+---
+
+# 描述性统计分析 {#sec-descriptive}
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE,
+                      out.width="100%")
+
+if (!require(pacman)) install.packages("pacman")
+
+p_load(drhur,
+       here,
+       rio,
+       tidyverse,
+       modelsummary,
+       sjPlot)
+
+wvs7 <- import(here("data/wvs7.rda"))
+
+```
+
+## 导言
+
+当我们获得一份新到手的数据，一定想快速看看这份数据包含的一些基础信息。相比于直接观察原始数据，我们更需要通过描述性统计来获取数据中各个变量的关键信息，从而辅助我们进行后续的数据分析。在本章节，我们将介绍描述性统计的基础操作。
+
+## 知识点
+
+- 研究问题  
+    - 我们继续以`wvs7`举例，`wvs7`里被调查者们收入情况的分布特征是如何直观展现出来的？  
+    - 诸如性别、宗教等类别变量的分布应该怎么查看呢？  
+ 
+- 变量描述
+    - 原始数据
+    - 矩
+
+- 数据描述
+    - 数据框
+    - 数据信息
+
+- 可视化
+    - 表
+    - 图
+
+## 演示数据
+
+我们在这部分继续使用`wvs7`的一个样本进行演示。
+具体变量信息可通过`?drhur::wvs7`查看，也可以通过`data`命令调用。
+
+```{r wvs7}
+data("wvs7")
+```
+
+
+## 变量描述
+
+### 原始数据
+
+很多研究者喜欢看更为原始的数据。
+在这里我们介绍3种直接看数据的方法：
+
+第一，直接输入数据名称，可以以`$`指定特定的变量。
+
+```{r seeRaw1}
+wvs7$age[1:20]
+```
+
+第二，通过`head/tail`命令来查看数据的开始和结束部分。
+
+```{r seeRaw2-head}
+head(wvs7$age)
+```
+
+```{r seeRaw2-tail}
+tail(wvs7$age)
+```
+第三，通过`select`来一次性查看多个变量。
+
+```{r seeRaw3}
+library(dplyr)
+
+select(wvs7, age, female)
+```
+
+更多时候，变量的矩和其他统计能给我们提供更提纲挈领、简明扼要的信息。
+我们在上一章给大家介绍了`table`。
+这里做两个扩展：
+
+- `table`还可以显示缺失数据信息：
+
+```{r tableMissing}
+table(wvs7$age, useNA = "ifany")
+```
+如果你想要总是显示缺失值的数量，即使数据中没有缺失值，你可以使用`useNA = "always"`。
+如果你不想在表格中显示缺失值的信息，可以使用`useNA = "no"`。
+
+`NA`也会作为一个特殊的值被返回。
+
+- 对于`table`的“表头”，可以使用`unique`一并提取:
+
+```{r unique}
+unique(wvs7$age)
+```
+
+这行代码将返回 `wvs7` 数据集中 `age` 变量的所有独特值。
+这对于快速查看一个变量包含哪些可能的值非常有用，特别是在变量的潜在值数目不多时。
+正如其名，`unique`命令可以查看那些“独一无二”的值，也就是去掉重复值的数据情况。这个功能有些类似于在类别变量中查看层次。
+
+### 矩
+
+在上一课我们介绍可以使用`summary`获得变量特征信息。
+但很多时候出于需要，有必要对其中的统计量单独计算，比如在政治学和社会学实验中我们常要比较实验组和控制组的分布差别来判断实验干预是否有效。
+这种情况下就需要将平均值、中位数等等单独提取比较。
+
+我们下面基于`wvs7`的年龄变量来演示如何进行这些操作：
+
+你既可以通过`summary`命令一次性获取多个描述性统计的指标。
+
+```{r summary}
+summary(wvs7$age)
+```
+
+也可以通过特定的命令直接获取你想要的统计量。
+
+- `min`:求最小值。
+- `quantile`：求分位数（可以在参数中标注`1/4`、`3/4`等来明确分位数的位置，如果不明确该参数，则会返回0%、25%、50%、75%、100%的分位数值）。
+- `median`：求中位数。
+- `mean`：求平均数。
+- `max`：求最大值。
+- `sum`：求和。
+
+```{r summary-1}
+min(wvs7$age) 
+quantile(wvs7$age, 1/4, na.rm = TRUE)
+median(wvs7$age)
+mean(wvs7$age, na.rm = TRUE)
+quantile(wvs7$age, 3/4, na.rm = TRUE)
+max(wvs7$age) 
+sum(is.na(wvs7$age))
+
+IQR(wvs7$age, na.rm = TRUE) # quantile(x, 3/4) - quantile(x, 1/4)
+```
+
+> 提示：`na.rm` 是指如何对待缺失变量，通常是逻辑值，取`TRUE`表示命令运行前去除缺失变量。类似地，以后会在各类参数中看到`xxx = TRUE/FALSE`的标注，一般表明是否开启该函数的某项功能。例如在此处，就是表示开启`remove NA`的功能。
+
+###
+
+作为以统计计算为根本使命的编程语言，R（尤其是`moments`软件包)还提供了非常便捷的途径运算除平均值以外的变量分布的矩：
+
+```{r moments}
+## Variance
+var(wvs7$age, na.rm = TRUE)
+
+## Standard deviation
+sd(wvs7$age, na.rm = TRUE)
+
+## Skewness
+library(moments)
+skewness(wvs7$age, na.rm = TRUE)
+
+## Kurtosis
+kurtosis(wvs7$age, na.rm = TRUE)
+```
+
+其中，`var`命令（计算方差）和`sd`命令（计算方差）来自于`stats`包，`skewness`命令（计算偏度）和`kurtosis`（计算峰度）命令来自于`moments`包。
+
+## 数据描述
+### 数据框
+
+其实我们在上一课的“数据探索”中已经介绍了一些数据框描述的方法。
+此处，我们做一些补充。
+
+首先，对于一个数据，我们当然可以像对待变量一样，直接看它的原始数据样貌。
+但如果数据过大，直接在操作台（console）中看可能非常麻烦，而且有可能因为R显示预设使我们无法看到想看到的变量。
+那怎么办呢？
+`View`命令给我们提供了一个方法，它会打开一个单独的窗口将数据全部显示出来。^[这里做个提醒：`View`命令的首字母是大写的，这点非常重要。
+在R中`X`和`x`代表完全不同的对象或命令。]
+
+```{r view, eval=FALSE}
+View(wvs7)
+```
+
+这一步，也可以通过点击`Enviroment`中的数据来实现：
+
+```{r ViewData, width=100%}
+#| label: fig-ViewData
+#| fig-cap: "点击替代View命令"
+#| fig-align: center
+#| fig-width: 4
+#| fig-height: 8
+#| dpi: 300
+knitr::include_graphics("images/ViewData.png")
+```
+
+
+还记不记得，我们之前说过“不触碰数据”的原则？为什么这里就可以呢？
+首先，这一步只起到查看数据的功能，不会改变原数据信息。并且，如果你仔细观察就会发现，当你点击鼠标时，`Console`栏里也相应地出现了`View(<数据名称>)`的信息。
+实际上，是RStudio替你将点鼠标的行为转化为了代码，自动输入给了R。
+
+其次，这种“直接看”的观察方法，对于拥有几百个变量、成千上万观测值的复杂数据而言可能并不十分高效。
+更方便快捷的方法可能是截取数据的一部分来看一看，例如，我们想看一看数据的开始和结束部分：
+
+```{r headTail}
+head(wvs7, n = 6)
+tail(wvs7, n = 7)
+```
+
+### 数据信息
+
+`dplyr::glimpse`包为我们提供了另一种更加总结式的观测数据的方式：
+
+```{r glimpse}
+library(dplyr)
+
+glimpse(wvs7)
+```
+`glimpse()` 函数提供了一种紧凑的、一览式的方式来查看数据框（data frame）的结构。
+这比标准的 `str()` 函数输出更加简洁，便于快速查看数据集中每个变量的类型和前几个值。这对于初步了解数据集的构成非常有用。
+
+而如果我们想对数据进行更加规范性的描述，其实还可以使用`summary`对数据包含变量进行批处理：
+
+```{r summaryData}
+summary(wvs7)
+```
+
+但如上例所示，这种方法对像`country`这种字符变量不是特别友好，而且对于需要显示的统计值也缺乏灵活性。
+下面我们从可视化角度探讨一下解决这个问题的一些方法。
+
+## 可视化
+### 表
+
+<!-- https://vincentarelbundock.github.io/modelsummary/articles/datasummary.html -->
+
+描述性统计图表是检验数据清理效果的利器，也是进行科学研究的规定动作。一般而言，清晰的图表比罗列的文字、数字更能帮助研究者获取有效信息。
+表格中包含与研究相关所有数据的分布信息。传统的描述性表格制作通常是先是通过`summary`之类的命令在数据操作台上显示描述统计信息，然后手动制成以变量为行、统计信息种类为列的表格。R语言研究生态的发展，为制作描述统计表格提供了前所未有的便利。
+
+我们这里介绍使用`modelsummary`包制造描述性表格的方法。
+`modelsummary`中`datasummary_skim`可以实现一行代码完成表格制作的神奇操作：
+
+```{r dataSummary}
+library("modelsummary")
+
+datasummary_skim(wvs7)
+datasummary_skim(wvs7, type = "categorical")
+```
+
+`datasummary_skim`的兄弟命令`datasummary`则可以帮助实现更加定制化的操作，比如不显示中位数而只显示平均值，或者使用方差代替标准差等等。
+定制化语法为：
+
+> `变量` + `变量`... ~ `统计值1` + `统计值2`...
+
+```{r datasummary-0}
+datasummary(age + education ~ Mean + Var + P25 + P75, data = wvs7)
+```
+
+如果想对所有变量都执行以上操作怎么办？
+
+```{r datasummary-1}
+datasummary(All(as.data.frame(wvs7)) ~ Mean + Var + P25 + P75, data = wvs7)
+```
+
+在这个命令中，`All(as.data.frame(wvs7))`是一个特殊的表达式，它告诉`datasummary`对数据框wvs7中的所有变量进行操作。
+
+目前`modelsummary`支持十二种输出类型和七种输出格式，可以满足各种制表环境。
+比如要生成MS Word文件，使用者只需规定输出文件后缀即可：
+
+```{r datasummaryOutdocx, eval=FALSE}
+datasummary_skim(wvs7, output = "descriptiveTable.docx")
+```
+
+`modelsummary`还支持其他输出格式，例如HTML、LaTeX、PDF、Excel等。
+```{r datasummaryOuthtml, eval=FALSE}
+datasummary_skim(wvs7, output = "descriptiveTable.html")
+```
+
+```{r datasummaryOuttex, eval=FALSE}
+datasummary_skim(wvs7, output = "descriptiveTable.tex")
+```
+
+```{r datasummaryOutpdf, eval=FALSE}
+datasummary_skim(wvs7, output = "descriptiveTable.pdf")
+```
+
+```{r datasummaryOutexcel, eval=FALSE}
+datasummary_skim(wvs7, output = "descriptiveTable.xlsx")
+```
+
+### 图
+
+对于数据分布的图形化展示，我们这里推荐五种：
+
+- 直方图
+- 密度图
+- 箱图
+- 里克特图
+
+由于大部分图形都是基于`ggplot2`制作的，我们需要在对`ggplot2`制图的基本原理了解后才能更好地掌握。因此图形的制作过程我们将留在下一节集中介绍，这里只是先展示一下图形制作完成后的效果，以及理解方法。
+
+直方图是展示变量分布最直接的形式。
+
+- 横轴：变量包含的特殊值
+- 纵轴：每个特殊值出现的频率
+
+```{r histogram, echo=FALSE}
+#| label: fig-histogram
+#| fig-cap: "年龄分布的直方图"
+#| fig-align: center
+
+ggplot(data = wvs7, aes(age)) +
+  geom_histogram() + 
+  theme_minimal()
+```
+
+在R中，我们也可以很容易地将多个变量直方图放在一个面板中展示。
+比起分布表格，我认为这是更好展现变量分布特征的方式（除非选择`datasummary_skim`这种图加表的方式）。
+
+```{r histPanel, echo=FALSE}
+#| label: fig-histPanel
+#| fig-cap: "多个变量直方图"
+#| fig-align: center
+
+select(wvs7, 2:7) %>% 
+  mutate(across(everything(), as.integer)) %>% 
+  pivot_longer(cols = everything(), names_to = "variable") %>% 
+  ggplot(aes(value)) +
+  facet_wrap(~variable, scales = 'free') +
+  geom_histogram()
+```
+
+:::{.callout-note}
+- `select(wvs7, 2:7)`选择数据集wvs7中的第2到第7列。
+- `mutate(across(everything(), as.integer))`将所有选中的列转换为整数类型。
+- `pivot_longer(cols = everything(), names_to = "variable")`将数据从宽格式转换为长格式，以便于绘制直方图。
+- `ggplot(aes(value))`开始绘制图形，设置aes的value为直方图的变量。
+- `facet_wrap(~variable, scales = 'free')`将不同的变量分布到不同的面板中，每个面板使用独立的y轴刻度（scales = 'free'）。
+- `geom_histogram()`添加直方图图层。
+:::
+
+密度图是直方图通过Kernel smoothing处理之后的结果。
+比起直方图，它在细节上有所损失，但能更好地体现分布特征和总体趋势。
+
+- 横轴：基于变量的连续数据
+- 纵轴：Kernel密度
+- 核平滑（Kernel Smoothing）：是一种用于估计概率密度函数的技术。它通过在每个数据点周围放置一个核（如高斯核）并对这些核进行平滑处理来工作。
+这种方法可以产生一个平滑的曲线，更好地反映数据的分布特征。
+
+```{r density, echo=FALSE}
+#| label: fig-density
+#| fig-cap: "年龄的密度图"
+#| fig-align: center
+
+
+ggplot(data = wvs7, aes(age)) +
+  geom_density() + 
+  theme_minimal()
+```
+
+箱图可能是最常见的数据分布可视化方式。
+
+:::{.callout-tip}
+- **箱子（Box）**：箱子的左沿表示第一四分位数（Q1，也就是25%分位），右沿表示第三四分位数（Q3，也就是75%分位），箱子的长度（IQR，四分位距）是Q3 - Q1，表示数据的中间50%的分布范围。
+箱子中间的线表示中位数（第二四分位数，50%分位）。
+
+- **线段（Whiskers）**：从箱子左右两侧延伸出的线段称为“胡须”或“线段”，用于表示数据的变异范围。
+线段的长度通常由1.5倍的IQR决定。最左端的线段终点为下边缘值（Lower Fence），计算公式为Q1 - 1.5IQR；最右端的线段终点为上边缘值（Upper Fence），计算公式为Q3 + 1.5IQR。
+这两个边缘值定义了数据的正常变异范围。
+
+- **异常值（Outliers）**：位于线段之外的点称为异常值，即那些小于下边缘值或大于上边缘值的数据点。
+异常值通常被视为与其他数据相比差异较大的值，可能需要进一步的分析。
+
+:::
+
+
+以wvs7数据集中的年龄数据为例，如果94岁和99岁这两个年龄值远离其他数据点，并且超出了上边缘值（Q3 + 1.5IQR），那么它们将被视为异常值，并在箱形图中以单独的点形式标注出来。
+
+
+```{r box, echo=FALSE}
+#| label: fig-box
+#| fig-cap: "年龄的箱图"
+#| fig-align: center
+
+ggplot(data = wvs7, aes(age)) +
+  geom_boxplot() + 
+  theme_minimal()
+```
+
+最后，里克特图是专门展现里克特问题分布的可视化方式，在实验结果比较、调查问题分析等方面都有非常直观的表现力。
+
+里克特图通常用于展示调查问卷中有关态度和意见类问题的结果。
+在里克特量表中，参与者通常会针对一个陈述提供他们的同意程度，这些程度通常分为几个等级，如“完全同意”、“同意”、“中立”、“不同意”和“完全不同意”。
+
+在我们的图像中，有两个变量：`corruption_state` 和 `corruption_local`。
+这两个变量可能代表着关于国家级别和地方级别腐败认知的问卷回答。
+每个变量的回答分布都被可视化了，展示了不同程度的回答，从“None”（没有）到“All”（全部）。
+
+:::{.callout-tip}
+分析图表时，可以考虑以下几点：
+
+- 回答分布：每个条目的长度代表了在该分类下回答的人数比例。例如，`corruption_state` 可能显示更多的人认为在国家层面“大多数”或“全部”都是腐败的，这表明对国家层面腐败的普遍认知可能更严重。
+
+- 比较不同层面：通过比较 `corruption_state` 和 `corruption_local` 的回答，可以了解人们对国家与地方腐败程度的看法是否有差异。
+
+- 回答倾向：此图表还可以帮助识别参与者的回答倾向。如果大多数回答倾向于两端（“None”或“All”），这可能表明态度极化；如果回答集中在中间，则可能表示态度更为温和。
+:::
+
+
+```{r likert, echo=FALSE}
+#| label: fig-likert
+#| fig-cap: "对腐败看法的里克特图"
+#| fig-align: center
+
+library(sjPlot)
+
+df_corrupt <- select(wvs7, starts_with("corruption"))
+plot_likert(df_corrupt)
+```
+
+## 总结
+
+- 变量描述
+    - 原始数据：`head`, `tail`,`select`
+    - 矩：`var`, `sd`, `skewness`, `kurtosis`
+
+- 数据描述
+    - 数据框：`table`, `unique`
+    - 数据信息：`glimpse`, `summary`
+
+- 可视化
+    - 表：`datasummary_skim`, `datasummary`
+    - 图：直方图、密度图、箱图、里克特图

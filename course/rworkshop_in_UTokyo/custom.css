@@ -1,0 +1,25 @@
+.comparison-container {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  font-size: 1.5em;
+  height: 100vh;
+  justify-content: flex-start;
+  padding-top: 20vh;
+}
+
+.comparison-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 1em;
+}
+
+.comparison-row span {
+  flex: 1;
+  text-align: center;
+}
+
+.comparison-row span:nth-child(2) {
+  flex: 0.2;
+}
