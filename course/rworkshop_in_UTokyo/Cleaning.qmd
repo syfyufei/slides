@@ -77,7 +77,7 @@ https://adriansun.drhuyue.site/course/r-workshop-tokyo-2024.html
 
 Email: sunyf20@mails.tsinghua.edu.cn
 
-0*![](https://drhuyue.site:10002/Adrian/figure/qrcode_adriansun.drhuyue.site.png){height=250}
+![](https://drhuyue.site:10002/Adrian/figure/qrcode_adriansun.drhuyue.site.png){height=250}
 
 :::
 
