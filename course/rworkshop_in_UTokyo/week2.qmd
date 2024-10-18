@@ -1,0 +1,627 @@
+---
+title: "Data Cleaning with Dplyr"
+subtitle: "R Workshop 2024 in UTokyo"
+author: "SUN Yufei（Adrian）"
+institute: "UTokyo & Tsinghua University" 
+
+knitr: 
+    opts_chunk: 
+      eval: false
+
+format: 
+  revealjs:
+    css: https://drhuyue.site:10002/Adrian/data/style_basic.css
+    theme: ../../tiffany.scss
+    logo: https://gitlab.com/sammo3182/backup/raw/85b3c1ad4b459d7a9f901f124b936428eda5fcaf/logo_zzxx.png?inline=true
+    slide-number: true
+    incremental: true
+    preview-links: true # open an iframe for a link
+    link-external-newwindow: true
+    chalkboard: true # allwoing chalk board B, notes canvas C
+    footer: "SUN Yufei（Adrian）"
+    progress: true
+    hide-inactive-cursor: true
+    hide-cursor-timeout: 1000
+    
+    show-slide-number: all # `speaker` only print in pdf, `all` shows all the time
+    width: 1600
+    height: 900
+    title-slide-attributes:
+      data-background-image: https://adriansun.drhuyue.site/img/logo.jpg
+      data-background-size: 100px   
+      data-background-position: top 10% right 5%
+---
+
+```{r setup}
+#| include = FALSE
+
+library(pacman)
+
+p_load(
+  rio,
+  knitr,
+  RColorBrewer,
+  dotwhisker,
+  interplot,
+  modelsummary,
+  # dependency
+  stringr,
+  haven,
+  purrr,
+  broom,
+  
+  tidyr,
+  tidyverse,
+  
+  igraph,
+  quanteda,
+  quanteda.textmodels,
+  caret,
+  quanteda.corpora,
+  quanteda.textplots
+)
+
+# Functions preload
+set.seed(313)
+
+# Load the wvs dataset
+wvs <- import("https://drhuyue.site:10002/Adrian/data/wvs7.rda")
+
+```
+
+## `tidyverse`
+
+:::: {.columns .fragment}
+::: {.column width="50%" .fragment}
+
+Collection of R packages designed for data science.
+
+![tidyverse](https://drhuyue.site:10002/Adrian/figure/tidyverse.png)
+:::
+
+::: {.column width="50%" .fragment}
+### `dplyr` ![dplyr](https://www.tidyverse.org/css/images/hex/dplyr.png){width=100px style="float:right; margin-left:10px;"}
+
+`dplyr`：data manipulation
+
+### `ggplot2` ![ggplot2](https://www.tidyverse.org/css/images/hex/ggplot2.png){width=100px style="float:right; margin-left:10px;"}
+
+`ggplot2` creating graphics
+
+### `purrr` ![purrr](https://www.tidyverse.org/css/images/hex/purrr.png){width=100px style="float:right; margin-left:10px;"}
+
+`purrr` functional programming
+:::
+::::
+
+::: {.fragment}
+
+Install tidyverse:
+```r
+   install.packages("tidyverse")
+```
+
+Load tidyverse (includes dplyr):
+```r
+   library(tidyverse)
+```
+
+Or load dplyr only:
+```r
+   library(dplyr)
+```
+:::
+
+## `dplyr`:  The 5 verbs of `dplyr`
+
+`tidyverse::：dplyr`
+
+::: {.notes}
+
+- Tidyverse is a collection of R packages created by Hadley Wickham
+- dplyr is one of the core packages in Tidyverse
+- The goal of dplyr is to manipulate data frames in useful ways
+- With just a few commands (the verbs of dplyr), you can do most data operations
+- Today we'll learn the five main verbs of dplyr:
+  - select
+  - filter  
+  - arrange
+  - mutate
+  - summarize
+
+:::
+
+- `select()`: picks variables based on their names.
+- `filter()`: picks cases based on their values.
+- `mutate()`: adds new variables that are functions of existing variables
+- `summarise()`: reduces multiple values down to a single summary.
+- `arrange()`: changes the ordering of the rows.
+
+## playingdata: wvs7
+
+:::{.fragment}
+
+```{r}
+#| echo: True
+#| eval: True
+
+library(rio)
+
+wvs <- import("https://drhuyue.site:10002/Adrian/data/wvs7.rda")
+
+wvs
+
+```
+:::
+
+## `arrange()`
+
+just like `sort()` in Excel
+
+
+
+:::{.fragment}
+
+default: ascending order or from low to high
+```{r}
+#| echo: True
+#| eval: False
+
+wvs %>% 
+  arrange(age)
+
+```
+:::
+
+
+
+
+:::{.fragment}
+
+We can instead arrange in descending order with the desc() function:
+```{r}
+#| echo: True
+#| eval: False
+
+
+wvs %>% 
+    arrange(desc(age))
+
+```
+:::
+
+
+
+:::{.fragment}
+
+Character columns get arranged in alaphetical order:
+```{r}
+#| echo: True
+#| eval: False
+
+
+wvs %>% 
+  arrange(marital)
+
+```
+:::
+
+
+
+:::{.fragment}
+
+If we input multiple column names, arrange uses the additional columns to break ties.
+```{r}
+#| echo: True
+#| eval: False
+
+
+wvs %>% 
+  arrange(age, incomeLevel)
+
+```
+:::
+
+:::{.callout-warning icon=false .fragment}
+
+## Question
+
+What's the difference between the following two data frames? and why?
+
+```{r}
+#| echo: True
+#| eval: False
+
+wvs %>% 
+  head(5) %>% 
+  arrange(age)
+
+wvs %>% 
+  head(5) %>% 
+  arrange(age, education)
+
+
+```
+
+:::
+
+
+
+## `select()`
+
+Choose columns
+
+:::{.fragment}
+
+please select the columns `country`, `age`, and `education`
+
+```{r}
+#| echo: True
+#| eval: False
+
+wvs %>% 
+  select(country, age)
+
+```
+:::
+
+:::{.fragment}
+
+We can use a “-” to get rid of a column and leave the rest of the columns:
+
+```{r}
+#| echo: True
+#| eval: False
+
+wvs %>% 
+  select(-country)
+
+```
+:::
+
+:::{.fragment}
+
+We can use `contains()` to select columns that contain a certain string:
+
+```{r}
+#| echo: True
+#| eval: False
+
+wvs %>% 
+  select(contains("confidence_"))
+
+```
+
+:::
+
+::: {.fragment}
+
+Select can also be used to rearrange the order of columns:
+
+```{r}
+#| echo: True
+#| eval: False
+
+wvs %>% 
+  select(country, age, education)
+
+```
+
+:::
+
+::: {.fragment}
+
+`everything()` is a convenient shortcut that adds all the columns that haven’t been used yet. It is very useful if you want to move a column to the front of a data frame:
+
+```{r}
+#| echo: True
+#| eval: False
+
+wvs %>% 
+  select(country, everything())
+
+```
+:::
+
+## `filter()`
+
+just like `filter()` in Excel, select which rows you want
+
+::: {.fragment}
+
+if you want to select the rows where `age` is greater than 30
+
+```{r}
+#| echo: True
+#| eval: False
+
+wvs %>% 
+  filter(age > 30)
+
+```
+:::
+
+::: {.fragment}
+
+Or maybe we only want female respondents:
+
+```{r}
+#| echo: True
+#| eval: False
+
+wvs %>% 
+  filter(female == TRUE)
+
+```
+:::
+
+::: {.callout-warning icon=false .fragment}
+
+use “==” instead of “=”. This is because “=” is for assignemnt – making something equal something else – whereas “==” is for comparison – seeing if two things are equal or not.
+
+:::
+
+::: {.fragment}
+
+multiple conditions hold: `&` or `,`
+
+if you want to select the rows where `age` is greater than 30 and `female` is `TRUE`
+
+```{r}
+#| echo: True
+#| eval: False
+
+wvs %>% 
+  filter(age > 30 & female == TRUE)
+
+wvs %>% 
+  filter(age > 30, female == TRUE)
+
+```
+:::
+
+## `filter()` with groups
+
+Sometimes we want to filter based on the value of a variable within a group.
+
+![](https://drhuyue.site:10002/Adrian/figure/group_filter.png)
+
+::: {.fragment}
+
+```{r}
+#| echo: True
+#| eval: False
+
+wvs %>% 
+  group_by(country) %>% 
+  filter(max(age) > 80)
+
+```
+What will we get?
+
+:::
+
+::: {.fragment}
+
+```{r}
+#| echo: True
+#| eval: False
+
+wvs %>% 
+  group_by(country) %>% 
+  filter(n() == 36)
+
+```
+
+`n()` is a shortcut for the number of rows in the group. What is the output?
+
+:::
+
+## `mutate()`
+
+::: {.fragment}
+
+`arrange`: sort the data;
+`select`: choose the columns;
+`filter`: choose the rows;
+`group_by`: group the data;
+
+We haven’t changed our data at all yet though – that’s what mutate does!
+
+:::
+
+::: {.fragment}
+
+for example, we want to create a new variable `age_group` based on the value of `age`
+
+```{r}
+#| echo: True
+#| eval: False
+
+wvs %>% 
+  mutate(age_group = case_when(
+    age < 30 ~ "Young",
+    age < 60 ~ "Middle-aged",
+    age >= 60 ~ "Old"
+  ))
+
+```
+
+:::
+
+::: {.fragment}
+
+We can also use mutate to input new data:
+
+```{r}
+#| echo: True
+#| eval: False
+
+wvs %>% 
+  mutate(wave = 7)
+
+```
+
+
+:::
+
+::: {.fragment}
+
+We can create multiple new columns with one use of mutate if we separate each new column with a “,”:
+
+```{r}
+#| echo: True
+#| eval: False
+
+wvs %>% 
+  mutate(wave = 6,
+         Year = 2014)
+
+```
+
+:::
+
+::: {.callout-note icon=false .fragment}
+
+Notice that “mutate” leaves all of the original columns in the dataframe and adds new columns. If we instead use “transmute” we’ll only get the new columns:
+
+```{r}
+#| echo: True
+#| eval: False
+
+wvs %>% 
+  transmute(wave = 6,
+         Year = 2014)
+
+```
+
+we can also use "+, -, *, /" to create new variables
+
+```{r}
+#| echo: True
+#| eval: False
+
+wvs %>% 
+  mutate(mean_age_centered_by_gender = age - mean(age))
+
+```
+
+:::
+
+
+## `mutate()` with groups
+
+Sometimes its useful to define new variables based on a group.
+
+::: {.fragment}
+
+For example, examine the following – note how it’s different from the code below:
+
+```{r}
+#| echo: True
+#| eval: False
+
+wvs %>% 
+  group_by(country) %>% 
+  mutate(mean_age_centered_by_gender = age - mean(age))
+
+```
+
+The code above subtracts the mean of age for each country from the age of each respondent.
+
+:::
+
+## `summarize()`
+
+Mutate kept the same number of rows in the data frame and added a column.
+
+We also want to be able to collapse rows of a data frame which we might think of summarizing.
+
+::: {.fragment}
+
+For example, we want to know the mean of `hamsters`
+
+```{r}
+#| echo: True
+#| eval: False
+
+wvs %>% 
+  summarize(mean_age = mean(age, na.rm = TRUE))
+
+```
+
+:::
+
+::: {.fragment}
+
+We can summarize multiple variables with multiple functions at the same time:
+
+```{r}
+#| echo: True
+#| eval: False
+
+wvs %>%
+  summarize(mean_age = mean(age, na.rm = TRUE),
+            median_age = median(age, na.rm = TRUE))
+
+```
+
+:::
+
+## `summarize()` with groups
+
+Summarize isn’t that useful by itself, but when we add groups it becomes crazy powerful!
+
+::: {.fragment}
+
+```{r}
+#| echo: True
+#| eval: False
+
+wvs %>% 
+  group_by(country) %>% 
+  summarize(mean_age = mean(age, na.rm = TRUE),
+            median_age = median(age, na.rm = TRUE),
+            count = n())
+
+```
+
+:::
+
+## The power of combining verbs!
+
+The true power of dplyr comes from combining these 5 verbs to solve problems.
+
+::: {.fragment}
+
+```{r}
+#| echo: True
+#| eval: False
+
+wvs %>%
+  filter(age > 30) %>% 
+  select(country, age, education) %>% 
+  arrange(age) %>% 
+  mutate(wave = 7) %>% 
+  group_by(country) %>% 
+  summarize(mean_age = mean(age, na.rm = TRUE),
+            median_age = median(age, na.rm = TRUE),
+            count = n())
+
+```
+
+Try to explain the code above step by step.
+
+:::
+
+
+
+
+
+
+
+
+
+
+
+

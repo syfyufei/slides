@@ -1,0 +1,32 @@
+---
+title: "Welcome to R Workshop"
+author: "SUN Yufei"
+format: 
+  pdf:
+    documentclass: ctexart
+    keep-tex: true
+    latex-engine: xelatex
+    include-in-header:
+      text: |
+        \usepackage{xeCJK}
+---
+
+\vspace{-2em}
+
+Dear Students,
+
+Welcome to this semester’s R Workshop! This workshop complements Professor Ito's course on text analysis and is designed to help you get started with R programming over the next few weeks. By the end of this workshop, you will be comfortable using R for data cleaning, analysis, visualization, and even machine learning. Below is our course outline:
+
+* **Week 1:** Basic grammar
+* **Week 2:** Data cleaning & Basic visualization
+* **Week 3:** Loops and batch processing
+* **Week 4:** R & Quarto (for HTML, PDF, Word, etc.)
+
+Teaching materials for each class will be available the day before each session. For the slides of the first class, you can find them here: [Slides Link](https://adriansun.drhuyue.site/slides/course/rworkshop_in_UTokyo/Playing.html#/about-me). Due to HTML encoding issues, we recommend opening it directly in your browser. For the data needed for the first session’s exercises, you can download it from this link: [Data Link](http://gofile.me/73tNh/dBMIAnLvk).
+
+We also offer online office hours by appointment. Please email me at [**sunyf20@mails.tsinghua.edu.cn**](mailto:sunyf20@mails.tsinghua.edu.cn) to schedule a session.If you have any suggestions or feedback regarding the workshop, don’t hesitate to reach out to me at any time.
+
+Looking forward to working with you!
+
+Best regards,  
+SUN Yufei (Adrian)

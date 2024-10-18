@@ -24,71 +24,94 @@ p_load(
   rio,
   tidyverse
 )
+
+# Load the wvs dataset
+wvs <- import("https://drhuyue.site:10002/Adrian/data/wvs7.rda")
 ```
 
-1.How to display the help documentation for the `sum()` function? Provide two methods.
+## Pre-class Programming Exercises - Week 1
 
-```{r filter, exercise=TRUE}
+### 1. Function Help and Usage
 
-some_name <- 1:5
-some_name
+Display the help documentation for the `mean()` function. Then, use `mean()` to calculate the average age in the `wvs` dataset, excluding any missing values. Provide the code and the result.
 
-
-
-
-
-```
-
-```{r filter-solution}
-
-nycflights <- filter(nycflights, month == 2)
+```{r mean-help-advanced, exercise=TRUE}
+# Write your code here
 
 ```
 
-1.Please create a compliant and non-compliant object:
+```{r mean-help-advanced-solution}
+# Display help
+?mean
 
+# Calculate mean age
+mean_age <- mean(wvs$age, na.rm = TRUE)
+print(paste("The mean age is:", round(mean_age, 2)))
+```
 
-```{r objectEg, exercise = TRUE}
+### 2. Variable Naming Rules
 
-# Create a non-compliant object
-# 5var_name <- data_frame($education)
+Create one variable that follows the naming rules and one that doesn't.
 
+```{r variable-naming, exercise=TRUE}
+# Create a variable that follows the rules
+
+# Create a variable that doesn't follow the rules
 
 ```
 
-```{r objectEg-solution}
+```{r variable-naming-solution}
+# Variable that follows the rules
+valid_variable <- 1:5
 
-# Create a compliant object
+# Variable that doesn't follow the rules (this line will produce an error)
+# 1invalid_variable <- 1:5
+```
 
-var_name5 <- data_frame(wvs7$education)
+### 3. Data Structure Exploration
 
+Use appropriate functions to view the number of rows, columns, and variable names of the `wvs` data frame.
+
+```{r data-structure, exercise=TRUE}
+# Write your code here
 
 ```
 
-Select a data in `data` to open and check the variables in it by summary:
+```{r data-structure-solution}
+nrow(wvs)  # Number of rows
+ncol(wvs)  # Number of columns
+names(wvs)  # Variable names
+```
 
-```{r mtcars_exercise, exercise=TRUE}
+### 4. Variable Extraction
 
+Extract the "age" variable from the `wvs` data frame using two different methods.
+
+```{r variable-extraction, exercise=TRUE}
+# Method 1
+
+# Method 2
 
 ```
 
-```{r mtcars_exercise-solution}
-# example
+```{r variable-extraction-solution}
+# Method 1
+wvs[, "age"]
 
-data(uspop)
-summary(uspop)
+# Method 2
+wvs$age
 ```
 
-Try to import a `.RDS`, `.sav`, and `.csv` file:
+### 5. Variable Characteristics
 
-```{r csv_exercise, exercise=TRUE}
+Use appropriate functions to examine the characteristics of the "age" variable in the `wvs` data frame.
+
+```{r variable-characteristics, exercise=TRUE}
+# Write your code here
 
 ```
 
-```{r csv_exercise-solution}
-
-df_rds <- readRDS("aDataset.rds")
-df_sav <- read_spss("aDataset.sav")
-df_csv <- read.csv("<FileName>.csv")
-
+```{r variable-characteristics-solution}
+summary(wvs$age)
+table(wvs$age)
 ```

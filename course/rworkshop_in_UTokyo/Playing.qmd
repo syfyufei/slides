@@ -715,7 +715,6 @@ Github Page: https://github.com/syfyufei
 Email: sunyf20@mails.tsinghua.edu.cn
 
 Personal Website:https://syfyufei.github.io/
-
-![](https://drhuyue.site:10002/Adrian/figure/IMG_0271.JPG){height=250}
+0*![](https://drhuyue.site:10002/Adrian/figure/IMG_0271.JPG     ){height=250}
 
 :::

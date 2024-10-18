@@ -1,0 +1,276 @@
+---
+title: "Hot Keyboard Time: Data Cleaning with Dplyr"
+output: 
+  learnr::tutorial:
+    language: "en"
+    progressive: true
+    allow_skip: true
+    toc: true
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+chooseCRANmirror(graphics = FALSE, ind = 1)
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE,
+                      out.width="100%")
+
+if (!require(pacman)) install.packages("pacman")
+
+p_load(
+  lubridate,
+  here,
+  rio,
+  tidyverse
+)
+
+# Load the wvs dataset
+wvs <- import("https://drhuyue.site:10002/Adrian/data/wvs7.rda")
+```
+
+## Exercise 1: arrange()
+
+Use the `arrange()` function to sort the data.
+
+```{r arrange-exercise, exercise=TRUE}
+# Sort by age in ascending order
+wvs %>% 
+  arrange(___)
+
+# Sort by age in descending order
+wvs %>% 
+  arrange(___(___))
+
+# Sort by age and income level
+wvs %>% 
+  arrange(___, ___)
+```
+
+```{r arrange-exercise-solution}
+# Sort by age in ascending order
+wvs %>% 
+  arrange(age)
+
+# Sort by age in descending order
+wvs %>% 
+  arrange(desc(age))
+
+# Sort by age and income level
+wvs %>% 
+  arrange(age, incomeLevel)
+```
+
+## Exercise 2: select()
+
+Use the `select()` function to choose specific columns.
+
+```{r select-exercise, exercise=TRUE}
+# Select country, age, and education columns
+wvs %>% 
+  select(___, ___, ___)
+
+# Select all columns except country
+wvs %>% 
+  select(___)
+
+# Select all columns containing "confidence_"
+wvs %>% 
+  select(___(___))
+
+# Move the country column to the front
+wvs %>% 
+  select(___, ___)
+```
+
+```{r select-exercise-solution}
+# Select country, age, and education columns
+wvs %>% 
+  select(country, age, education)
+
+# Select all columns except country
+wvs %>% 
+  select(-country)
+
+# Select all columns containing "confidence_"
+wvs %>% 
+  select(contains("confidence_"))
+
+# Move the country column to the front
+wvs %>% 
+  select(country, everything())
+```
+
+## Exercise 3: filter()
+
+Use the `filter()` function to select specific rows.
+
+```{r filter-exercise, exercise=TRUE}
+# Select rows where age is greater than 30
+wvs %>% 
+  filter(___ > ___)
+
+# Select female respondents
+wvs %>% 
+  filter(___ == ___)
+
+# Select respondents who are over 30 and female
+wvs %>% 
+  filter(___ > ___ & ___ == ___)
+
+# Select countries where the maximum age is over 80
+wvs %>% 
+  group_by(___) %>% 
+  filter(___(___) > ___)
+
+# Select countries with a sample size of 36
+wvs %>% 
+  group_by(___) %>% 
+  filter(___ == ___)
+```
+
+```{r filter-exercise-solution}
+# Select rows where age is greater than 30
+wvs %>% 
+  filter(age > 30)
+
+# Select female respondents
+wvs %>% 
+  filter(female == TRUE)
+
+# Select respondents who are over 30 and female
+wvs %>% 
+  filter(age > 30 & female == TRUE)
+
+# Select countries where the maximum age is over 80
+wvs %>% 
+  group_by(country) %>% 
+  filter(max(age) > 80)
+
+# Select countries with a sample size of 36
+wvs %>% 
+  group_by(country) %>% 
+  filter(n() == 36)
+```
+
+## Exercise 4: mutate()
+
+Use the `mutate()` function to create new variables.
+
+```{r mutate-exercise, exercise=TRUE}
+# Create an age group variable
+wvs %>% 
+  mutate(age_group = case_when(
+    ___ < 30 ~ "Young",
+    ___ < 60 ~ "Middle-aged",
+    ___ >= 60 ~ "Old"
+  ))
+
+# Add a new constant column
+wvs %>% 
+  mutate(___ = ___)
+
+# Create multiple new columns
+wvs %>% 
+  mutate(wave = ___,
+         Year = ___)
+
+# Create an age-centered variable by gender
+wvs %>% 
+  group_by(___) %>% 
+  mutate(mean_age_centered_by_gender = ___ - ___(___))
+```
+
+```{r mutate-exercise-solution}
+# Create an age group variable
+wvs %>% 
+  mutate(age_group = case_when(
+    age < 30 ~ "Young",
+    age < 60 ~ "Middle-aged",
+    age >= 60 ~ "Old"
+  ))
+
+# Add a new constant column
+wvs %>% 
+  mutate(wave = 7)
+
+# Create multiple new columns
+wvs %>% 
+  mutate(wave = 6,
+         Year = 2014)
+
+# Create an age-centered variable by gender
+wvs %>% 
+  group_by(country) %>% 
+  mutate(mean_age_centered_by_gender = age - mean(age))
+```
+
+## Exercise 5: summarize()
+
+Use the `summarize()` function to aggregate data.
+
+```{r summarize-exercise, exercise=TRUE}
+# Calculate the mean age
+wvs %>% 
+  summarize(mean_age = ___(___))
+
+# Calculate multiple statistics
+wvs %>%
+  summarize(mean_age = ___(___),
+            median_age = ___(___))
+
+# Group by country and calculate statistics
+wvs %>% 
+  group_by(___) %>% 
+  summarize(mean_age = ___(___),
+            median_age = ___(___),
+            count = ___())
+```
+
+```{r summarize-exercise-solution}
+# Calculate the mean age
+wvs %>% 
+  summarize(mean_age = mean(age, na.rm = TRUE))
+
+# Calculate multiple statistics
+wvs %>%
+  summarize(mean_age = mean(age, na.rm = TRUE),
+            median_age = median(age, na.rm = TRUE))
+
+# Group by country and calculate statistics
+wvs %>% 
+  group_by(country) %>% 
+  summarize(mean_age = mean(age, na.rm = TRUE),
+            median_age = median(age, na.rm = TRUE),
+            count = n())
+```
+
+## Exercise 6: Combining Functions
+
+Try to combine the above functions to solve complex problems.
+
+```{r combine-exercise, exercise=TRUE}
+wvs %>%
+  filter(___) %>% 
+  select(___, ___, ___) %>% 
+  arrange(___) %>% 
+  mutate(___) %>% 
+  group_by(___) %>% 
+  summarize(mean_age = ___,
+            median_age = ___,
+            count = ___)
+```
+
+```{r combine-exercise-solution}
+wvs %>%
+  filter(age > 30) %>% 
+  select(country, age, education) %>% 
+  arrange(age) %>% 
+  mutate(wave = 7) %>% 
+  group_by(country) %>% 
+  summarize(mean_age = mean(age, na.rm = TRUE),
+            median_age = median(age, na.rm = TRUE),
+            count = n())
+```
+
+Please try to complete the above exercises and explain each step of the operation.
