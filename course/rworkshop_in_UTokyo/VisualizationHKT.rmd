@@ -1,0 +1,244 @@
+---
+title: "Hot Keyboard Time: Data Visualization with ggplot2"
+output: 
+  learnr::tutorial:
+    language: "en"
+    progressive: true
+    allow_skip: true
+    toc: true
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+chooseCRANmirror(graphics = FALSE, ind = 1)
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE,
+                      out.width="100%")
+
+if (!require(pacman)) install.packages("pacman")
+
+p_load(
+  lubridate,
+  here,
+  rio,
+  tidyverse
+)
+
+# Load the wvs dataset
+wvs <- import("https://drhuyue.site:10002/Adrian/data/wvs7.rda")
+```
+
+## Exercise 1: Scatter Plot
+
+Use ggplot2 to create a scatter plot of education level versus income level.
+
+```{r scatter-exercise, exercise=TRUE}
+# Create a basic scatter plot
+ggplot(data = wvs, aes(x = ___, y = ___)) +
+  geom_point()
+
+# Add color based on religious belief
+ggplot(data = wvs, aes(x = incomeLevel, y = education, color = ___)) +
+  geom_point()
+
+# Add a smoothing line
+ggplot(data = wvs, aes(x = incomeLevel, y = education, color = religious)) +
+  geom_point() +
+  geom_smooth(method = ___, se = ___)
+
+# Customize the plot
+ggplot(data = wvs, aes(x = incomeLevel, y = education, color = religious)) +
+  geom_point(alpha = ___) +
+  geom_smooth(method = "lm", se = TRUE) +
+  labs(title = "___",
+       subtitle = "___",
+       x = "___", 
+       y = "___") +
+  theme_minimal()
+```
+
+```{r scatter-exercise-solution}
+# Create a basic scatter plot
+ggplot(data = wvs, aes(x = incomeLevel, y = education)) +
+  geom_point()
+
+# Add color based on religious belief
+ggplot(data = wvs, aes(x = incomeLevel, y = education, color = religious)) +
+  geom_point()
+
+# Add a smoothing line
+ggplot(data = wvs, aes(x = incomeLevel, y = education, color = religious)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = TRUE)
+
+# Customize the plot
+ggplot(data = wvs, aes(x = incomeLevel, y = education, color = religious)) +
+  geom_point(alpha = 0.3) +
+  geom_smooth(method = "lm", se = TRUE) +
+  labs(title = "Education Level vs Income Level",
+       subtitle = "Grouped by Religious Belief",
+       x = "Income Level", 
+       y = "Education Level") +
+  theme_minimal()
+```
+
+## Exercise 2: Bar Plot
+
+Create a bar plot showing the proportion of education levels by income level.
+
+```{r bar-exercise, exercise=TRUE}
+# Prepare the data
+prop_data <- wvs %>%
+  group_by(___, ___) %>%
+  summarise(count = n()) %>%
+  mutate(proportion = ___)
+
+# Create a basic bar plot
+ggplot(data = prop_data, aes(x = ___, y = ___, fill = ___)) +
+  geom_bar(stat = "identity", position = "dodge")
+
+# Customize the plot
+ggplot(data = prop_data, aes(x = incomeLevel, y = proportion, fill = factor(education))) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "___",
+       x = "___",
+       y = "___",
+       fill = "___") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = ___),
+    legend.position = "___",
+    axis.text.x = element_text(angle = ___, hjust = 1)
+  ) +
+  scale_fill_brewer(palette = "___")
+```
+
+```{r bar-exercise-solution}
+# Prepare the data
+prop_data <- wvs %>%
+  group_by(incomeLevel, education) %>%
+  summarise(count = n()) %>%
+  mutate(proportion = count / sum(count))
+
+# Create a basic bar plot
+ggplot(data = prop_data, aes(x = incomeLevel, y = proportion, fill = factor(education))) +
+  geom_bar(stat = "identity", position = "dodge")
+
+# Customize the plot
+ggplot(data = prop_data, aes(x = incomeLevel, y = proportion, fill = factor(education))) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Proportion of Education Levels by Income Level",
+       x = "Income Level",
+       y = "Proportion",
+       fill = "Education Level") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    legend.position = "bottom",
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  ) +
+  scale_fill_brewer(palette = "Set3")
+```
+
+## Exercise 3: Line Plot
+
+Create a line plot showing the average education level for each income level, grouped by gender.
+
+```{r line-exercise, exercise=TRUE}
+# Prepare the data
+avg_education <- wvs %>%
+  group_by(___, ___) %>%
+  summarise(avg_education = ___)
+
+# Create a basic line plot
+ggplot(data = avg_education, aes(x = ___, y = ___, color = ___)) +
+  geom_line()
+
+# Add points and customize the plot
+ggplot(data = avg_education, aes(x = incomeLevel, y = avg_education, color = female)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "___",
+       x = "___",
+       y = "___",
+       color = "___") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = ___),
+    legend.position = "___"
+  ) +
+  scale_color_manual(values = c("___", "___"), labels = c("___", "___"))
+```
+
+```{r line-exercise-solution}
+# Prepare the data
+avg_education <- wvs %>%
+  group_by(incomeLevel, female) %>%
+  summarise(avg_education = mean(education, na.rm = TRUE))
+
+# Create a basic line plot
+ggplot(data = avg_education, aes(x = incomeLevel, y = avg_education, color = female)) +
+  geom_line()
+
+# Add points and customize the plot
+ggplot(data = avg_education, aes(x = incomeLevel, y = avg_education, color = female)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Average Education Level by Income Level and Gender",
+       x = "Income Level",
+       y = "Average Education Level",
+       color = "Gender") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    legend.position = "bottom"
+  ) +
+  scale_color_manual(values = c("blue", "red"), labels = c("Male", "Female"))
+```
+
+## Exercise 4: Combining Plot Types
+
+Create a plot that combines a scatter plot with a box plot to show the distribution of education levels for each income level.
+
+```{r combined-exercise, exercise=TRUE}
+# Create a combined plot
+ggplot(data = wvs, aes(x = ___, y = ___)) +
+  geom_boxplot(alpha = ___) +
+  geom_jitter(alpha = ___, width = ___)
+
+# Customize the combined plot
+ggplot(data = wvs, aes(x = factor(incomeLevel), y = education)) +
+  geom_boxplot(alpha = 0.5) +
+  geom_jitter(alpha = 0.2, width = 0.2) +
+  labs(title = "___",
+       x = "___",
+       y = "___") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = ___),
+    axis.text.x = element_text(angle = ___, hjust = 1)
+  )
+```
+
+```{r combined-exercise-solution}
+# Create a combined plot
+ggplot(data = wvs, aes(x = factor(incomeLevel), y = education)) +
+  geom_boxplot(alpha = 0.5) +
+  geom_jitter(alpha = 0.2, width = 0.2)
+
+# Customize the combined plot
+ggplot(data = wvs, aes(x = factor(incomeLevel), y = education)) +
+  geom_boxplot(alpha = 0.5) +
+  geom_jitter(alpha = 0.2, width = 0.2) +
+  labs(title = "Distribution of Education Levels by Income Level",
+       x = "Income Level",
+       y = "Education Level") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+
+Please try to complete the above exercises and explain each step of the visualization process.

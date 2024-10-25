@@ -1,0 +1,42 @@
+---
+title: "Course Homepage Usage Instructions"
+author: "SUN Yufei"
+format: 
+  pdf:
+    documentclass: ctexart
+    keep-tex: true
+    latex-engine: xelatex
+    include-in-header:
+      text: |
+        \usepackage{xeCJK}
+---
+
+\vspace{-2em}
+
+Dear Students,
+
+I am pleased to provide you with information regarding the utilization of our course homepage.
+
+1. Course Homepage Access:
+   The course homepage can be accessed via the following URL:
+   [https://adriansun.drhuyue.site/course/r-workshop-tokyo-2024.html](https://adriansun.drhuyue.site/course/r-workshop-tokyo-2024.html)
+
+2. Course Materials:
+   Our course homepage serves as the central hub for all course materials. Here, you can access weekly lecture slides and exercises (HKT) in advance. We encourage you to review these materials prior to each session to enhance your preparation and engagement.
+
+3. Individual Tutoring Sessions:
+   For students unable to attend the regular course sessions, we offer flexible one-on-one tutoring options. You are cordially invited to utilize the scheduling widget located in the bottom right corner of the course homepage to arrange personalized tutoring sessions. These individualized learning opportunities are designed to accommodate your specific pace and requirements, ensuring a tailored educational experience.
+
+4. Online Sessions:
+   For sessions conducted online, access will be provided through links available on the course homepage. Please ensure to test your equipment and internet connection before the commencement of online sessions to guarantee smooth participation.
+
+Important Note: The third week of our course will be conducted online. You may join our virtual classroom using the following links:
+
+- Primary Link: [https://meet.google.com/qkn-odxh-bhw](https://meet.google.com/qkn-odxh-bhw)
+
+- Backup Link: [https://us05web.zoom.us/j/89548243411?pwd=WyDtVIPOhThhHFGbBZ9gQVzCbUFC7u.1](https://us05web.zoom.us/j/89548243411?pwd=WyDtVIPOhThhHFGbBZ9gQVzCbUFC7u.1)
+
+Should you encounter any difficulties accessing the course homepage or participating in online sessions, please do not hesitate to contact me.
+
+Best regards,  
+SUN Yufei (Adrian)

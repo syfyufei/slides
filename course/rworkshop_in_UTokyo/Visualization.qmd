@@ -1,0 +1,671 @@
+---
+title: "Visualization in R"
+subtitle: "R Workshop 2024 in UTokyo"
+author: "SUN Yufei（Adrian）"
+institute: "UTokyo & Tsinghua University" 
+
+knitr: 
+    opts_chunk: 
+      eval: false
+
+format: 
+  revealjs:
+    css: https://drhuyue.site:10002/Adrian/data/style_basic.css
+    theme: ../../tiffany.scss
+    logo: https://gitlab.com/sammo3182/backup/raw/85b3c1ad4b459d7a9f901f124b936428eda5fcaf/logo_zzxx.png?inline=true
+    slide-number: true
+    incremental: true
+    preview-links: true # open an iframe for a link
+    link-external-newwindow: true
+    chalkboard: true # allwoing chalk board B, notes canvas C
+    footer: "SUN Yufei（Adrian）"
+    progress: true
+    hide-inactive-cursor: true
+    hide-cursor-timeout: 1000
+    scrollable: true
+    
+    show-slide-number: all # `speaker` only print in pdf, `all` shows all the time
+    width: 1600
+    height: 900
+    title-slide-attributes:
+      data-background-image: https://adriansun.drhuyue.site/img/logo.jpg
+      data-background-size: 100px   
+      data-background-position: top 10% right 5%
+---
+
+```{r setup}
+#| eval: True
+
+library(pacman)
+
+p_load(
+  rio,
+  knitr,
+  RColorBrewer,
+  dotwhisker,
+  interplot,
+  modelsummary,
+  # dependency
+  stringr,
+  haven,
+  purrr,
+  broom,
+  tidyr,
+  tidyverse,
+  igraph,
+  quanteda,
+  quanteda.textmodels,
+  caret,
+  quanteda.corpora,
+  quanteda.textplots
+)
+
+# Functions preload
+set.seed(313)
+
+# Load the wvs dataset
+wvs <- import("https://drhuyue.site:10002/Adrian/data/wvs7.rda")
+
+```
+
+# Course Homepage {background="#43464B"}
+
+:::{style="text-align: right; margin-top: 1em"}  
+
+https://adriansun.drhuyue.site/course/r-workshop-tokyo-2024.html
+
+Email: sunyf20@mails.tsinghua.edu.cn
+
+![](https://drhuyue.site:10002/Adrian/figure/qrcode_adriansun.drhuyue.site.png){height=250}
+
+:::
+
+
+## Visualization Engines in R
+
+- Build-In: Base R Graphics
+
+- `lattice`: Trellis graphics, with an emphasis on multivariate data
+
+- `ggplot2`: based on The Grammar of Graphics
+
+::: {.notes}
+
+- `Base R Graphics` is the most basic and oldest visualization tool in R, providing a straightforward approach to creating simple plots.
+- `lattice` is a powerful tool for visualizing multivariate data, providing a flexible and customizable approach to creating complex plots.
+- `ggplot2`, on the other hand, is a more recent and widely used package that follows the Grammar of Graphics principles, offering a more modern and flexible approach to data visualization.
+
+:::
+
+## Scatter Plot
+
+RQ: Do people of different age groups have different views on income distribution?（WVS7 Q106）
+
+<div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+  <span style="color: #0ABAB5;">1</span>
+  <span>Incomes should be made more equal</span>
+  <input type="range" min="1" max="10" value="5" style="flex-grow: 1; margin: 0 10px;">
+  <span>There should be greater incentives for individual effort</span>
+  <span style="color: #0ABAB5;">10</span>
+</div>
+
+:::{.panel-tabset}
+
+### Base R
+
+```{r}
+#| echo: True
+#| eval: True
+#| fig.width: 6
+#| fig-align: center
+
+plot(wvs$incomeLevel, wvs$education)
+
+
+```
+
+:::{.fragment}
+
+Why does this graph only show a bunch of small circles?
+
+:::
+
+:::{.notes}
+
+If you open the original data, you will find that the values in these two variables are integers. Therefore, the same circle position on the scatter plot may actually have multiple repeated values.
+
+They are completely overlapped at the same position, so the data information is not fully expressed.
+
+:::
+
+### Base R more
+
+```{r}
+#| echo: True
+#| eval: True
+#| fig-align: center
+
+# png("scatterBasic.png")
+
+plot(
+  wvs$incomeLevel, wvs$education,
+  main = "Family Income and Education",
+  xlab = "Family Income",
+  ylab = "Education Level"
+)
+
+# dev.off()
+
+```
+
+1. Enable device: Set save path and format.
+2. Draw the plot
+3. Close the device
+
+:::{.notes}
+
+The `plot()` command is used to create a scatter plot of the incomeLevel (family income) and education columns from the wvs7 data frame. The main parameter sets the graph's main title as "Family Income and Education", while the xlab and ylab parameters set the X-axis and Y-axis labels as "Family Income" and "Education Level" respectively.
+
+:::
+
+### lattice
+
+```{r}
+#| echo: True
+#| eval: True
+#| fig-align: center
+
+xyplot(education ~ incomeLevel, data = wvs)
+
+```
+
+::: {.notes}
+
+- The `xyplot()` command is one of the functions in the lattice package used to create scatter plots. The relationship between variables can be expressed in the form of a formula, separated by the `~` symbol, with the dependent variable (in this case, education) on the left side and the independent variable (in this case, incomeLevel) on the right side.
+- The `data = wvs7` parameter specifies that the data frame containing these variables is named wvs7. This means that the xyplot function will look for the education and incomeLevel variables in the wvs7 data frame to create the graph.
+
+:::
+
+### lattice more
+
+```{r}
+#| echo: True
+#| eval: True
+#| fig-align: center
+
+xyplot(
+  education ~ incomeLevel,
+  group = female,
+  type = c("p", "g", "smooth"),
+  main = "Family Income on Education",
+  xlab = "Income",
+  ylab = "Education",
+  data = wvs,
+  auto.key = TRUE
+)
+
+```
+
+::: {.notes}
+
+- The `xyplot()` command is used to create a scatter plot. `education ~ incomeLevel` specifies the dependent variable (Y-axis) and independent variable (X-axis) of the graph. 
+- The `group = female` parameter indicates that data points will be grouped based on the values of the female variable.
+- `type = c("p", "g", "smooth")` specifies the graph types: 'p' represents points (scatter plot), 'g' represents grid lines, and 'smooth' adds a smoothing curve.
+- The `main`, `xlab`, and `ylab` parameters set the main title and labels for the X and Y axes, respectively.
+- `data = wvs7` specifies the data source.
+- `auto.key = TRUE` automatically adds a legend to distinguish different groups.
+
+:::
+
+```{r}
+#| echo: True
+#| eval: True
+#| fig-align: center
+
+xyplot(
+  education ~ incomeLevel | religious,
+  group = female,
+  type = c("p", "g", "smooth"),
+  main = "Family Income on Education",
+  xlab = "Income",
+  ylab = "Education",
+  data = wvs,
+  auto.key = TRUE
+)
+
+```
+
+::: {.notes}
+
+- The `xyplot()` command is used to create grouped plots distinguishing religious categories. Similar to the first one, but here the `|` symbol is introduced, indicating that the graph will be faceted according to different values of the `religious` variable, creating a subplot for each `religious` value. This allows for a more detailed exploration of the relationship between education level and family income across different religious backgrounds.
+- The remaining parameters are the same as in the first `xyplot()` command, used to set the graph type, title, axis labels, data source, and automatic legend.
+
+:::
+
+:::{.callout-tip .fragment}
+
+Please create a scatter plot of education level versus income, grouped by country
+
+:::
+
+:::{.fragment}
+
+```{r}
+#| echo: True
+#| eval: True
+#| fig-align: center
+
+xyplot(
+  education ~ incomeLevel | country,
+  layout=c(5,3),
+  type = c("p", "g"),
+  main = "Family In come on Education",
+  xlab = "Income",
+  ylab = "Education",
+  data = wvs,
+  auto.key = TRUE
+)
+
+```
+
+:::
+
+### ggplot2
+
+`ggplot2`: Grammar of Graphics
+
+figure -> individual components: data, aesthetics, geometry, statistics
+
+::: {.notes}
+
+- The Grammar of Graphics is a systematic theory of data visualization proposed by Leland Wilkinson. It breaks down the process of creating graphics into several independent layers, including:
+  1. Data: The dataset to be visualized
+  2. Aesthetics: Mapping data variables to graphical properties (such as x-axis, y-axis, color, shape, etc.)
+  3. Geometries: Visual elements used to represent data (such as points, lines, bars, etc.)
+  4. Statistics: Statistical transformations applied to the data (such as summarization, smoothing, etc.)
+  5. Scales: Controlling how data is mapped to graphical properties
+  6. Coordinate Systems: Defining how data is presented on a plane
+  7. Facets: Splitting data into subsets and creating small multiples
+
+Creating plots with ggplot is similar to editing photos in Photoshop: you start with a basic plot and then add layers of effects one by one
+
+
+:::
+
+```{r}
+#| echo: True
+#| eval: True
+#| fig-align: center
+
+ggplot(data = wvs,
+       aes(x = incomeLevel, y = education, color = religious))
+```
+
+::: {.notes}
+
+Create a basic plot using the `ggplot()` function, which defines the data source (`data = wvs`) and aesthetic mappings (`aes`).
+In `aes`, `x = incomeLevel` and `y = education` specify that the X-axis and Y-axis of the scatter plot should be mapped to the `incomeLevel` (income level) and `education` (education level) variables, respectively.
+`color = religious` specifies that the color of the points should vary according to different values of the `religious` (religious belief) variable, so different religious beliefs will be represented by points of different colors on the plot.
+
+This graph is currently empty because the command here only specifies the basic elements of the graph, and no specific graphics have been added through the `geom_*` series of commands.
+
+Next, we will start adding more graphics to it.
+
+:::
+
+```{r}
+#| echo: True
+#| eval: True
+#| fig-align: center
+
+ggplot(data = wvs,
+       aes(x = incomeLevel, y = education, color = religious)) +
+    geom_point(size = 2, alpha = 0.3) +
+    geom_smooth(aes(color = NULL), se=TRUE) + 
+    labs(title = "Economy on Education" ,
+         subtitle = "Scatter plot + density distribution",
+         x = "Family Income", y = "Education") +
+  theme_minimal()
+
+```
+
+::: {.notes}
+
+- Add scatter plot: `geom_point()` adds a scatter plot layer, `size = 2` sets the size of the points, `alpha = 0.3` sets the transparency of the points, making it easier to observe the density of data points.
+
+- Add smooth curve: `geom_smooth()` adds a smooth curve to show the trend between `incomeLevel` and `education`, `aes(color = NULL)` means not coloring the smooth curve according to `religious`, `se=TRUE` indicates displaying the standard error of the curve.
+
+- Set graph labels: `labs` is used to add title, subtitle, and axis labels to the graph, making the graph information more complete and clear.
+
+- Set theme and other details: `theme_minimal` applies a minimalist theme, with a clean and concise background highlighting the data.
+
+:::
+
+Universal formula for plotting with ggplot
+
+```{r}
+#| echo: True
+
+# Load the ggplot2 package
+library(ggplot2)
+
+# General ggplot template
+ggplot(data = <your_data>, aes(x = <x_variable>, y = <y_variable>, fill = <fill_variable>, color = <color_variable>)) +
+  <geom_function>(aes(group = <group_variable>), 
+                  size = <size_value>, 
+                  shape = <shape_value>, 
+                  alpha = <alpha_value>) +
+  labs(title = "<Your Plot Title>", 
+       subtitle = "<Subtitle>", 
+       x = "<X-axis Label>", 
+       y = "<Y-axis Label>", 
+       fill = "<Legend Title for Fill>", 
+       color = "<Legend Title for Color>") +
+  theme_minimal() +  # Use theme of your choice
+  theme(plot.title = element_text(hjust = 0.5),  # Center the title
+        legend.position = "<legend_position>") +  # Legend position options: "none", "left", "right", "bottom", "top"
+  scale_color_manual(values = <custom_color_palette>) +  # Custom color palette (optional)
+  scale_fill_manual(values = <custom_fill_palette>)  # Custom fill palette (optional)
+
+
+```
+
+* **`ggplot()`** initializes the plot.
+* **`aes()`** defines the aesthetic mappings (like x, y, color, and fill).
+* **`geom_*()`** specifies the type of plot (scatter, bar, line, etc.).
+* **`labs()`** adds titles and labels.
+* **`theme()`** customizes the plot's appearance.
+* **`scale_*()`** modifies color and fill scales.
+
+::: {.notes}
+
+### 1. **`ggplot(data = <your_data>)`**
+
+* **Purpose**: This initializes the plot. The `data` argument specifies the dataset you will use for plotting.
+* **Example**: If you have a dataset named `my_data`, you would write `ggplot(data = my_data)` to tell `ggplot` where to pull the data from.
+
+### 2. **`aes(x = <x_variable>, y = <y_variable>)`**
+
+* **Purpose**: The `aes()` function defines the **aesthetics** of your plot. Aesthetics are the visual aspects of the plot, such as the x and y axis variables, colors, fills, shapes, etc.
+* **Explanation**: `x = <x_variable>` sets the variable for the x-axis, and `y = <y_variable>` sets the variable for the y-axis.
+* **Example**: If you’re plotting `height` against `age`, it would look like this: `aes(x = age, y = height)`.
+
+### 3. **`fill = <fill_variable>, color = <color_variable>`**
+
+* **Purpose**: These additional arguments inside `aes()` are used to map specific variables to **colors** (for lines or points) or **fills** (for bar charts, density plots, etc.). They help differentiate between groups.
+* **Example**: If you want to color different groups by gender, you could use `fill = gender` or `color = gender`.
+
+### 4. **`<geom_function>(aes(...))`**
+
+* **Purpose**: Geoms are what actually **draw the plot**. This is where you choose the type of plot you want (scatter, bar, line, etc.). Each geom has its own function, such as:
+    * `geom_point()` for scatter plots.
+    * `geom_bar()` for bar charts.
+    * `geom_line()` for line plots.
+* **Inside the `aes()`**: You can specify additional aesthetics, such as `group = <group_variable>`, which groups the data for more complex plots like multiple lines in a line plot.
+* **Example**: A simple scatter plot might use `geom_point()` like this:
+    
+    ```r
+    geom_point(aes(color = gender), size = 3)
+    ```
+    
+    This would make each point colored by gender and set the point size to 3.
+
+### 5. **`size = <size_value>, shape = <shape_value>, alpha = <alpha_value>`**
+
+* **Purpose**: These arguments adjust **non-data-dependent aesthetics**, such as the size, shape, or transparency (alpha) of points or lines.
+* **Example**: You might set `size = 2` to make points larger or `alpha = 0.7` to make points slightly transparent.
+
+### 6. **`labs(title = "<Your Plot Title>", subtitle = "<Subtitle>", x = "<X-axis Label>", y = "<Y-axis Label>")`**
+
+* **Purpose**: The `labs()` function is used to set the **labels** for various parts of the plot, such as the title, subtitle, and axis labels.
+* **Example**:
+    
+    ```r
+    labs(title = "Age vs. Height", subtitle = "Sample Data", x = "Age (years)", y = "Height (cm)")
+    ```
+    
+    This would add a title, subtitle, and axis labels to your plot.
+
+### 7. **`theme_minimal()`**
+
+* **Purpose**: `ggplot2` offers many **themes** to customize the look of the plot, like fonts, grid lines, and background color. `theme_minimal()` provides a clean, modern look with minimal grid lines and a white background.
+* **Other Themes**: You could also try `theme_classic()`, `theme_light()`, or `theme_bw()`.
+* **Example**:
+    
+    ```r
+    theme_minimal()
+    ```
+    
+
+### 8. **`theme()`**
+
+* **Purpose**: The `theme()` function allows you to **fine-tune** specific elements of your plot, like adjusting the title position, removing the legend, or changing text sizes.
+* **Common Adjustments**:
+    * `plot.title = element_text(hjust = 0.5)`: Centers the plot title.
+    * `legend.position = "right"`: Controls the legend position (options: `"none"`, `"left"`, `"right"`, `"bottom"`, `"top"`).
+* **Example**:
+    
+    ```r
+    theme(plot.title = element_text(hjust = 0.5), legend.position = "bottom")
+    ```
+    
+
+### 9. **`scale_color_manual(values = <custom_color_palette>)`**
+
+* **Purpose**: This allows you to **customize colors** for your plot. `scale_color_manual()` changes the colors of points, lines, etc., and `scale_fill_manual()` changes the fill colors.
+* **Example**: If you have a custom palette, you can use it like this:
+    
+    ```r
+    scale_color_manual(values = c("blue", "red"))
+    ```
+    
+
+### 10. **`scale_fill_manual(values = <custom_fill_palette>)`**
+
+* **Purpose**: Similar to `scale_color_manual()`, this customizes the fill colors of objects (like bars or density plots) in the plot.
+* **Example**: If you want bars to be a specific color, use:
+    
+    ```r
+    scale_fill_manual(values = c("yellow", "green"))
+    ```
+    
+
+### 11. **Complete Example**:
+
+Here’s an example of how the entire template would look for a scatter plot:
+
+```r
+ggplot(data = my_data, aes(x = age, y = height, color = gender)) +
+  geom_point(size = 3, alpha = 0.7) +
+  labs(title = "Age vs. Height", subtitle = "Sample Data", 
+       x = "Age (years)", y = "Height (cm)", color = "Gender") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5), 
+        legend.position = "bottom") +
+  scale_color_manual(values = c("blue", "pink"))
+```
+
+This would produce a scatter plot with:
+
+* Points sized at 3 and slightly transparent.
+* A title, subtitle, and customized axis labels.
+* Colors based on gender, using blue and pink.
+* A centered title and legend placed at the bottom.
+
+### Summary:
+
+* **`ggplot()`** initializes the plot.
+* **`aes()`** defines the aesthetic mappings (like x, y, color, and fill).
+* **`geom_*()`** specifies the type of plot (scatter, bar, line, etc.).
+* **`labs()`** adds titles and labels.
+* **`theme()`** customizes the plot's appearance.
+* **`scale_*()`** modifies color and fill scales.
+
+:::
+
+:::
+
+## Bar Plot
+
+:::{.panel-tabset}
+
+### Base R
+
+```{r}
+#| echo: True
+#| eval: True
+#| fig-align: center
+
+# Create a contingency table of income level and education
+income_education_counts <- table(wvs$incomeLevel, wvs$education)
+
+# Calculate proportions within each income level
+income_education_props <- prop.table(income_education_counts, 1)
+
+# Use barplot() to draw the bar chart with proportions
+barplot(
+  t(income_education_props),  # Transpose to have education levels as bars
+  main = "Proportion of Education Levels by Income Level",
+  xlab = "Income Level",
+  ylab = "Proportion",
+  col = rainbow(ncol(income_education_props)),
+  legend = colnames(income_education_props),
+  beside = TRUE
+)
+```
+
+::: {.notes}
+
+- `table()` creates a contingency table of income level and education.
+- `prop.table()` calculates proportions within each income level.
+- `t()` transposes the table to have education levels as bars.
+- `barplot()` draws the bar chart with proportions.
+- `main`, `xlab`, and `ylab` set the title, X-axis label, and Y-axis label of the graph.
+- `col` sets the color of the bars.
+- `legend` adds a legend.
+- `beside = TRUE` places the bars side by side.
+
+:::
+
+### lattice
+
+```{r}
+#| echo: True
+#| eval: True
+#| fig-align: center
+
+# Load the lattice package
+library(lattice)
+
+# Calculate proportions for each income level
+prop_data <- as.data.frame(prop.table(table(wvs$incomeLevel, wvs$education), 1))
+
+# Use barchart() to draw the bar chart with proportions
+barchart(
+  Freq ~ Var2 | Var1,
+  data = prop_data,
+  main = "Proportion of Education Levels by Income Level",
+  xlab = "Education Level",
+  ylab = "Proportion",
+  col = "lightgreen",
+  horizontal = FALSE,
+  scales = list(x = list(rot = 45))
+)
+```
+
+::: {.notes}
+
+1. `barchart()`: This is a function from the `lattice` package used to create a bar chart. The goal here is to visualize the proportions of education levels for each income level.
+    
+2. `Freq ~ Var2 | Var1`: This formula specifies that the Y-axis (`Freq`) represents the proportion of education levels (`Var2`), and the `| Var1` part means the plot is split by income levels. Each income level will have its own bar chart (facet), showing the proportion of each education level.
+    
+3. `data = prop_data`: This specifies that the data used for plotting comes from the `prop_data` data frame.
+    
+4. `main = "Proportion of Education Levels by Income Level"`: This sets the main title of the plot as "Proportion of Education Levels by Income Level".
+    
+5. `xlab = "Education Level"` and `ylab = "Proportion"`: These label the X-axis as "Education Level" and the Y-axis as "Proportion", clarifying what each axis represents.
+    
+6. `col = "lightgreen"`: This sets the bar colors to light green.
+    
+7. `horizontal = FALSE`: This ensures that the bars are drawn vertically, creating a typical vertical bar chart.
+    
+8. `scales = list(x = list(rot = 45))`: This rotates the X-axis labels by 45 degrees to improve readability, especially when there are many labels.
+
+
+:::
+
+### ggplot2
+
+```{r}
+#| echo: True
+#| eval: True
+#| fig-align: center
+
+# Load the ggplot2 package
+library(ggplot2)
+library(dplyr)
+
+# Calculate proportions within each income level
+prop_data <- wvs %>%
+  group_by(incomeLevel, education) %>%
+  summarise(count = n()) %>%
+  mutate(proportion = count / sum(count))
+
+# Use ggplot2 to draw the bar chart with proportions
+ggplot(data = prop_data, aes(x = incomeLevel, y = proportion, fill = factor(education))) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(
+    title = "Proportion of Education Levels by Income Level",
+    x = "Income Level",
+    y = "Proportion",
+    fill = "Education Level"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    legend.position = "bottom",
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  ) +
+  scale_fill_brewer(palette = "Set3")
+
+```
+
+::: {.notes}
+
+
+1. `ggplot(data = prop_data, aes(x = incomeLevel, y = proportion, fill = factor(education)))`: This initializes the `ggplot` object, specifying the dataset (`prop_data`) and mapping the aesthetics (`aes()`):
+    
+    * `x = incomeLevel`: The income level is mapped to the X-axis.
+    * `y = proportion`: The calculated proportion is mapped to the Y-axis.
+    * `fill = factor(education)`: The education level is mapped to the fill color of the bars, converted to a factor to distinguish the different education levels by color.
+2. `geom_bar(stat = "identity", position = "dodge")`:
+    
+    * `geom_bar(stat = "identity")`: This specifies that the heights of the bars should represent the actual values of the proportions in the data (`stat = "identity"`).
+    * `position = "dodge"`: This adjusts the bar positions so that bars for different education levels appear side-by-side (dodge) rather than stacked.
+3. `labs(...)`: This function adds labels and titles to the plot:
+    
+    * `title = "Proportion of Education Levels by Income Level"`: The main title of the plot.
+    * `x = "Income Level"`: Label for the X-axis.
+    * `y = "Proportion"`: Label for the Y-axis.
+    * `fill = "Education Level"`: Label for the legend that indicates the different education levels.
+4. `theme_minimal()`: This applies a minimalistic theme to the plot, removing unnecessary elements and providing a clean appearance.
+    
+5. `theme(...)`: This customizes certain aspects of the plot's appearance:
+    
+    * `plot.title = element_text(hjust = 0.5)`: Centers the plot title horizontally (`hjust = 0.5`).
+    * `legend.position = "bottom"`: Moves the legend to the bottom of the plot.
+    * `axis.text.x = element_text(angle = 45, hjust = 1)`: Rotates the X-axis text labels by 45 degrees to make them more readable, especially when there are many labels.
+6. `scale_fill_brewer(palette = "Set3")`: This sets the color palette for the bar fill using `RColorBrewer`'s "Set3" palette, which provides visually distinct colors for different education levels.
+
+:::
+
+:::
+
+
+
+
+
+
+
+
+ 
