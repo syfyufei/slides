@@ -1,0 +1,611 @@
+---
+title: "Loop in R"
+subtitle: "R Workshop 2024 in UTokyo"
+author: "SUN Yufei（Adrian）"
+institute: "UTokyo & Tsinghua University" 
+
+knitr: 
+    opts_chunk: 
+      eval: false
+
+format: 
+  revealjs:
+    css: https://drhuyue.site:10002/Adrian/data/style_basic.css
+    theme: ../../tiffany.scss
+    logo: https://gitlab.com/sammo3182/backup/raw/85b3c1ad4b459d7a9f901f124b936428eda5fcaf/logo_zzxx.png?inline=true
+    slide-number: true
+    incremental: true
+    preview-links: true # open an iframe for a link
+    link-external-newwindow: true
+    chalkboard: true # allwoing chalk board B, notes canvas C
+    footer: "SUN Yufei（Adrian）"
+    progress: true
+    hide-inactive-cursor: true
+    hide-cursor-timeout: 1000
+    scrollable: true
+    
+    show-slide-number: all # `speaker` only print in pdf, `all` shows all the time
+    width: 1600
+    height: 900
+    title-slide-attributes:
+      data-background-image: https://adriansun.drhuyue.site/img/logo.jpg
+      data-background-size: 100px   
+      data-background-position: top 10% right 5%
+---
+
+```{r setup}
+#| eval: True
+
+library(pacman)
+
+p_load(
+  rio,
+  knitr,
+  RColorBrewer,
+  dotwhisker,
+  interplot,
+  modelsummary,
+  # dependency
+  stringr,
+  haven,
+  purrr,
+  broom,
+  tidyr,
+  tidyverse,
+  igraph,
+  quanteda,
+  quanteda.textmodels,
+  caret,
+  quanteda.corpora,
+  quanteda.textplots
+)
+
+# Functions preload
+set.seed(313)
+
+# Load the wvs dataset
+wvs <- import("https://drhuyue.site:10002/Adrian/data/wvs7.rda")
+
+```
+
+# Course Homepage {background="#43464B"}
+
+:::{style="text-align: right; margin-top: 1em"}  
+
+https://adriansun.drhuyue.site/course/r-workshop-tokyo-2024.html
+
+Email: sunyf20@mails.tsinghua.edu.cn
+
+![](https://drhuyue.site:10002/Adrian/figure/qrcode_adriansun.drhuyue.site.png){height=250}
+
+:::
+
+## Why we need loops?
+
+> "Please collect all the news from the ISS website."
+
+```{r}
+#| echo: true
+
+library(rvest)
+
+ISS_news <- read_html("https://issnews.iss.u-tokyo.ac.jp/cat2/cat14/index.html") %>% 
+  html_nodes("h3 a") %>% 
+  html_attr("href")
+
+# for each page, we need to:
+# 1. read the html
+# 2. extract the news
+# 3. combine them together
+
+first_page <- read_html(ISS_news[1]) %>% 
+  html_nodes("p:nth-child(2)") %>% 
+  html_text()
+
+```
+
+If we don't use loops, we need to manually collect the news from each page. That will be 3*PageNum lines of code.
+
+::: {.notes}
+
+Now let image a situation where we need to collect news from ISS website.
+
+If we don't use loops, we need to manually collect the news from each page. That will be 3*PageNum lines of code.
+
+:::
+
+## Why we need loops?
+
+- **Reduces Code Repetition**
+
+- **Superior Efficiency**
+
+- **Saves Time**
+
+::: {.notes}
+
+Think of loops as a treadmill in the programming world. You simply place repetitive tasks on it, press "start", and it will help you complete them over and over until you tell it "enough". This way, you don't have to manually repeat the same work, and you can keep your code clean and elegant.
+
+Using loops offers several advantages:
+
+- Reduces Code Repetition: Individual commands are like hand-washing clothes, while loops are like programming washing machines that automatically complete repetitive work. By using loops, you can avoid rewriting the same code, making programs more concise and easier to maintain.
+- Superior Efficiency: Imagine if you need to print "Hello, World!" 100 times - would you manually input these 100 lines of code? Using loops, you only need to write the print statement once and tell the loop to execute it 100 times. This not only saves considerable time but also reduces the possibility of errors.
+- Saves Time: Loops are like superheroes that can complete tasks at high speed, making your code run faster and more efficiently.
+
+:::
+
+## Key Concepts
+
+- Research Question:
+   **Is social trust, an important component of social capital, affected by social inequality?**
+   - How to create a "neighborhood distrust" variable based on neighborhood trust variables?
+   - How to categorize income levels into low, medium, and high based on family income?
+
+- Loops
+    - Conditional Statements
+    - Iteration
+    - While Loops
+    - Repeat Loops
+
+## Loops
+
+Loops are *conditional* repetitions. 
+
+![](https://drhuyue.site:10002/Adrian/figure/loopDiagrams.png){width=100%}
+
+::: {.notes}
+
+Loops are *conditional* repetitions. Using loops can effectively reduce the occurrence of the same or similar commands multiple times, decrease errors caused by manually writing statements repeatedly, and enhance the readability and efficiency of programming. This section introduces a basic conditional statement and the three most commonly used loop statements in social science data processing and analysis.
+
+:::
+
+## Conditional Statements (IF)
+
+Conditional statements are not loop statements but are the foundation of loop statements. They determine whether the loop continues. Almost all loop statements can be broken down into finite steps of conditional statements.
+
+![](https://drhuyue.site:10002/Adrian/figure/ifDiagram.png){width=100%}
+
+
+### Logical Judgement
+
+```{r logicalJudge,echo=TRUE}
+1 + 1 != 2
+
+is.na(c(1, 2, NA, 3))
+
+is.numeric(wvs7$female)
+```
+
+::: {.notes}
+
+- TRUE == 1, FALSE == 0
+
+- As we learned in @sec-algebra, `!=` means "not equal to," so `1 + 1 != 2` means "1 plus 1 is not equal to 2," which is obviously incorrect, resulting in `FALSE`.
+
+- The `is.na()` function checks each element of a vector, returning `TRUE` if the element is missing (NA) and `FALSE` otherwise. Thus, `is.na(c(1, 2, NA, 3))` results in a logical vector: `FALSE, FALSE, TRUE, FALSE`, indicating only the third element is missing.
+
+- `is.numeric()` checks if the given object is of numeric type, returning `TRUE` if it is, and `FALSE` otherwise. `is.numeric(wvs7$female)` checks if the `female` column in the `wvs7` data frame is numeric.
+
+:::
+
+## Conditional Handling
+
+- If...then, else...then... is a form of conditional statement used in almost all high-level programming languages.
+    - Basic Syntax: `if(<logical condition>){<execute command>}`
+    - Extended Syntax: `if(<logical condition1>){<execute command1>} else if(<logical condition2>){<execute command2>}... else(<execute commandn>)`
+        - Statement Vectorization: `ifelse(<logical condition>, <execute command1>, <execute command2>)`
+        - Multi-condition Abbreviation: `case_when(<logical condition1> ~ <execute command1>, <logical condition2> ~ <execute command2>, ...)`
+
+::: {.notes}
+
+
+- `ifelse()` is a vectorized version of `if...then...` that applies the same logic to each element of a vector.
+- `ifelse()` is a vectorized version of `if...then...` that applies the same logic to each element of a vector.
+- `case_when()` is a more flexible version of `if...then...` that allows for multiple conditions and corresponding actions.
+
+:::
+
+- e.g., Convert the gender variable in `wvs7` to a numeric variable if it is logical
+
+```{r if,echo=TRUE}
+if(is.logical(wvs7$female)) wvs7$female <- as.numeric(wvs7$female)
+```
+
+- e.g., Create a "neighborhood distrust" variable based on the neighborhood trust variable in `wvs7`, where 4 represents the least trust and 1 represents the most trust
+
+```{r ifNested,echo=TRUE}
+if(wvs7$trust_neighbor[1] == 1) {
+  wvs7$distrust_neighbor[1] <- 4
+} else if (wvs7$trust_neighbor[1] == 2) {
+  wvs7$distrust_neighbor[1] <- 3
+} else if (wvs7$trust_neighbor[1] == 3) {
+  wvs7$distrust_neighbor[1] <- 2
+} else if (is.na(wvs7$trust_neighbor[1])) {
+  wvs7$distrust_neighbor[1] <- NA
+} else{
+  wvs7$distrust_neighbor[1] <- 1
+}
+```
+
+::: {.notes}
+
+The code above only converts the first observation of the `trust_neighbor` variable in the `wvs7` dataset.
+If we want to create a corresponding `distrust_neighbor` variable for the entire `trust_neighbor` variable, we need to use a looping approach.
+
+:::
+
+- What is wrong with the following approach?
+
+```{r length,error=TRUE}
+
+if(wvs7$trust_neighbor == 1) {wvs7$distrust_neighbor <- 4}
+```
+
+::: {.notes}
+
+- When the neighborhood trust variable `trust_neighbor` is 1, the neighborhood distrust variable `distrust_neighbor` should be assigned a value of 4.
+- But if you run this code under console, will you get the desired result?
+
+The errors in this code are in.
+1. Logic error: this code will only judge and assign a value to the first line in the dataframe wvs7.
+If the first element of `wvs7$trust_neighbor` is equal to 1, then the first element of `wvs7$distrust_neighbor` is assigned a value of 4. This does not do anything to the other rows in wvs7. 2. incomplete conditional judgment.
+2. Incomplete conditional judgment: If your intent is to set `wvs7$distrust_neighbor` to 4 for all elements of `wvs7$trust_neighbor` that are equal to 1, then you should use a vectorized conditional judgment rather than operate on the first row alone.
+
+:::
+
+```{r ifelse}
+wvs7$distrust_neighbor <- ifelse(wvs7$trust_neighbor == 1, 4, wvs7$distrust_neighbor)
+```
+
+::: {.notes}
+
+The correct approach is to use the `ifelse` function, which conditions the vector element by element.
+Set the value of the `distrust_neighbor` column in the row corresponding to the `trust_neighbor` column equal to 1 in the `wvs7` dataframe to 4, leaving the values of the other rows unchanged.
+:::
+
+- Does this approach solve my problem?
+
+```{r ifelsezero,error=TRUE}
+wvs7$distrust_neighbor <- ifelse(wvs7$trust_neighbor == 2, 3, wvs7$distrust_neighbor)
+wvs7$distrust_neighbor <- ifelse(wvs7$trust_neighbor == 3, 2, wvs7$distrust_neighbor)
+wvs7$distrust_neighbor <- ifelse(wvs7$trust_neighbor == 4, 3, wvs7$distrust_neighbor)
+```
+
+::: {.notes}
+
+We just learned about using `ifelse`, wouldn't it work if we used `ifelse` to assign values to `distrust_neighbor` based on the value of each `trust_neighbor`?
+Might as well try running this code:
+
+The above command still gives an error (`replacement has length zero`), but don't be discouraged.
+By looking at the structure of `wvs7$trust_neighbor`, it turns out that `wvs7$trust_neighbor` exists as a `NA`
+
+:::
+
+```{r ifelseIssue}
+table(wvs7$trust_neighbor)
+
+wvs7$distrust_neighbor <- ifelse(wvs7$trust_neighbor == 1, 4, 
+                                 ifelse(wvs7$trust_neighbor == 2, 3, 
+                                        ifelse(wvs7$trust_neighbor == 3, 2, 
+                                               ifelse(wvs7$trust_neighbor == 4, 1, NA))))
+```
+
+::: {.notes}
+
+Finally it’s right!
+
+But this code is still too long and not concise enough.
+
+:::
+
+- Is there a better way?
+
+```{r reorder-1,echo=TRUE}
+wvs7$distrust_neighbor <- 5 - wvs7$trust_neighbor
+```
+
+::: {.notes}
+  
+We also need to think reversely when writing code.
+The values ​​of `wvs7$trust_neighbor` are 1, 2, 3, 4, NA. If we want to create `wvs7$distrust_neighbor`, we can just subtract it from 5!
+Isn’t it amazing!
+:::
+
+- e.g.: According to the household income level in `wvs7`, low (1), medium (2), high (3) and other levels are distinguished. The distinction standards are the 25% and 75% quantile points.
+```{r caseWhen,echo=TRUE}
+vec_cut <- quantile(wvs7$incomeLevel, probs = c(0.25, 0.75), na.rm = TRUE)
+wvs7$incomeCat3 <- ifelse(wvs7$incomeLevel < vec_cut[1], 1,
+ifelse(wvs7$incomeLevel > vec_cut[2], 3,
+ifelse(is.na(wvs7$incomeLevel), NA, 2)))
+```
+
+::: {.notes}
+
+This line of code uses the `quantile` function to calculate the 25% and 75% quantiles of `incomeLevel` and stores the results in `vec_cut`.
+The `na.rm = TRUE` parameter ensures that missing values ​​are ignored when calculating quantiles.
+The second piece of code uses a nested `ifelse` function to assign a classification level to each observation:
+- If `incomeLevel` is less than the 25% percentile (`vec_cut[1]`), `incomeCat3` is assigned a value of 1 (low income).
+- If `incomeLevel` is greater than the 75% percentile (`vec_cut[2]`), `incomeCat3` is assigned a value of 3 (high income).
+- If `incomeLevel` is between the 25th and 75th percentiles, `incomeCat3` is assigned a value of 2 (middle income).
+- If `incomeLevel` is a missing value, `incomeCat3` is also assigned the value NA.
+
+:::
+```{r caseWhen-1,echo=TRUE}
+wvs7$incomeCat3 <- case_when(
+wvs7$incomeLevel < vec_cut[1] ~ 1,
+wvs7$incomeLevel >= vec_cut[1] & wvs7$incomeLevel <= vec_cut[2] ~ 2,
+wvs7$incomeLevel > vec_cut[2] ~ 3
+)
+# If no condition is met, case_when directly assigns NA
+```
+
+::: {.notes}
+
+This code uses the `case_when` function to assign a classification level to each observation:
+- When `incomeLevel` is less than the 25% percentile (`vec_cut[1]`), `incomeCat3` is assigned a value of 1 (low income).
+- When `incomeLevel` is greater than the 75% percentile (`vec_cut[2]`), `incomeCat3` is assigned a value of 3 (high income).
+- For other cases (i.e. `incomeLevel` is between the 25th and 75th percentiles), `incomeCat3` is assigned a value of 2 (middle income).
+This is achieved through `TRUE ~ 2`, where TRUE is equivalent to a default condition, which will match all situations not covered by the previous condition.
+**The advantage of using `case_when` is that it can make the correspondence between conditions and results more clear**, while also avoiding the complexity that may be caused by nested `ifelse` functions.
+
+:::
+  
+- What if I want to do it by country?
+
+```{r caseCountry,echo=TRUE}
+vec_cut <- quantile(wvs7$incomeLevel, probs = c(0.25, 0.75), na.rm = TRUE)
+wvs7 <- group_by(wvs7, country) %>%
+mutate(incomeCat3 = case_when(
+incomeLevel < vec_cut[1] ~ 1,
+incomeLevel >= vec_cut[1] & incomeLevel <= vec_cut[2] ~ 2,
+incomeLevel > vec_cut[2] ~ 3
+))
+```
+
+::: {.notes}
+
+This code uses the `group_by` function to group the `wvs7` data set by the country` column.
+
+:::
+
+## Traversal (FOR)
+
+![](https://drhuyue.site:10002/Adrian/figure/loop/forDiagram.png){width=100%}
+
+
+Command syntax:
+`for(<index> in <input sequence>){<execution command>}`
+Enter sequence settings:
+- given value range
+- Determined by variables and data frame dimensions
+
+::: {.notes}
+
+The traversal loop means that the user gives the input sequence, the program sequentially takes values, and performs "exhaustion judgment", that is, whether all values ​​in the input value sequence have been taken.
+If it is judged to be "no", use the value to perform the preset command. If it is "yes", stop the command.
+Different from the judgment statement, the input here is a sequence of values ​​rather than a single value, and the purpose of program operation has also changed from a single judgment-output to *repeated* running of commands within a given value range.
+Traversal loops are the most common type of loop, and they also form the basic operating logic of program batch processing in subsequent chapters.
+Logic diagram of traversing loop statements:
+
+:::
+
+## Traversal Loop
+
+- e.g., establish the "neighborhood distrust" variable based on the neighborhood trust variable in `wvs7`, 4 represents the least trust, 1 represents the most trust
+```{r for-1,echo=TRUE}
+length(wvs7$trust_neighbor)
+for(i in 1:1264) {
+if (is.na(wvs7$trust_neighbor[i])) {
+wvs7$distrust_neighbor[i] <- NA
+} else if (wvs7$trust_neighbor[i] == 1) {
+wvs7$distrust_neighbor[i] <- 4
+} else if (wvs7$trust_neighbor[i] == 2) {
+wvs7$distrust_neighbor[i] <- 3
+} else if (wvs7$trust_neighbor[i] == 3) {
+wvs7$distrust_neighbor[i] <- 2
+} else{
+wvs7$distrust_neighbor[i] <- 1
+}
+}
+```
+
+::: {.notes}
+
+Previously, because the `if` judgment statement could only receive a single logical judgment, I could only apply logical judgment to a single value in `wvs7$trust_neighbor` to obtain the value.
+If I want to perform a replacement operation on each value, or write out the coordinates of each value (`wvs7$trust_neighbor[1]`, `wvs7$trust_neighbor[2]`, `wvs7$trust_neighbor[3] `…) and then repeat the following commands, or use the `ifelse` command to perform vectorization operations.
+However, the vectorization operation is not applicable all the time (for example, `ifelse` can only return a vector value with the same length as the input sequence. If the execution command contains multiple output values, it cannot be implemented through `ifelse`).
+At this time, I can use a traversal loop statement to complete this task:
+
+:::
+
+For the output object, it can be determined according to the purpose of the command; for the input value range, dynamic assignment can also be used.
+
+```{r forTab}
+# Make a contingency table for each trust variable
+wvs7_trust <- select(wvs7, starts_with("trust"))
+```
+```{r forTab-1,echo=TRUE}
+ls_tb <- vector(mode = "list")
+for(i in seq(wvs7_trust)) {
+ls_tb[[i]] <- pull(wvs7_trust, i) %>% table
+}
+names(ls_tb) <- names(wvs7_trust)
+ls_tb
+```
+
+## Build a recursive loop
+
+- e.g., calculate how many numeric variables there are in `wvs7`
+
+```{r forCount,echo=TRUE}
+count_num <- 0
+for (variable in names(wvs7)) {
+if (is.numeric(wvs7[[variable]])) {
+count_num <- count_num + 1
+}
+}
+count_num
+```
+
+::: {.notes}
+
+- `count_num <- 0`: This line of code initializes a counter, setting it to zero.
+- `for (variable in names(wvs7)) { ... }`: This loop iterates through all column names in the data frame `wvs7`.
+- `if (is.numeric(wvs7[[variable]])) { ... }`: Inside the loop, this `if` statement checks whether the currently traversed column is numeric.
+- `count_num <- count_num + 1`: If the column is numeric, the counter will be incremented by 1.
+- After the loop ends, `count_num` will contain the total number of numeric variables in the data frame.
+:::
+
+## Condition Loop (WHILE)
+
+The purpose of conditional loops is to repeatedly run commands.
+Logic diagram of conditional loop statement:
+
+![](https://drhuyue.site:10002/Adrian/figure/loop/whileDiagram.png){width=100%}
+
+::: {.notes}
+
+The main difference from the traversal loop is that the conditional loop does not terminate based on whether all index values ​​​​are traversed, but whether a given condition is reached.
+Therefore, it is more convenient when the number of indexes is unknown.
+Of course, if the termination condition is set to traverse all index values, the conditional loop and the traversal loop will have the same effect.
+In fact, all iteration loops can be rewritten as conditional loops, but not vice versa.
+Therefore, conditional loops are actually a more *comprehensive* form of loop statements than traversal loops.
+
+:::
+
+- e.g. A rewrite of the previous contingency table example
+
+Previous example of using `for`:
+
+```{r whileTab}
+ls_tb2 <-vector(mode = "list")
+for(j in seq(wvs7_trust)) {
+ls_tb2[[j]] <- pull(wvs7_trust, j) %>% table
+}
+names(ls_tb2) <-names(wvs7_trust)
+ls_tb2
+```
+
+Rewrite using `while`:
+
+```{r whileTab-1,echo=TRUE}
+ls_tb2 <-vector(mode = "list")
+j <- 1
+while(j <= length(wvs7_trust)) {
+ls_tb2[[j]] <- pull(wvs7_trust, j) %>% table
+j <- j + 1
+}
+names(ls_tb2) <- names(wvs7_trust)
+ls_tb2
+identical(ls_tb, ls_tb2)
+```
+
+## Condition Loop (WHILE)
+
+Conversely, not all conditional loop statements can be rewritten as traversal loops.
+
+```{r random,echo=TRUE}
+i <- 0
+while (TRUE) {
+if (runif(1) < 0.01)
+break
+i <- i + 1
+}
+i
+```
+
+This type of statement cannot be rewritten into a traversal loop statement, but R also provides a shorthand mode, which is a repeated statement.
+
+::: {.notes}
+
+Especially when only the termination condition is clear, but the number of command runs or the index is uncertain, the conditional loop cannot be rewritten into a traversal loop.
+This example is particularly likely to occur in cases involving random numbers:
+For example, we use uniform distribution as a random variable equation to count and accumulate, and add 1 every time a random number is generated. It is stipulated that counting can only be stopped when the generated random number is less than 0.01.
+This kind of running program can only be achieved using conditional loops:
+
+:::
+
+## Repeating Loop (REPEAT)
+
+Repeating loop statements can be viewed as conditional loops with "continue running" as the termination condition.
+
+![](https://drhuyue.site:10002/Adrian/figure/loop/repeatDiagram.png){width=100%}
+
+::: {.notes}
+
+This special form of conditional loops is more common when creating command constructs that operate on unknown data, and is less commonly used alone than traversals and conditional loops.
+Terminating the repeating loop needs to be done through a judgment statement after running the command.
+Logic diagram of repeated loop statement:
+
+:::
+
+## Repeating Loop (REPEAT)
+
+Let's rewrite the following example of the conditional statement above using a repeated statement:
+
+Example using `while`:
+```{r randomRepeat}
+i <- 0
+while (TRUE) {
+if (runif(1) < 0.01)
+break
+i <- i + 1
+}
+i
+```
+Use `repeat` to rewrite:
+```{r randomRepeat-1,echo=TRUE}
+repeat{
+if (runif(1) < 0.01)
+break
+i <- i + 1
+}
+```
+
+::: {.notes}
+
+First piece of code (using `while` loop):
+- `i <- 0`: Initialize counter i to 0.
+- `while (TRUE) { ... }`: Use an infinite loop, the loop will continue until a `break` statement is encountered.
+- `if (runif(1) < 0.01) break`: In each loop, generate a random number between 0 and 1. If this random number is less than 0.01, use the break statement to break out of the loop.
+- `i <- i + 1`: If the loop is not broken out, counter i is increased by 1.
+- `i`: After the loop ends, the value of counter i is output, indicating how many times the loop has been executed.
+Second piece of code (using `repeat` loop):
+- `repeat { ... }`: Use `repeat` loop, which is also an infinite loop and will not stop until it encounters `break` statement.
+
+:::
+
+Another example of a conditional loop can also be rewritten as a repeated loop.
+
+Example using `while`:
+
+```{r repeat}
+ls_tb3 <- vector(mode = "list")
+k<-1
+while(k <= length(wvs7_trust)) {
+ls_tb3[[k]] <- pull(wvs7_trust, k) %>% table
+k <- k + 1
+}
+names(ls_tb3) <- names(wvs7_trust)
+```
+
+Use `repeat` to rewrite:
+
+```{r repeat-1,echo=TRUE}
+k<-1
+repeat{
+ls_tb3[[k]] <- pull(wvs7_trust, k) %>% table
+k <- k + 1
+if(k == length(wvs7_trust) + 1) break
+}
+names(ls_tb3) <- names(wvs7_trust)
+identical(ls_tb2, ls_tb3)
+```
+
+::: {.notes}
+
+- `ls_tb3[[k]] <- pull(wvs7_trust, k) %>% table`: In each loop, use the `pull()` function to extract the data of the `k`th column in the data frame `wvs7_trust`, Then use the `table()` function to calculate the frequency table of the column data and store the result in the `k`th element of the list `ls_tb3`.
+- `if(k == length(wvs7_trust) + 1) break`: If the value of counter k is equal to the number of columns of data frame `wvs7_trust` plus 1, use the `break` statement to break out of the loop.
+
+:::
+

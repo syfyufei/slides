@@ -1,0 +1,24 @@
+---
+title: "Week 3 Lecture Recording Information"
+author: "SUN Yufei"
+format: 
+  pdf:
+    documentclass: ctexart
+    keep-tex: true
+    latex-engine: xelatex
+    include-in-header:
+      text: |
+        \usepackage{xeCJK}
+---
+
+\vspace{-2em}
+
+Dear Students,
+
+I am pleased to inform you that the recording of Week 3's lecture has been uploaded to the course homepage. You can view it by navigating to "[Course Homepage](https://adriansun.drhuyue.site/course/r-workshop-tokyo-2024.html) - Week 3 - Lecture Recording" or directly access the Week 3 Lecture Recording on [YouTube](https://youtu.be/6HjaoI2h4H0).
+
+Additionally, please use the scheduling widget located in the bottom right corner of the course homepage to book one-on-one R language tutoring sessions.
+
+
+Best regards,  
+SUN Yufei (Adrian)

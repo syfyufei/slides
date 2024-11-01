@@ -1,0 +1,975 @@
+---
+title: "循环与批处理"
+subtitle: "Loop and batch processing"
+runtime: shiny_prerendered
+---
+
+# 循环与批处理 {#sec-loop}
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE,
+                      out.width="100%")
+
+if (!require(pacman)) install.packages("pacman")
+
+p_load(drhur,
+       here,
+       rio,
+       DiagrammeR,
+       DiagrammeRsvg, # saving the svg plots from grViz; better than relying on the knitr screenshot which is unstable for word
+       rsvg,
+       tidyverse)
+
+wvs7 <- import(here("data/wvs7.rda"))
+
+wvs7_trust <- select(wvs7, starts_with("trust"))
+
+ls_tb2 <-vector(mode = "list")
+
+vec_cut <- quantile(wvs7$incomeLevel, probs = c(0.25, 0.75), na.rm = TRUE)
+
+ls_tb3 <- vector(mode = "list")
+
+ls_tb4 <- vector(mode = "list")
+
+ls_tb5 <- vector(mode = "list")
+
+```
+
+## 导言
+
+想象一下，循环就像是编程世界里的小跑步机。
+你只需把需要反复做的事情放上去，然后按下“开始”按钮，它就会帮你一遍又一遍地完成任务，直到你告诉它“够了”为止。
+这样一来，你就不必手忙脚乱地重复相同的工作了，而且还能保持代码的整洁和优雅。
+
+使用循环有很多好处，比如：
+
+- **减少代码重复**：
+单独的命令就像手洗衣服，而循环就像是编程里的洗衣机，帮你自动完成重复的工作。
+通过使用循环，你可以避免重复编写相同的代码，使程序更简洁、更易于维护。
+
+- **效率超群**：
+循环就像是一个超级英雄，它可以飞速地完成任务，让你的代码运行得更快、更高效。
+
+- **节省时间**：
+想象一下，如果你需要打印100次“Hello,World!”，你要手动输入这100行代码吗？使用循环，你只需要编写一次打印语句，并告诉循环执行100次，就可以轻松完成任务。这不仅节省了大量时间，还减少了出错的可能性。
+
+在编程中，循环就像是我们的得力助手，帮助我们高效地处理重复的任务。通过合理地使用循环，我们可以编写出更加简洁、高效和优雅的代码，为程序带来更好的性能和用户体验。
+
+## 知识点
+
+- 研究问题：
+   **社会信任是社会资本的的重要组成部分，社会不平等会影响社会信任水平吗？**
+   - 如何根据邻里信任变量，创造邻里不信任变量？
+   - 如何根据家庭收入水平，区分低、中、高三个级别的收入水平？
+
+- 循环
+    - 判断
+    - 遍历
+    - 条件
+    - 重复
+- 批处理
+    - 变量批处理
+    - 程序批处理
+
+## 循环
+
+循环是*有条件的*重复。
+循环的使用能有效地减少相同或相似命令多次出现，降低因为人工反复编写语句造成的错误，增强编程的可读性和运行效率。
+本节我会介绍一种基础的判断语句和在处理和分析社会科学数据中最常用到的三种循环语句。
+
+
+```{r loopDiagrams, width=100%}
+#| label: fig-loopDiagrams
+#| fig-cap: "三种常用循环语句"
+#| fig-align: center
+#| fig-width: 4
+#| fig-height: 8
+#| dpi: 300
+knitr::include_graphics("images/loop/loopDiagrams.png")
+```
+
+
+
+## 判断（IF）
+
+判断语句不是循环语句，但却是循环语句的基础。
+判断是循环中的一个重要部分，它决定了循环是否继续执行。
+几乎所有的循环语句的都可以分化为有限步骤的判断语句。
+
+判断语句的逻辑示意图：
+
+```{r ifDiagram, width=100%}
+#| label: fig-ifDiagram
+#| fig-cap: "判断语句"
+#| fig-align: center
+#| fig-width: 4
+#| fig-height: 8
+#| dpi: 300
+knitr::include_graphics("images//loop/ifDiagram.png")
+```
+
+
+
+- 逻辑判断
+
+```{r logicalJudge,echo=TRUE}
+1 + 1 != 2
+
+is.na(c(1, 2, NA, 3))
+
+is.numeric(wvs7$female)
+```
+:::{.callout-tip}
+
+- TRUE == 1, FALSE == 0
+
+- 我们在@sec-algebra 中学过，`!=`表示“不等于”，那么`1 + 1 != 2` 表示“不等于”。
+所以整个表达式的意思是“1 加 1 不等于 2”，这显然是一个不正确的陈述，因为 1 加 1 等于 2。所以输出的结果是`FALSE`。
+
+- `is.na()` 函数会对向量中的每个元素进行检查，如果元素是缺失值（NA），则返回 `TRUE`，否则返回 `FALSE`。
+因此，`is.na(c(1, 2, NA, 3))` 的结果会是一个逻辑向量：`FALSE, FALSE, TRUE,FALSE`，表示只有第三个元素是缺失值。
+
+- `is.numeric()` 用于检查给定的对象是否为数值类型（numeric type），如果是，则返回 `TRUE`，否则返回 `FALSE`。
+`is.numeric(wvs7$female)` 会检查 `wvs7` 数据框中的 `female` 列是否为数值类型
+
+:::
+
+- 差异对待: If...then, else...then... 是几乎所有高阶编程语言都使用的判断语句形式
+    - 基础语法：`if(<逻辑判断>){<执行命令>}`
+    - 扩展语法：`if(<逻辑判断1>){<执行命令1>} else if(<逻辑判断2>){<执行命令2>}... else(<执行命令n>)`
+        - 语句变量化：`ifelse(<逻辑判断>, <执行命令1>, <执行命令2>)`
+        - 多条件简写：`case_when(<逻辑判断1> ~ <执行命令1>， <逻辑判断2> ~ <执行命令2>, ...)`
+
+### e.g. `wvs7`如果性别变量是个逻辑变量话，转换成数字变量
+
+```{r if,echo=TRUE}
+if(is.logical(wvs7$female)) wvs7$female <- as.numeric(wvs7$female)
+```
+
+### e.g. 根据`wvs7`中邻里信任变量建立“邻里不信任”变量，4代表最不信任，1代表最信任
+
+```{r ifNested,echo=TRUE}
+if(wvs7$trust_neighbor[1] == 1) {
+  wvs7$distrust_neighbor[1] <- 4
+} else if (wvs7$trust_neighbor[1] == 2) {
+  wvs7$distrust_neighbor[1] <- 3
+} else if (wvs7$trust_neighbor[1] == 3) {
+  wvs7$distrust_neighbor[1] <- 2
+} else if (is.na(wvs7$trust_neighbor[1])) {
+  wvs7$distrust_neighbor[1] <- NA
+} else{
+  wvs7$distrust_neighbor[1] <- 1
+}
+```
+
+:::{.callout-warning}
+
+上面的代码只转换了`wvs7`数据集中`trust_neighbor`变量的第一个观测值。
+如果我们想要为整个`trust_neighbor`变量创建一个对应的`distrust_neighbor`变量，我们需要使用循环的方法。
+:::
+
+在创建之前，请注意循环使用的方法：
+
+### 注意：
+
+1. 顺序
+1. 穷尽
+1. 向量化操作（vectorization）
+
+
+
+下面做法有什么问题？
+
+邻里信任变量`trust_neighbor`为1的时候，邻里不信任变量`distrust_neighbor`就应该赋值为4。
+但如果你在console下面运行这段代码，会得到想要的结果吗？
+试一下吧：
+
+```{r length,error=TRUE}
+if(wvs7$trust_neighbor == 1) {wvs7$distrust_neighbor <- 4}
+```
+
+:::{.callout-warning}
+
+这段代码的错误在:
+
+1. 逻辑错误：这段代码只会对数据框 wvs7 中的第一行进行判断和赋值。
+如果 `wvs7$trust_neighbor` 的第一个元素等于 1，那么 `wvs7$distrust_neighbor` 的第一个元素会被赋值为4。这并不会对 wvs7 中的其他行进行任何操作。
+
+2. 不完整的条件判断：如果你的目的是将 `wvs7$trust_neighbor` 中所有等于 1 的元素对应的 `wvs7$distrust_neighbor` 设置为 4，那么应该使用向量化的条件判断，而不是单独对第一行进行操作。
+:::
+
+
+```{r ifelse}
+
+wvs7$distrust_neighbor <- ifelse(wvs7$trust_neighbor == 1, 4, wvs7$distrust_neighbor)
+```
+
+:::{.callout-warning}
+正确的做法是使用`ifelse`函数，`ifelse`函数可以逐元素地对向量进行条件判断。
+将 `wvs7` 数据框中 `trust_neighbor` 列等于 1 的对应行的 `distrust_neighbor` 列的值设置为 4，其他行的值保持不变。
+:::
+
+
+### 这种方法可以解决我的问题吗？
+刚才我们学到了使用`ifelse`的方法，如果我们使用`ifelse`根据每个`trust_neighbor`的值给`distrust_neighbor`赋值的话，是不是就可以呢？
+
+不妨尝试运行这段代码：
+```{r ifelsezero,error=TRUE}
+wvs7$distrust_neighbor <- ifelse(wvs7$trust_neighbor == 2, 3, wvs7$distrust_neighbor)
+wvs7$distrust_neighbor <- ifelse(wvs7$trust_neighbor == 3, 2, wvs7$distrust_neighbor)
+wvs7$distrust_neighbor <- ifelse(wvs7$trust_neighbor == 4, 3, wvs7$distrust_neighbor)
+```
+
+:::{.callout-warning}
+上述的命令依旧报错（`replacement has length zero`），但是不要气馁。
+通过查看`wvs7$trust_neighbor`的结构，发现`wvs7$trust_neighbor`存在是`NA`的情况。
+上段做法你的思路是对的，只是忽略了缺失值的情况。
+因此，我们需要把该情况也纳入考虑中。
+:::
+
+```{r ifelseIssue}
+table(wvs7$trust_neighbor)
+
+wvs7$distrust_neighbor <- ifelse(wvs7$trust_neighbor == 1, 4, 
+                                 ifelse(wvs7$trust_neighbor == 2, 3, 
+                                        ifelse(wvs7$trust_neighbor == 3, 2, 
+                                               ifelse(wvs7$trust_neighbor == 4, 1, NA))))
+```
+
+
+终于对啦！
+但是这代码还是太长啦，还是不够简洁。
+
+### 有没有更好的办法？
+
+```{r reorder-1,echo=TRUE}
+wvs7$distrust_neighbor <- 5 - wvs7$trust_neighbor
+```
+
+
+:::{.callout-note}
+
+我们写代码也要带着逆向思维。
+`wvs7$trust_neighbor`的取值为1、2、3、4、NA，我们如果想创建`wvs7$distrust_neighbor`，直接用5减去本身就可得到啦！
+是不是很神奇！
+:::
+
+### e.g.：根据`wvs7`中家庭收入水平来区分低（1）、中（2）、高（3）等水平，区分标准为25%和75%分位点，
+
+```{r caseWhen,echo=TRUE}
+vec_cut <- quantile(wvs7$incomeLevel, probs = c(0.25, 0.75), na.rm = TRUE)
+
+
+wvs7$incomeCat3 <- ifelse(wvs7$incomeLevel < vec_cut[1], 1,
+                          ifelse(wvs7$incomeLevel > vec_cut[2], 3,
+                                 ifelse(is.na(wvs7$incomeLevel), NA, 2)))
+
+```
+
+:::{.callout-note}
+
+这行代码使用`quantile`函数计算`incomeLevel`的25%和75%分位点，并将结果存储在`vec_cut`中。
+`na.rm = TRUE`参数确保在计算分位点时忽略缺失值。
+
+
+第二段代码使用嵌套的`ifelse`函数为每个观测值分配一个分类等级：
+
+- 如果`incomeLevel`小于25%分位点（`vec_cut[1]`），则`incomeCat3`被赋值为1（低收入）。
+
+- 如果`incomeLevel`大于75%分位点（`vec_cut[2]`），则`incomeCat3`被赋值为3（高收入）。
+
+- 如果`incomeLevel`在25%和75%分位点之间，`incomeCat3`被赋值为2（中等收入）。
+
+- 如果`incomeLevel`是缺失值，则`incomeCat3`也被赋值为NA。
+
+:::
+
+```{r caseWhen-1,echo=TRUE}
+wvs7$incomeCat3 <- case_when(
+  wvs7$incomeLevel < vec_cut[1] ~ 1,
+  wvs7$incomeLevel >= vec_cut[1] & wvs7$incomeLevel <= vec_cut[2] ~ 2,
+  wvs7$incomeLevel > vec_cut[2] ~ 3
+)
+
+# 如果没有符合条件，case_when 直接赋值NA
+```
+
+:::{.callout-note}
+这段代码使用`case_when`函数为每个观测值分配一个分类等级：
+
+- 当`incomeLevel`小于25%分位点（`vec_cut[1]`）时，`incomeCat3`被赋值为1（低收入）。
+- 当`incomeLevel`大于75%分位点（`vec_cut[2]`）时，`incomeCat3`被赋值为3（高收入）。
+- 对于其他情况（即`incomeLevel`在25%和75%分位点之间），`incomeCat3`被赋值为2（中等收入）。
+这是通过`TRUE ~ 2`实现的，TRUE在这里相当于一个默认条件，它会匹配所有未被前面条件覆盖的情况。
+
+**使用`case_when`的好处是它可以让条件和结果的对应关系更加明确**，同时也避免了嵌套`ifelse`函数可能带来的复杂性。
+:::
+
+### 如果想分国家做怎么做？
+
+```{r caseCountry,echo=TRUE}
+vec_cut <- quantile(wvs7$incomeLevel, probs = c(0.25, 0.75), na.rm = TRUE)
+
+wvs7 <- group_by(wvs7, country) %>% 
+  mutate(incomeCat3 = case_when(
+    incomeLevel < vec_cut[1] ~ 1,
+    incomeLevel >= vec_cut[1] & incomeLevel <= vec_cut[2] ~ 2,
+    incomeLevel > vec_cut[2] ~ 3
+  ))
+```
+
+:::{.callout-note}
+这段代码使用`group_by`函数`按country`列对`wvs7`数据集进行分组。
+:::
+
+## 遍历（FOR）
+
+遍历循环指使用者给出输入序列、程序顺序取值并进行“尽取判定”，即输入值序列中是否所有值都已经取用了。
+如判定为否则使用取值进行预设命令，如为是则停止命令。
+与判断语句不同，此处输入已为一序列的值而非单一值，程序运行目的也从单次判断-输出，变为了在给定取值范围内*重复*运行命令。
+遍历循环是最常见的循环类型，也构成了之后章节中程序批处理的基础运行逻辑。
+
+遍历循环语句的逻辑示意图：
+
+
+```{r forDiagram, width=100%}
+#| label: fig-forDiagram
+#| fig-cap: "遍历循环语句"
+#| fig-align: center
+#| fig-width: 4
+#| fig-height: 8
+#| dpi: 300
+knitr::include_graphics("images//loop/forDiagram.png")
+```
+
+
+命令语法：
+
+`for(<索引> in <输入序列>){<执行命令>}`
+
+输入序列设定：
+
+- 给定值域
+- 通过变量、数据框维度确定
+
+
+### e.g., 根据`wvs7`中邻里信任变量建立“邻里不信任”变量，4代表最不信任，1代表最信任
+
+之前由于`if`判断语句只能接收单一逻辑判断，所以我只能对`wvs7$trust_neighbor`中单一值施用逻辑判断，进行取值。
+
+我如果想要对每个值都进行替换操作，要么就是把每个值的坐标都写出来（`wvs7$trust_neighbor[1]`、`wvs7$trust_neighbor[2]`、`wvs7$trust_neighbor[3]`……）之后重复以下的命令，要么使用`ifelse`命令进行向量化操作。
+
+但向量化操作并不是所有时候都适用的（比如`ifelse`只能返回和输入序列等长的向量值，如果执行命令中包含多个输出值，则无法通过`ifelse`实现）。
+
+这时，我可以使用遍历循环语句完成这个任务：
+
+```{r for-1,echo=TRUE}
+length(wvs7$trust_neighbor)
+
+for(i in 1:1264) {
+  if (is.na(wvs7$trust_neighbor[i])) {
+    wvs7$distrust_neighbor[i] <- NA
+  } else if (wvs7$trust_neighbor[i] == 1) {
+    wvs7$distrust_neighbor[i] <- 4
+  } else if (wvs7$trust_neighbor[i] == 2) {
+    wvs7$distrust_neighbor[i] <- 3
+  } else if (wvs7$trust_neighbor[i] == 3) {
+    wvs7$distrust_neighbor[i] <- 2
+  } else{
+    wvs7$distrust_neighbor[i] <- 1
+  }
+}
+```
+
+对输出对象，可以根据命令目的而定；对输入值范围，也可以采取动态赋值的方式。
+
+```{r forTab}
+# 给每一个信任变量做一个列联表
+
+wvs7_trust <- select(wvs7, starts_with("trust"))
+```
+
+
+```{r forTab-1,echo=TRUE}
+ls_tb <- vector(mode = "list")
+
+for(i in seq(wvs7_trust)) {
+  ls_tb[[i]] <- pull(wvs7_trust, i) %>% table
+}
+
+names(ls_tb) <- names(wvs7_trust)
+
+ls_tb
+```
+
+### 构建递归循环
+
+e.g., 计算`wvs7`中有几个数字变量
+
+```{r forCount,echo=TRUE}
+count_num <- 0
+
+for (variable in names(wvs7)) {
+  if (is.numeric(wvs7[[variable]])) {
+    count_num <- count_num + 1
+  }
+}
+
+count_num
+
+```
+
+:::{.callout-note}
+
+- `count_num <- 0`：这行代码初始化一个计数器，将其设置为零。
+- `for (variable in names(wvs7)) { ... }`：这个循环遍历数据框`wvs7`中的所有列名。
+- `if (is.numeric(wvs7[[variable]])) { ... }`：在循环内部，这个`if`语句检查当前遍历的列是否为数值型。
+- `count_num <- count_num + 1`：如果列是数值型的，计数器就会增加1。
+- 循环结束后，`count_num`将包含数据框中数值型变量的总数。
+:::
+
+## 条件（WHILE）
+
+条件循环目的也是重复运行命令。
+
+条件循环语句的逻辑示意图：
+
+```{r whileDiagram, width=100%}
+#| label: fig-whileDiagram
+#| fig-cap: "条件循环语句"
+#| fig-align: center
+#| fig-width: 4
+#| fig-height: 8
+#| dpi: 300
+knitr::include_graphics("images//loop/whileDiagram.png")
+```
+
+
+与遍历循环最主要不同在于条件循环不以是否遍历所有索引值，而是是否达到给定条件为终止条件。
+因此，它在未知索引个数情况下会更为便捷。
+当然，如果将终止条件就设定为遍历完所有索引值的话，条件循环和遍历循环则具有同等效果。
+实际上，所有遍历循环语句都可以改写为条件循环语句，但*反之则不然*。
+由此，条件循环其实是比遍历循环更加*综合*的一种循环语句形式。
+
+### e.g. 对于之前列联表例子的改写
+
+之前使用`for`的例子：
+```{r whileTab}
+
+ls_tb2 <-vector(mode = "list")
+
+for(j in seq(wvs7_trust)) {
+  ls_tb2[[j]] <- pull(wvs7_trust, j) %>% table
+}
+
+names(ls_tb2) <-names(wvs7_trust)
+
+ls_tb2
+```
+
+使用`while`进行改写：
+```{r whileTab-1,echo=TRUE}
+ls_tb2 <-vector(mode = "list")
+
+j <- 1
+
+while(j <= length(wvs7_trust)) {
+  ls_tb2[[j]] <- pull(wvs7_trust, j) %>% table
+  j <- j + 1
+}
+
+names(ls_tb2) <- names(wvs7_trust)
+
+ls_tb2
+
+identical(ls_tb, ls_tb2)
+```
+
+### 反过来，并非所有条件循环语句都能改写为遍历循环。
+尤其是当只有终止条件明确，但命令运行次数或索引不确定时，条件循环就无法改写成遍历循环。
+这种例子在包含随机数的案例中特别可能发生：
+
+比如我们以uniform distribution作为随机变量方程进行计数累加，每生成一个随机数就加1。规定只有生成随机数小于0.01时计数才能停止。
+这种运行程序就只能使用条件循环才能实现：
+
+```{r random,echo=TRUE}
+i <- 0
+
+while (TRUE) {
+  if (runif(1) < 0.01)
+    break
+  i <- i + 1
+}
+
+i
+```
+
+这类语句无法改写成遍历循环语句，但R也提供了一种简写模式，即重复语句。
+
+
+### 重复（REPEAT）
+
+重复循环语句可被视为以“持续运行”作为终止条件的条件循环。
+这种条件循环的特殊形式在创建对未知数据进行处理的命令构建时更为常见，比起遍历和条件循环来较少单独使用。
+终止重复循环需要在运行命令之后通过判断语句完成。
+
+重复循环语句的逻辑示意图：
+
+```{r repeatDiagram, width=100%}
+#| label: fig-repeatDiagram
+#| fig-cap: "重复循环语句"
+#| fig-align: center
+#| fig-width: 4
+#| fig-height: 8
+#| dpi: 300
+knitr::include_graphics("images//loop/repeatDiagram.png")
+```
+
+
+
+
+我用重复语句改写以下上面条件语句的例子：
+
+使用`while`的例子：
+```{r randomRepeat}
+i <- 0
+
+while (TRUE) {
+  if (runif(1) < 0.01)
+    break
+  i <- i + 1
+}
+
+i
+```
+
+使用`repeat`进行改写：
+```{r randomRepeat-1,echo=TRUE}
+repeat{
+  if (runif(1) < 0.01)
+    break
+  i <- i + 1
+}
+```
+
+:::{.callout-note}
+
+第一段代码（使用`while`循环）：
+- `i <- 0`：初始化计数器i为0。
+- `while (TRUE) { ... }`：使用一个无限循环，循环将一直进行，直到遇到`break`语句。
+- `if (runif(1) < 0.01) break`：在每次循环中，生成一个0到1之间的随机数。如果这个随机数小于0.01，则使用`break`语句跳出循环。
+- `i <- i + 1`：如果没有跳出循环，则计数器i增加1。
+- `i`：循环结束后，输出计数器i的值，表示循环执行了多少次。
+
+第二段代码（使用`repeat`循环）：
+- `repeat { ... }`：使用`repeat`循环，这也是一个无限循环，直到遇到`break`语句才会停止。
+:::
+
+
+另一个条件循环的例子我们也可以重复循环改写。
+
+使用`while`的例子：
+```{r repeat}
+
+ls_tb3 <- vector(mode = "list")
+
+k <- 1
+
+while(k <= length(wvs7_trust)) {
+  ls_tb3[[k]] <- pull(wvs7_trust, k) %>% table
+  k <- k + 1
+}
+
+names(ls_tb3) <- names(wvs7_trust)
+
+```
+
+使用`repeat`进行改写：
+```{r repeat-1,echo=TRUE}
+k <- 1
+
+repeat{
+  ls_tb3[[k]] <- pull(wvs7_trust, k) %>% table
+  k <- k + 1
+  
+  if(k == length(wvs7_trust) + 1) break
+}
+
+names(ls_tb3) <- names(wvs7_trust)
+
+identical(ls_tb2, ls_tb3)
+```
+
+:::{.callout-note}
+
+- `ls_tb3[[k]] <- pull(wvs7_trust, k) %>% table`：在每次循环中，使用`pull()`函数提取数据框`wvs7_trust`中第`k`列的数据，然后使用`table()`函数计算该列数据的频率表，并将结果存储在列表`ls_tb3`的第`k`个元素中。
+- `if(k == length(wvs7_trust) + 1) break`：如果计数器k的值等于数据框`wvs7_trust`的列数加1，则使用`break`语句跳出循环。
+:::
+
+## 中止与跳转
+
+`repeat`例子中使用到的`break`是终止循环命令，用于循环运行命令内部，可以用在所有循环流程中。
+比如如果我只想对`wvs7_trust`中前两个变量，对家人和邻居信任，列出列联表，可以在原有遍历循环命令中镶嵌`break`实现。
+
+第一段代码中的循环会遍历 `wvs7_trust` 数据框的所有列，对每一列使用 `table` 函数生成频数表，并将结果存储在列表 `ls_tb4` 中。
+因此，`ls_tb4` 的长度将等于 `wvs7_trust` 的列数。
+```{r break}
+
+ls_tb4 <- vector(mode = "list")
+
+for(i in seq(wvs7_trust)) {
+  ls_tb4[[i]] <- pull(wvs7_trust, i) %>% table
+}
+
+names(ls_tb4) <- names(wvs7_trust)
+
+ls_tb4
+```
+
+第二段代码中的循环同样开始遍历 `wvs7_trust` 数据框的所有列，但当 `i == 3` 时，`break` 语句会使循环提前终止。
+这意味着只有前两列会被处理，并且 `ls_tb4` 的长度将等于 2。
+
+```{r break-1,echo=TRUE}
+for(i in seq(wvs7_trust)) {
+  
+  if(i == 3) break
+  
+  ls_tb4[[i]] <- pull(wvs7_trust, i) %>% table
+}
+
+names(ls_tb4) <- names(wvs7_trust[1:2])
+
+ls_tb4
+```
+两段代码的主要区别在于第二段代码中使用了 `break` 语句，它会在循环到 `i == 3` 时终止循环。
+这意味着第二段代码只会对 `wvs7_trust` 数据框的前两列进行操作，而第一段代码会对所有列进行操作。
+
+
+和`break`近似的循环内命令还有`next`，通过与判断语句的配合可以达到跳过特定输入或索引值，继续进行循环。
+比如，对于下例中我想制作列联表的是第一、二、四个变量，跳过第三个：
+
+```{r next}
+
+ls_tb5 <- vector(mode = "list")
+
+for(i in seq(wvs7_trust)) {
+  ls_tb5[[i]] <- pull(wvs7_trust, i) %>% table
+}
+
+names(ls_tb5) <- names(wvs7_trust)
+
+ls_tb5
+```
+
+当 `i == 3` 时，循环会跳过对第三列的处理，但会继续处理后续的列。
+
+```{r next-1,echo=TRUE}
+for(i in seq(wvs7_trust)) {
+  
+  if(i == 3) next
+  
+  ls_tb5[[i]] <- pull(wvs7_trust, i) %>% table
+}
+
+names(ls_tb5) <- names(wvs7_trust)
+
+ls_tb5
+```
+
+
+## 批处理
+
+批处理可以被视为循环语句的打包。
+它的运行速度并不比循环明显快多少，但其语法上更加清晰，命令运行的副作用也更少，比如不会生成索引变量（以上例子中的`i`、`j`、`k`等）。
+因此，如果一个任务批处理和循环命令都可以实现，我推荐优先使用前者。（在介绍完批处理之后我会简要谈一下什么时候应使用循环而不是批处理。）
+`tidyverse`提供了两组批处理命令，一组配合`dplyr`命令设置，一组则在更广范围内施用。
+
+## `dplyr`命令
+
+`dplyr`中批处理命令有两个`across`和`if_*`，二者都是嵌套在`dplyr`命令中实现多变量或多观测值批量修改。
+`across`主要用于变量/列批量修改，变量。基础语法：
+
+> `across(<变量（组）>, 命令)`
+
+在使用这类变量中，除了使用`mean`、`var`等内置命令，也可以通过`function(<变量>){<程序>}`方式创建命令, 比如求平均值的对数就可以写成`function(variable){log(mean(variable))}`，这个表达可以进一步简写成`~ log(mean(.))`。
+其中`.`指代命令输入变量位置。
+
+### e.g., 基于`wvs7`中人际信任变量创建一组人际不信任变量（即人际信任变量的倒序）
+
+```{r mutateBatch}
+wvs7$distrust_neighbor <- 5 - wvs7$trust_neighbor
+```
+
+:::{.callout-note}
+本段代码基于`trust_neighbor`创建了`distrust_neighbor`。
+但如果我想对所有设计人际信任的变量都做反向操作，应该怎么办呢？
+:::
+
+```{r mutateBatch-1,echo=TRUE}
+wvs7 %>% 
+  mutate(across(starts_with("trust"), ~ 5 - .))
+
+head(wvs7)
+```
+
+:::{.callout-note}
+对数据框`wvs7`中所有以`trust`开头的列进行转换，每个值都被替换为5减去原始值。
+:::
+
+### 同样方法可以使用在其他针对变量/列的命令中，比如`summarise`。
+e.g., 我想获得所有关于机构信心变量的平均值：
+
+```{r summariseBatch}
+wvs7 %>%
+  summarise(across(starts_with("confidence"), mean, na.rm = TRUE))
+```
+
+### 配合`where()`还可实现变量动态筛选、加工。
+e.g., 如果出于分析需要，要`wvs7`将所有的定序变量都转换成数字变量：
+
+
+```{r mutateWhere}
+str(wvs7)
+```
+我们首先查看一下数据结构。
+
+```{r mutateWhere-1,echo=TRUE}
+head(mutate(wvs7, across(where(is.ordered), as.numeric)))
+```
+
+:::{.callout-note}
+- `across()`函数用于选择数据框中的特定列，并对这些列应用某个函数
+- `where(is.ordered)`用于选择所有具有有序因子类型的列
+- `as.numeric`函数则将这些列转换为数值类型
+:::
+
+### `if_*`
+
+`across`命令是用于定位批处理的变量。
+如果批处理对象是观测值（比如在`filter`中），那么可以使用`if_any`或`if_all`命令。
+
+e.g., 看对各项机构信心*都*都是最高（=4）的被调查者的平均年龄和性别比例
+
+```{r filterIf,echo=TRUE}
+filter(wvs7, if_all(starts_with("confidence"), ~ . == 4)) %>%
+  summarise(mean_age = mean(age, na.rm = TRUE),
+            mean_female = mean(female, na.rm = TRUE))
+```
+
+
+## `purrr`命令
+
+`purrr`软件提供了一系列基于`map`的批处理命令，输入类型包含向量、数据框、列等各种形式。
+输出结果会以一个列方式储存。
+几乎所有遍历循环都可以改写成`map`批处理命令。
+以之前遍历循环例子举例：
+
+使用 `for` 循环遍历 `wvs7_trust` 数据框的每一列，对每一列使用 `table` 函数生成频数表，并将结果存储在列表 `ls_tb6` 中。
+
+```{r map}
+ls_tb6 <- vector(mode = "list")
+
+for(i in seq(wvs7_trust)) {
+  ls_tb6[[i]] <- pull(wvs7_trust, i) %>% table
+}
+
+names(ls_tb6) <- names(wvs7_trust)
+
+ls_tb6
+```
+
+使用 `map` 函数达到相同的目的，但代码更简洁：
+```{r map-1,echo=TRUE}
+ls_tb6 <- map(wvs7_trust, table)
+
+names(ls_tb6) <- names(wvs7_trust)
+
+ls_tb6
+```
+
+:::{.callout-note}
+在上面的例子中，我使用了一个传统的 `for` 循环来遍历 `wvs7_trust` 对象的每个元素，并对每个元素应用 `table` 函数。
+然后，我将结果存储在一个新的列表中，并给这个列表的命名与 `wvs7_trust` 的命名相匹配。
+
+使用 `purrr::map` 函数改写后，我们可以更加简洁地实现同样的功能。
+`map` 函数会自动处理迭代，并将每个元素传递给指定的函数（在这个例子中是 `table`）。
+:::
+### 输出类型控制
+
+`purrr`还出于分析遍历提供了各种数据合并类型命令：
+
+| 命令      | 输出         |
+|:-------:|:----------:|
+| map     | 列          |
+| map_chr | 字符向量       |
+| map_dbl | 小数向量       |
+| map_dfc | 列合并数据框     |
+| map_dfr | 行合并数据框     |
+| map_int | 整数向量       |
+| map_lgl | 逻辑向量       |
+| walk    | 只呈现副作用，无输出 |
+
+
+e.g., 将上例中列联表结果合并为一个数据框
+
+```{r mapCombine}
+map(wvs7_trust, table)
+```
+
+`map(wvs7_trust, table)` 会对 `wvs7_trust` 数据框的每一列应用 `table` 函数，并返回一个列表，其中包含每列的频数表。
+这与之前的示例相同，结果是一个列表，每个元素是一个表格，表示每个变量的频数分布。
+
+```{r mapCombine-1,echo=TRUE}
+map_dfr(wvs7_trust, table)
+```
+`map_dfr(wvs7_trust, table)` 的作用类似于 `map`，但它会将结果以数据框的形式组合起来，而不是列表。
+
+### 双变量和多变量
+
+`purrr`为双变量和多变量批处理提供了`map2`和`pmap`版本。
+我可以使用`map2`进一步改写之前的遍历循环例子：
+
+```{r map2}
+ls_tb <- vector(mode = "list")
+
+for(i in seq(wvs7_trust)) {
+  ls_tb[[i]] <- pull(wvs7_trust, i) %>% table
+}
+
+names(ls_tb) <- names(wvs7_trust)
+
+# map版本
+
+ls_tb6 <- map(wvs7_trust, table)
+
+names(ls_tb6) <- names(wvs7_trust)
+
+```
+
+`map2` 函数用于同时遍历两个向量或列表，并将一个函数应用于每一对元素。
+这在处理需要两个输入参数的函数时非常有用。
+
+```{r map2-1,echo=TRUE}
+ls_tb7 <- map2(wvs7_trust, names(wvs7_trust), ~ {
+  temp <- table(.x)
+  names(temp) <- .y
+  return(temp)})
+```
+
+:::{.callout-note}
+- `map2`函数遍历了两个对象：`wvs7_trust`数据框的列和`wvs7_trust`的列名。
+- 对于每一列（`.x`）和对应的列名（`.y`），函数创建了一个频率表（`table(.x)`），然后将频率表的名字设置为对应的列名（`names(temp) <- .y`）。
+- 最后，返回修改后的频率表。
+- 直接将列名与相应的频率表关联起来，使得结果更加清晰易懂。
+也可以避免显式的循环，使代码更加简洁。
+:::
+
+## 命令纠错
+
+批处理命令提供了比循环命令更简洁的编程写法，不会产生`i`、`j`等索引变量。
+这里有一个问题：如果输入值中可能导致命令运行中止，由于没有索引变量导致使用者无法直接确定跑到哪里出了问题。
+为解决这个问题，`purrr`提供了`safely`和`possibly`命令帮助使用者找出错误。
+
+
+- `safely`: 这个函数接受一个函数作为输入，并返回一个新的函数。
+这个新函数在执行原函数时会捕获任何错误，并且总是返回一个包含两个元素的列表：`result`和`error`。
+如果原函数成功执行，`result`将包含函数的结果，而`error`将是`NULL`；
+如果执行失败，`result`将是`NULL`，而`error`将包含错误信息。
+
+
+```{r debug_safely,echo=TRUE}
+safe_log <- safely(log)
+
+results <- map(list(10, -5, 2), safe_log)
+
+results
+```
+
+
+:::{.callout-note}
+我们首先使用`safely`创建了一个安全的对数函数`safe_log`。
+然后，我们使用`map`函数将这个安全的对数函数应用于一个包含正数和负数的向量。
+由于对数函数不能处理负数，因此在处理-5时会产生错误。
+使用`safely`可以确保即使出现错误，我们仍然可以获得结果列表，其中包含成功计算的对数值和错误信息。
+:::
+
+- `possibly`: 这个函数也接受一个函数作为输入，并返回一个新的函数。
+这个新函数在执行原函数时会捕获任何错误，并返回一个指定的默认值（通过`otherwise`参数指定）。
+这意味着不管原函数是否成功执行，`possibly`都会返回一个结果，要么是函数的正常结果，要么是默认值。
+
+```{r debug_possibly,echo=TRUE}
+debug_log <- possibly(~log(.), otherwise = "Error")
+
+result <- select(wvs7, c(1, 3)) %>% 
+  map(~ head(debug_log(.), 10))  # 只查看每列前10个结果
+
+result
+
+```
+
+:::{.callout-note}
+在这段代码中，`select(wvs7, c(1, 3))`首先从数据框`wvs7`中选择第1列和第3列。
+然后，`map`函数遍历这两列，对每一列的每个元素应用`debug_log`函数。如果`log()`函数成功执行，则返回对数值；
+如果执行失败（例如，因为值是负数或零，对数函数无法处理），则返回`"Error"`。
+:::
+
+## 何时循环 > 批处理
+
+<!-- http://adv-r.had.co.nz/Functionals.html#functionals-not -->
+
+虽然大多数情况，我推荐大家使用批处理而不是循环语句，但Hadley Wickham在经典R语言编程教科书*Advanced R*（2019）中指出，至少有三种情况使用者应考虑保留使用循环语句：
+
+1. 修改原有数据
+1. 递归循环
+1. 条件循环
+
+其中“修改原有数据”一条已经通过我们上面讲过的`mutate`(+`across`)即可解决，不推荐使用繁琐的循环语句。
+第三点实际上只是针对那些不能转写成遍历循环的条件循环而言的（详见条件条件循环例子）。
+只有对第二点，我是完全赞成的。
+使用批处理类似线性代数中的矩阵运算，是对诸行或诸列的“并行”运算，很难在其中实现迭代（详见遍历循环相关例子）。
+在这种情况下，我建议使用者直接使用循环语句。
+
+
+## 总结
+
+- 循环
+    - 判断：`if`（`ifelse`）
+    - 遍历：`for`
+    - 条件：`while`
+    - 重复：`repeat`
+- 批处理
+    - 变量批处理：`across`、`if_any`/`if_all`
+    - 程序批处理：`map_*`
+
+
+## 附录：原始版
+
+我上面介绍的`purrr::map_*`实际上是R自带命令`apply`在`tidyverse`的变体。
+它们基本可以用来完成同一类问题，运行速度上也相仿。
+我之所以比较详细介绍`map`，是因为其书写语法更加统一、方便记忆，而且能和其他`tidyverse`命令较好地兼容使用。
+
+比如下面的例子对样本中男性和女性群体分别做了做了一个简单的回归方程：
+
+$$Confidence\ of\ the\ Government \sim \beta_0 + \beta_1Family\ Income + \epsilon,$$
+
+并抽取了解释变量的估计系数&beta;<sub>1</sub>（在系数列表中的第二列）。
+这里使用两种语法进行了同样的任务，都是在四行内完成的，结果也一致，但区别亦很明显：
+
+
+```{r mapApply}
+split(wvs7, wvs7$female) %>% 
+  map(~ lm(confidence_gov ~ incomeLevel, data = .)) %>% 
+  map(coef) %>% 
+  map_dbl(2)
+
+split(wvs7, wvs7$female) %>% 
+  lapply(function(data) lm(confidence_gov ~ incomeLevel, data = data)) %>% 
+  lapply(coef) %>% 
+  vapply(function(x) x[[2]], double(1))
+```
+
+
+但鉴于有些R语言命令和程序，尤其是比较早期的使用者或许更依赖`apply`系列命令，因此我这里简单介绍一下`apply`家族的用法，包括`apply`、`lapply`、`sapply`、`vapply`、`tapply`和`mapply`。
