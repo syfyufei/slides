@@ -1,0 +1,221 @@
+---
+title: "话语分析方法及应用（SOTU 真实数据版）"
+subtitle: "见字为数：从总统演说到量化证据"
+author: "孙宇飞（Adrian Sun）"
+format:
+  revealjs:
+    slide-number: true
+    transition: slide
+    theme: simple
+    incremental: true
+    embed-resources: false
+execute: false
+toc: false
+date: "`r format(Sys.Date(), '%Y-%m-%d')`"
+---
+
+## 开场（1 分钟）：见字为数
+
+- 今天的主线：**把一句话稳稳地变成可检验的数字**，用它回答社会科学问题。  
+- 轻轻点一下“第二层含义”：**我们并不换工具箱**——把文本变成“能进工具箱的变量”，然后用你熟悉的**数据描述→网络分析→回归/因果**来读懂它。  
+- 风格基调：**少术语、多比喻**；你会带走**可复用代码骨架**与**一张年度仪表盘**。
+
+---
+
+## 贯穿式案例：SOTU（State of the Union）
+
+- 真实语料：美国总统国情咨文（1790—至今）。  
+- 我们关心：
+  1) **讲什么**变了？（主题与搭配）  
+  2) **怎么讲**变了？（强硬 / 礼貌 / 模糊 等风格）  
+  3) 变化与**总统 / 年代 / 事件**的关系？
+
+**一键获取数据（任选其一）**：
+
+```r
+# 方式 A：直接读 quanteda 官方 RDS（推荐课堂演示）
+library(quanteda); library(quanteda.textstats)
+sotu <- readRDS(url("https://quanteda.org/data/data_corpus_sotu.rds"))
+d <- data.frame(
+  date = quanteda::docvars(sotu, "Date"),
+  president = quanteda::docvars(sotu, "President"),
+  party = quanteda::docvars(sotu, "Party"),
+  text = as.character(sotu)
+)
+write.csv(d, "sotu.csv", row.names = FALSE)
+
+# 方式 B：安装 quanteda.corpora（含 data_corpus_sotu）
+# install.packages("devtools"); devtools::install_github("quanteda/quanteda.corpora")
+library(quanteda.corpora)
+data(data_corpus_sotu, package = "quanteda.corpora")
+sotu2 <- data_corpus_sotu
+d <- data.frame(
+  date = quanteda::docvars(sotu2, "Date"),
+  president = quanteda::docvars(sotu2, "President"),
+  party = quanteda::docvars(sotu2, "Party"),
+  text = as.character(sotu2)
+)
+write.csv(d, "sotu.csv", row.names = FALSE)
+```
+
+---
+
+## 课程地图（90–120 分钟）
+
+1. 把“问题”说人话（15’）  
+2. 从文本到变量（15’）  
+3. 五条路线，像五种做法（30’）  
+4. LLM = 勤劳的助教（20’）  
+5. 一起复刻迷你结论（10’）  
+6. Lab：15分钟跑通一遍（25’）  
+7. 结尾：见字为数（1’）
+
+---
+
+## 从文本到变量（备料）
+
+**最小字段**：date / president / party / text  
+**三件套**：
+- 分词（英文可直接 tokens；中文需分词器）
+- 去噪（停用词、标点、短停）
+- 指标（字典计数、主题强度、向量相似度…）
+
+> 做菜比喻：**备料**干净，**出锅**才稳定。
+
+---
+
+## 五条路线（像五种做法）
+
+1) **字典法**：先定口味（强硬、礼貌、模糊…）→ 数量化  
+2) **主题模型**：这盘菜主要是什么味（“经济/战争/科技”）  
+3) **共现/搭配**：哪些词**总是一起出现**（叙事块）  
+4) **嵌入/相似度**：看“意思距离”怎么变（语义漂移）  
+5) **监督/LLM 标注**：请**勤劳助教**来打标签，再校准
+
+> 实战建议：**字典先验 + 主题探索 + LLM 精修**
+
+---
+
+## 路线 1 · 字典法（先定口味）
+
+**目标**：度量“强硬/礼貌/模糊”的**风格占比**。
+
+```r
+library(readr); library(quanteda)
+d <- read_csv("sotu.csv")
+corp <- corpus(d, text_field = "text")
+tok <- tokens(corp, remove_punct = TRUE) |> tokens_remove(stopwords("en"))
+
+dict <- dictionary(list(
+  tough = c("firm","sanction","grave","decisive","deter","arsenal","victory"),
+  polite = c("welcome","dialogue","cooperate","willing","mutual","together"),
+  vague  = c("note","appropriate","relevant","as soon as","properly","uncertain")
+))
+
+agg <- dfm(tok) |> dfm_lookup(dict) |> convert(to="data.frame")
+out <- cbind(d[,c("date","president","party")], agg)
+# 建议：按 decade 汇总或用滚动平均减少年际噪声
+```
+
+**读图建议**：用每千词或 z-score（按 decade）做可比；加 5 年滚动均线。
+
+---
+
+## 路线 2 · 主题模型（主要在讲啥）
+
+```r
+library(stm); library(quanteda)
+d <- read_csv("sotu.csv")
+pre <- quanteda::tokens(d$text, remove_punct = TRUE) |>
+  tokens_remove(stopwords("en")) |>
+  dfm() |>
+  convert(to = "stm")
+meta <- data.frame(date = as.Date(d$date), year = as.integer(format(as.Date(d$date), "%Y")))
+res <- stm(documents = pre$documents, vocab = pre$vocab, data = meta,
+           K = 10, prevalence = ~ s(year), init.type = "Spectral")
+plot(res, type="summary")
+```
+
+> 看“战争/同盟”“经济/就业”“科技/预算”主题随年代的强度曲线。
+
+---
+
+## 路线 3 · 共现/搭配（叙事块）
+
+```r
+library(quanteda.textstats)
+tok <- tokens(corpus(read_csv("sotu.csv"), text_field = "text"),
+              remove_punct = TRUE) |> tokens_remove(stopwords("en"))
+pair <- textstat_collocations(tok, size = 2:3, min_count = 10)
+head(pair[order(-pair$lambda), ], 20)
+```
+**课堂提示**：用 Gephi 画网络，比较 1940s 与 1990s 的“叙事主干”。
+
+---
+
+## 路线 4 · 嵌入/相似度（语义距离）
+
+**Python（句向量 Top-k）**：
+```python
+from sentence_transformers import SentenceTransformer, util
+import pandas as pd
+d = pd.read_csv("sotu.csv")
+m = SentenceTransformer("moka-ai/m3e-small")
+e = m.encode(d.text.tolist(), convert_to_tensor=True, normalize_embeddings=True)
+scores = util.cos_sim(e[0], e)[0].cpu().numpy()
+neighbors = d.iloc[scores.argsort()[::-1][:5]][["date","president","text"]]
+print(neighbors)
+```
+
+> 用“战争锚点/合作锚点”做年度语义距离，对比不同年代。
+
+---
+
+## 路线 5 · 监督/LLM（勤劳助教）
+
+- 给助教一本**代码本**（定义+示例），请它先打初稿标签  
+- 抽样**人工复核**（Krippendorff α / Cohen κ）  
+- 不一致处，**改词表或提示词**，再跑全量
+
+**Few-shot 模板（中文）**：
+```
+任务：判断句子风格 A 强硬 / B 礼貌 / C 模糊 / D 其他
+输出 JSON：{"label":"A|B|C|D","rationale":"不超过20字"}
+示例：……
+```
+
+---
+
+## 一起复刻一个“迷你结论”
+
+**问题**：战争相关年代是否更“强硬”？  
+**做法**：
+1) 字典法得到每篇“强硬分”  
+2) 标记战争相关年份（如 1942/1945/2002 等）  
+3) 画**年代 vs 强硬分**（加置信区间/滚动平均）  
+4) 抽样句交给 LLM 打标签，**对比一致性** → 校准词表/提示
+
+---
+
+## Lab（15’）：从 0 到 1 跑通
+
+1) 运行“数据获取”块生成 `sotu.csv`  
+2) 粘贴“字典法”代码，得到每年的风格占比  
+3) 画一条**随时间变动**的折线（分层：战争/和平/党派）  
+4) 抽 30 句给 LLM 打标签，比一比一致性（α/κ）
+
+---
+
+## 结尾（1 分钟）：轻轻扣回“见字为数”
+
+- 我们做的事，就是把文本**安稳地嵌进你熟悉的工具箱**：先做**数据描述**看全貌，再用**网络分析**看关系，最后用**回归/因果**把直觉“拧紧”。  
+- **带走三件事**：  
+  1) 问题要能落地到指标；  
+  2) 方法可以组合打；  
+  3) LLM 是助教，不是判官。
+
+---
+
+## Q&A
+
+如果你要中文语料复刻（如外交部记者会/立法会），我可以把这套流程在 10 分钟内替换并生成 PDF/PPTX。
