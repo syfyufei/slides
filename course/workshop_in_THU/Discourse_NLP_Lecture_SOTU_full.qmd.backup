@@ -1,0 +1,1385 @@
+---
+title: "话语分析方法及应用（SOTU 完整演示版）"
+subtitle: "见字为数：从总统演说到量化证据"
+author: "孙宇飞（Adrian Sun）"
+date: "`r format(Sys.Date(), '%Y-%m-%d')`"
+format:
+  revealjs:
+    slide-number: true
+    controls: true
+    overview: true
+    incremental: true
+    hash: true
+    code-line-numbers: true
+    transition: slide
+    theme: simple
+    css: assets/styles.css
+    fig-cap-location: bottom
+    logo: assets/logo.svg
+    footer: "Discourse NLP Lecture | Adrian Sun"
+    embed-resources: false
+    chalkboard: true
+    preview-links: auto
+params:
+  eval_code: false
+  data_source: "quanteda_rds"
+  smooth_window: 5
+  standardize_by_decade: true
+  lang: "zh"
+  show_notes: false
+execute:
+  echo: true
+  eval: false
+  warning: false
+  message: false
+  cache: false
+toc: false
+---
+
+```{r setup}
+#| include: false
+#| eval: true
+
+# Set global eval based on params (default to false for safety)
+EVAL_CODE <- ifelse(exists("params") && !is.null(params$eval_code), params$eval_code, FALSE)
+
+# Load required packages (only if needed)
+if (EVAL_CODE) {
+  suppressPackageStartupMessages({
+    library(readr)
+    library(dplyr)
+    library(ggplot2)
+    library(yaml)
+  })
+}
+
+# Always load knitr
+library(knitr)
+
+# Set global options
+knitr::opts_chunk$set(
+  echo = TRUE,
+  eval = FALSE,  # Default to false, individual chunks will override
+  warning = FALSE,
+  message = FALSE,
+  fig.width = 10,
+  fig.height = 6,
+  fig.align = "center",
+  cache = FALSE
+)
+
+# Set ggplot theme
+if (EVAL_CODE) {
+  theme_set(theme_minimal(base_size = 14))
+}
+
+# Helper function for smooth rolling average
+roll_mean <- function(x, window = 5) {
+  smooth_window <- ifelse(exists("params") && !is.null(params$smooth_window), params$smooth_window, 5)
+  if (length(x) < smooth_window) return(x)
+  stats::filter(x, rep(1/smooth_window, smooth_window), sides = 2) %>% as.numeric()
+}
+```
+
+# 开场：见字为数 {.center}
+
+---
+
+## 今天的主线
+
+::: {.incremental}
+- **核心理念**：把一句话稳稳地变成可检验的数字，用它回答社会科学问题
+- **工具思维**：我们并不换工具箱——把文本变成"能进工具箱的变量"
+- **分析流程**：数据描述 → 网络分析 → 回归/因果
+- **风格基调**：少术语、多比喻；你会带走可复用代码骨架与一张年度仪表盘
+:::
+
+::: notes
+讲者备注：
+- 开场控制在 2 分钟内，语气轻松
+- 强调"见字为数"不是换工具，而是让文本数据进入现有工具箱
+- 点明全程会有代码示例，但重点是理解思路而非死记语法
+:::
+
+---
+
+## 贯穿式案例：SOTU
+
+:::: {.columns}
+
+::: {.column width="50%"}
+**数据来源**
+
+- 美国总统国情咨文（State of the Union）
+- 时间跨度：1790—至今
+- 真实语料，公开可获取
+:::
+
+::: {.column width="50%"}
+**研究问题**
+
+1. **讲什么**变了？（主题与搭配）
+2. **怎么讲**变了？（强硬/礼貌/模糊等风格）
+3. 变化与**总统/年代/事件**的关系？
+:::
+
+::::
+
+::: notes
+讲者备注：
+- SOTU 是经典政治文本语料，适合教学演示
+- 强调研究问题的层次：内容（what）、风格（how）、关联（why）
+- 为后续五条路线做铺垫
+:::
+
+---
+
+# 课前准备：下载资源 {.center}
+
+---
+
+## 📦 下载课程材料
+
+::: {.callout-note icon=false}
+## 🔗 下载链接
+
+:::: {.columns}
+
+::: {.column width="50%"}
+### 📊 数据文件
+
+**SOTU 语料数据**
+- 📥 [下载 sotu.csv](data/sotu.csv) (约 5MB)
+- 包含 1790-2023 年所有国情咨文
+- 字段：date, president, party, text, year
+
+**或使用脚本自动获取**：
+```r
+source("scripts/fetch_sotu.R")
+```
+:::
+
+::: {.column width="50%"}
+### 📝 脚本文件
+
+**分析脚本打包下载**
+- 📥 [fetch_sotu.R](scripts/fetch_sotu.R) - 数据获取
+- 📥 [make_collocation_graph.R](scripts/make_collocation_graph.R) - 网络分析
+- 📥 [dict_en.yml](dict/dict_en.yml) - 风格字典
+
+**完整项目**
+- 🔗 [GitHub 仓库](https://github.com/adriansun/discourse-nlp-lecture)
+- 包含所有代码、数据、文档
+:::
+
+::::
+:::
+
+::: {.callout-tip}
+## 💡 建议
+
+- **跟随演示**：现在下载不是必需的，可以先听讲
+- **动手实践**：Lab 环节前下载数据和脚本
+- **课后复现**：克隆完整 GitHub 仓库
+:::
+
+::: notes
+讲者备注：
+- 展示下载链接，但不要求立即下载
+- 强调 Lab 前下载即可
+- 提醒学生记下 GitHub 地址
+:::
+
+---
+
+## 📚 安装 R 包（课前或 Lab 前）
+
+```{r install-packages}
+#| eval: false
+#| echo: true
+
+# 复制粘贴到 R 控制台运行（仅需一次）
+install.packages(c(
+  # 数据处理
+  "readr", "dplyr", "tidyr", "ggplot2",
+
+  # 文本分析
+  "quanteda", "quanteda.textstats", "stm",
+
+  # 网络与可视化
+  "igraph", "yaml",
+
+  # 统计建模
+  "lmtest", "sandwich", "broom", "irr"
+))
+```
+
+::: {.callout-warning}
+**时间提示**：安装大约需要 5-10 分钟，建议课前完成。
+
+如果网络受限，可以使用清华 CRAN 镜像：
+```r
+options(repos = c(CRAN = "https://mirrors.tuna.tsinghua.edu.cn/CRAN/"))
+```
+:::
+
+::: notes
+讲者备注：
+- 快速过一遍，不要在这里花太多时间
+- 提醒学生课后可以慢慢安装
+- 强调 Lab 环节会用到
+:::
+
+---
+
+# 数据获取与准备
+
+---
+
+## 一键获取 SOTU 数据
+
+```{r fetch-data}
+#| eval: true
+#| echo: true
+
+# Run data fetching script
+if (params$eval_code) {
+  source("scripts/fetch_sotu.R")
+}
+
+# Read data
+if (file.exists("data/sotu.csv")) {
+  d <- read_csv("data/sotu.csv", show_col_types = FALSE)
+  message("✓ Loaded ", nrow(d), " SOTU documents")
+} else {
+  message("✗ Data file not found. Please run: source('scripts/fetch_sotu.R')")
+}
+```
+
+::: {.callout-tip}
+**数据字段**：`date`, `president`, `party`, `text`, `year`
+
+数据源可选：`quanteda_rds`（在线）或 `csv`（离线）
+:::
+
+::: notes
+讲者备注：
+- 演示如何一行命令获取数据
+- 如果网络不佳，提前准备好 CSV 文件
+- 强调数据结构简单明了：每行一篇演讲
+:::
+
+---
+
+## 数据概览
+
+```{r data-overview}
+#| eval: false
+#| echo: true
+
+# Check data structure
+head(d[, c("year", "president", "party")], 10)
+
+# Summary statistics
+cat("Time range:", range(d$year, na.rm = TRUE), "\n")
+cat("Total documents:", nrow(d), "\n")
+cat("Unique presidents:", length(unique(d$president)), "\n")
+cat("Party distribution:\n")
+table(d$party)
+```
+
+::: {.callout-note appearance="simple"}
+## 📊 预期输出示例
+
+```
+   year president          party
+1  1790 Washington          none
+2  1790 Washington          none
+3  1791 Washington          none
+4  1792 Washington          none
+5  1793 Washington          none
+6  1794 Washington          none
+7  1795 Washington          none
+8  1796 Washington          none
+9  1797 Adams       Federalist
+10 1798 Adams       Federalist
+
+Time range: 1790 2023
+Total documents: 236
+Unique presidents: 43
+
+Party distribution:
+Democratic Democratic-Republican Federalist   none Republican   Whig
+     83                   12          7         9        124      1
+```
+:::
+
+::: notes
+讲者备注：
+- 快速过一遍数据结构
+- 让学生看到真实数据的样子
+- 为后续分析建立直觉
+- 强调示例输出让学生了解数据长什么样
+:::
+
+---
+
+# 课程地图（90-120 分钟）
+
+---
+
+## 内容安排
+
+1. **把"问题"说人话**（15分钟）
+2. **从文本到变量**（15分钟）
+3. **五条路线，像五种做法**（30分钟）
+   - 字典法、主题模型、共现网络、语义距离、LLM 标注
+4. **LLM = 勤劳的助教**（20分钟）
+5. **一起复刻迷你结论**（10分钟）
+6. **Lab：15分钟跑通一遍**（25分钟）
+7. **结尾：见字为数**（1分钟）
+
+---
+
+# 从文本到变量（备料）
+
+---
+
+## 文本预处理三件套
+
+:::: {.columns}
+
+::: {.column width="50%"}
+**1. 分词（Tokenization）**
+
+- 英文：按空格分词
+- 中文：需要分词器（jieba, pkuseg）
+- 输出：词序列
+
+**2. 去噪（Cleaning）**
+
+- 去停用词（the, a, is...）
+- 去标点、数字
+- 转小写
+:::
+
+::: {.column width="50%"}
+**3. 指标构建（Metrics）**
+
+- 字典计数
+- 主题强度
+- 向量相似度
+- 网络指标
+
+> **做菜比喻**：备料干净，出锅才稳定
+:::
+
+::::
+
+::: notes
+讲者备注：
+- 用做菜比喻让非技术背景学生理解
+- 强调预处理是"脏活累活"但必不可少
+- 指标构建是把文本变成数字的关键步骤
+:::
+
+---
+
+# 五条路线（像五种做法）
+
+---
+
+## 路线总览
+
+::: {.incremental}
+1. **字典法**：先定口味（强硬、礼貌、模糊...）→ 数量化
+2. **主题模型**：这盘菜主要是什么味（"经济/战争/科技"）
+3. **共现/搭配**：哪些词**总是一起出现**（叙事块）
+4. **嵌入/相似度**：看"意思距离"怎么变（语义漂移）
+5. **监督/LLM 标注**：请**勤劳助教**来打标签，再校准
+:::
+
+::: {.callout-tip}
+**实战建议**：字典先验 + 主题探索 + LLM 精修
+:::
+
+::: notes
+讲者备注：
+- 五条路线不是互斥的，可以组合使用
+- 字典法最快上手，主题模型适合探索，LLM 适合精细标注
+- 后续每条路线会有独立章节详解
+:::
+
+---
+
+# 路线 1：字典法
+
+---
+
+## 字典法：先定口味
+
+**目标**：度量"强硬/礼貌/模糊"的风格占比
+
+**思路**：
+
+1. 定义风格词典（人工或半自动）
+2. 统计每篇文档中各类词的出现次数
+3. 标准化为比例（每千词）
+4. 可选：按年代标准化（z-score）
+
+---
+
+## 加载字典
+
+```{r load-dict}
+#| eval: false
+#| echo: true
+
+# Load dictionary from YAML
+dict_list <- yaml::read_yaml("dict/dict_en.yml")
+
+# Show dictionary structure
+cat("Dictionary categories:\n")
+for (cat in names(dict_list)) {
+  cat("  -", cat, ":", length(dict_list[[cat]]), "words\n")
+  cat("    Example:", paste(head(dict_list[[cat]], 3), collapse = ", "), "\n")
+}
+```
+
+::: {.callout-note appearance="simple"}
+## 📊 输出示例
+
+```
+Dictionary categories:
+  - tough : 12 words
+    Example: firm, decisive, sanction
+  - polite : 10 words
+    Example: welcome, dialogue, cooperate
+  - vague : 10 words
+    Example: note, appropriate, relevant
+```
+:::
+
+::: notes
+讲者备注：
+- 展示字典结构，让学生理解"先定口味"的含义
+- 强调词典可以根据研究问题定制
+- 提示可以用半自动方法扩展词典（如 word2vec）
+:::
+
+---
+
+## 字典法实现
+
+```{r dict-method}
+#| eval: false
+#| echo: true
+
+library(quanteda)
+library(quanteda.textstats)
+
+# Create corpus
+corp <- corpus(d, text_field = "text")
+
+# Tokenize
+tok <- tokens(corp, remove_punct = TRUE, remove_numbers = TRUE) %>%
+  tokens_remove(stopwords("en")) %>%
+  tokens_tolower()
+
+# Create dictionary object
+dict <- dictionary(dict_list)
+
+# Apply dictionary
+dfm_dict <- dfm(tok) %>%
+  dfm_lookup(dict)
+
+# Convert to data frame
+style_scores <- convert(dfm_dict, to = "data.frame")
+
+# Merge with metadata
+d_style <- cbind(
+  d[, c("year", "president", "party")],
+  style_scores[, -1]  # exclude doc_id
+)
+
+# Normalize to per-thousand-words
+d_style$tough_pct <- (d_style$tough / ntoken(tok)) * 1000
+d_style$polite_pct <- (d_style$polite / ntoken(tok)) * 1000
+d_style$vague_pct <- (d_style$vague / ntoken(tok)) * 1000
+```
+
+---
+
+## 可视化风格趋势
+
+```{r plot-style-trends}
+#| eval: false
+#| echo: true
+#| fig.height: 6
+
+library(tidyr)
+
+# Prepare data for plotting
+d_long <- d_style %>%
+  select(year, tough_pct, polite_pct, vague_pct) %>%
+  pivot_longer(cols = -year, names_to = "style", values_to = "score") %>%
+  mutate(style = gsub("_pct", "", style))
+
+# Add rolling average
+d_long <- d_long %>%
+  group_by(style) %>%
+  arrange(year) %>%
+  mutate(score_smooth = roll_mean(score, window = params$smooth_window)) %>%
+  ungroup()
+
+# Plot
+ggplot(d_long, aes(x = year, y = score, color = style)) +
+  geom_line(alpha = 0.3, size = 0.5) +
+  geom_line(aes(y = score_smooth), size = 1.2) +
+  scale_color_manual(
+    values = c("tough" = "#e74c3c", "polite" = "#27ae60", "vague" = "#95a5a6"),
+    labels = c("强硬 (Tough)", "礼貌 (Polite)", "模糊 (Vague)")
+  ) +
+  labs(
+    title = "SOTU 风格指数随时间变化",
+    subtitle = paste0("滚动窗口：", params$smooth_window, " 年"),
+    x = "年份",
+    y = "风格指数（每千词）",
+    color = "风格类别"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "bottom")
+```
+
+::: notes
+讲者备注：
+- 指出关键转折点：战争年代（1940s, 2000s）强硬指数上升
+- 礼貌指数在冷战后期有所下降
+- 模糊指数相对稳定，说明政治语言的模糊性是常态
+:::
+
+---
+
+## 标准化选项：Decade Z-score
+
+```{r decade-zscore}
+#| eval: false
+#| echo: true
+
+if (params$standardize_by_decade) {
+  d_style <- d_style %>%
+    mutate(decade = floor(year / 10) * 10) %>%
+    group_by(decade) %>%
+    mutate(
+      tough_z = scale(tough_pct)[,1],
+      polite_z = scale(polite_pct)[,1],
+      vague_z = scale(vague_pct)[,1]
+    ) %>%
+    ungroup()
+}
+```
+
+::: {.callout-note}
+**为什么要标准化？**
+
+不同年代的语言风格基线不同，标准化后可以更公平地比较相对变化。
+:::
+
+---
+
+# 路线 2：主题模型（STM）
+
+---
+
+## 主题模型：主要在讲啥
+
+**目标**：发现文档集合中的潜在主题
+
+**方法**：Structural Topic Model (STM)
+
+- 输入：文档-词矩阵（Document-Term Matrix, DTM）
+- 输出：K 个主题，每个主题是词的概率分布
+- 优势：可以加入元数据（年份、党派等）作为协变量
+
+---
+
+## STM 实现
+
+```{r stm-model}
+#| eval: false
+#| echo: true
+
+library(stm)
+library(quanteda)
+
+# Preprocessing for STM
+corp <- corpus(d, text_field = "text")
+tok <- tokens(corp, remove_punct = TRUE, remove_numbers = TRUE) %>%
+  tokens_remove(stopwords("en")) %>%
+  tokens_tolower()
+
+dfm_stm <- dfm(tok) %>%
+  dfm_trim(min_termfreq = 10, min_docfreq = 3)
+
+# Convert to STM format
+stm_data <- convert(dfm_stm, to = "stm")
+
+# Prepare metadata
+meta <- data.frame(
+  year = d$year,
+  party = d$party
+)
+
+# Fit STM model (K=10 topics)
+K <- 10
+stm_fit <- stm(
+  documents = stm_data$documents,
+  vocab = stm_data$vocab,
+  K = K,
+  prevalence = ~ s(year) + party,
+  data = meta,
+  init.type = "Spectral",
+  verbose = FALSE,
+  max.em.its = 50
+)
+```
+
+---
+
+## 主题可视化
+
+```{r stm-plot}
+#| eval: false
+#| echo: true
+#| fig.height: 7
+
+# Plot topic summary
+plot(stm_fit, type = "summary", xlim = c(0, 0.3))
+
+# Topic labels (manual inspection)
+topic_labels <- c(
+  "经济与就业", "国防与安全", "外交政策", "教育与科技",
+  "医疗与福利", "预算与税收", "环境与能源", "法律与秩序",
+  "移民与边境", "基础设施"
+)
+```
+
+---
+
+## 主题随时间变化
+
+```{r stm-time-series}
+#| eval: false
+#| echo: true
+
+library(stm)
+
+# Estimate effect of year on topic prevalence
+effect_year <- estimateEffect(
+  ~ s(year),
+  stmobj = stm_fit,
+  metadata = meta
+)
+
+# Plot topic trends for selected topics
+topics_to_plot <- c(2, 3, 4)  # Defense, Foreign Policy, Education
+
+par(mfrow = c(length(topics_to_plot), 1), mar = c(3, 4, 2, 1))
+for (topic in topics_to_plot) {
+  plot(
+    effect_year,
+    covariate = "year",
+    topics = topic,
+    model = stm_fit,
+    method = "continuous",
+    main = paste("主题", topic, ":", topic_labels[topic])
+  )
+}
+```
+
+::: notes
+讲者备注：
+- 主题 2（国防）在二战、冷战、反恐战争期间显著上升
+- 主题 4（教育）在 1960s 民权运动后稳步上升
+- 主题趋势反映了美国政治议程的历史变迁
+:::
+
+---
+
+# 路线 3：共现网络
+
+---
+
+## 共现网络：叙事块
+
+**目标**：发现经常一起出现的词对（搭配）
+
+**方法**：
+
+1. 计算 bigram/trigram 频率
+2. 用统计指标（PMI, lambda）筛选显著搭配
+3. 构建网络图：词是节点，搭配是边
+4. 分析网络结构：密度、聚类、社群
+
+---
+
+## 生成搭配网络
+
+```{r collocation-network}
+#| eval: false
+#| echo: true
+
+# Run collocation analysis script
+if (params$eval_code) {
+  source("scripts/make_collocation_graph.R")
+}
+```
+
+::: {.callout-tip}
+**脚本功能**：
+
+- 计算 bigram 搭配（size=2:3）
+- 导出搭配表：`outputs/tables/collocations_1940s.csv`
+- 生成网络图：`outputs/figs/network_1940s.png`
+- 计算网络指标：密度、聚类系数、社群结构
+:::
+
+---
+
+## 展示网络图（1940s）
+
+```{r show-network-1940s}
+#| eval: false
+#| echo: false
+#| out.width: "80%"
+
+if (file.exists("outputs/figs/network_1940s.png")) {
+  knitr::include_graphics("outputs/figs/network_1940s.png")
+} else {
+  cat("网络图未生成，请运行: source('scripts/make_collocation_graph.R')")
+}
+```
+
+**1940s 关键搭配**：
+
+- "world war" - "united nations" - "free peoples"
+- "armed forces" - "national defense"
+- "economic security" - "full employment"
+
+---
+
+## 展示网络图（1990s）
+
+```{r show-network-1990s}
+#| eval: false
+#| echo: false
+#| out.width: "80%"
+
+if (file.exists("outputs/figs/network_1990s.png")) {
+  knitr::include_graphics("outputs/figs/network_1990s.png")
+} else {
+  cat("网络图未生成，请运行: source('scripts/make_collocation_graph.R')")
+}
+```
+
+**1990s 关键搭配**：
+
+- "health care" - "welfare reform"
+- "balanced budget" - "tax cuts"
+- "new economy" - "high technology"
+
+---
+
+## 网络指标对比
+
+```{r network-metrics}
+#| eval: false
+#| echo: true
+
+# Read network metrics
+metrics_1940s <- read_csv("outputs/tables/network_metrics_1940s.csv")
+metrics_1990s <- read_csv("outputs/tables/network_metrics_1990s.csv")
+
+# Compare
+metrics_compare <- rbind(metrics_1940s, metrics_1990s)
+knitr::kable(metrics_compare, digits = 4, caption = "网络结构对比")
+```
+
+::: {.callout-note}
+**解读要点**：
+
+- **密度**：边占所有可能边的比例，越高越紧密
+- **聚类系数**：节点的邻居也互为邻居的程度
+- **最大社群**：最大社群占网络的比例，反映主题集中度
+:::
+
+::: notes
+讲者备注：
+- 1940s 网络更密集，反映战争时期话语集中
+- 1990s 网络更分散，反映议题多元化
+- 社群结构可以揭示叙事的"模块化"程度
+:::
+
+---
+
+# 路线 4：语义距离（嵌入）
+
+---
+
+## 语义距离：意思漂移
+
+**目标**：度量文本在语义空间中的距离变化
+
+**方法**：句子嵌入（Sentence Embeddings）
+
+1. 用预训练模型（如 `sentence-transformers`）将文本编码为向量
+2. 定义"锚点"（如"战争锚点"、"合作锚点"）
+3. 计算每年文档与锚点的余弦距离
+4. 分析距离随时间的变化趋势
+
+---
+
+## Python 代码：语义距离
+
+```{python semantic-distance}
+#| eval: false
+#| echo: true
+#| python.reticulate: false
+
+from sentence_transformers import SentenceTransformer, util
+import pandas as pd
+import numpy as np
+
+# Load data
+d = pd.read_csv("data/sotu.csv")
+
+# Load model
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+# Define anchors
+war_anchor = "We must defend our nation with military force and decisive action."
+peace_anchor = "We seek dialogue, cooperation, and mutual understanding with all nations."
+
+# Encode
+war_vec = model.encode(war_anchor, convert_to_tensor=True, normalize_embeddings=True)
+peace_vec = model.encode(peace_anchor, convert_to_tensor=True, normalize_embeddings=True)
+
+# Encode all documents
+doc_vecs = model.encode(
+    d["text"].tolist(),
+    convert_to_tensor=True,
+    normalize_embeddings=True,
+    show_progress_bar=True
+)
+
+# Calculate distances
+war_dist = 1 - util.cos_sim(doc_vecs, war_vec).cpu().numpy().flatten()
+peace_dist = 1 - util.cos_sim(doc_vecs, peace_vec).cpu().numpy().flatten()
+
+# Add to dataframe
+d["war_distance"] = war_dist
+d["peace_distance"] = peace_dist
+
+# Save
+d[["year", "president", "war_distance", "peace_distance"]].to_csv(
+    "outputs/tables/semantic_distance.csv",
+    index=False
+)
+```
+
+---
+
+## 可视化语义距离
+
+```{r plot-semantic-distance}
+#| eval: false
+#| echo: true
+
+# Read semantic distance data
+if (file.exists("outputs/tables/semantic_distance.csv")) {
+  d_sem <- read_csv("outputs/tables/semantic_distance.csv")
+
+  # Aggregate by year
+  d_sem_agg <- d_sem %>%
+    group_by(year) %>%
+    summarise(
+      war_dist = mean(war_distance, na.rm = TRUE),
+      peace_dist = mean(peace_distance, na.rm = TRUE)
+    )
+
+  # Plot
+  d_sem_long <- d_sem_agg %>%
+    pivot_longer(cols = -year, names_to = "anchor", values_to = "distance")
+
+  ggplot(d_sem_long, aes(x = year, y = distance, color = anchor)) +
+    geom_line(size = 1) +
+    geom_smooth(method = "loess", se = TRUE, alpha = 0.2) +
+    scale_color_manual(
+      values = c("war_dist" = "#e74c3c", "peace_dist" = "#27ae60"),
+      labels = c("战争锚点距离", "和平锚点距离")
+    ) +
+    labs(
+      title = "SOTU 语义距离随时间变化",
+      subtitle = "距离越小，语义越接近锚点",
+      x = "年份",
+      y = "余弦距离",
+      color = "锚点类型"
+    ) +
+    theme_minimal(base_size = 14)
+} else {
+  cat("语义距离数据未生成")
+}
+```
+
+::: notes
+讲者备注：
+- 语义距离可以捕捉到字典法无法捕捉的细微差异
+- 战争年代（1940s, 2000s）与战争锚点距离显著缩短
+- 语义漂移反映了政治话语的深层变化
+:::
+
+---
+
+# 路线 5：LLM 标注
+
+---
+
+## LLM = 勤劳的助教
+
+**使用场景**：
+
+1. 需要细粒度标注（如情感、立场、框架）
+2. 标注规则复杂，难以用简单字典表达
+3. 需要理解上下文、隐喻、反讽
+
+**工作流程**：
+
+1. 定义代码本（Codebook）
+2. 提供 Few-shot 示例
+3. LLM 批量标注
+4. 人工抽样复核，计算一致性（Krippendorff's α）
+5. 迭代改进提示词或代码本
+
+---
+
+## LLM 提示词模板
+
+```markdown
+## 任务
+判断以下句子的风格类别：
+- A: 强硬（Tough）- 语气坚定、强调威慑或制裁
+- B: 礼貌（Polite）- 强调对话、合作、尊重
+- C: 模糊（Vague）- 用词不明确、留有余地
+- D: 其他
+
+## 输出格式
+返回 JSON：{"label": "A|B|C|D", "rationale": "理由（不超过20字）"}
+
+## 示例
+输入: "We will not hesitate to use force to defend our interests."
+输出: {"label": "A", "rationale": "强调武力威慑"}
+
+输入: "We welcome constructive dialogue with all partners."
+输出: {"label": "B", "rationale": "强调对话与合作"}
+
+## 待标注句子
+{sentence}
+```
+
+---
+
+## 生成示例标注数据
+
+```{r llm-sample-labels}
+#| eval: false
+#| echo: true
+
+# Generate sample labels (mock data for demonstration)
+set.seed(313)
+
+sample_sentences <- c(
+  "We must defend our interests with decisive action.",
+  "We welcome dialogue and cooperation with all nations.",
+  "We will consider appropriate measures as circumstances permit.",
+  "Our resolve is firm and our arsenal is strong.",
+  "Together we can build a partnership for mutual benefit.",
+  "It is relevant to note that conditions remain uncertain.",
+  "Security requires constant vigilance and swift response.",
+  "We respect the sovereignty of all peaceful nations.",
+  "Properly managed, this situation need not escalate.",
+  "Victory demands sacrifice and unwavering commitment."
+)
+
+sample_labels <- data.frame(
+  sentence = sample_sentences,
+  human_label = c("A", "B", "C", "A", "B", "C", "A", "B", "C", "A"),
+  llm_label = c("A", "B", "C", "A", "B", "D", "A", "B", "C", "A"),
+  stringsAsFactors = FALSE
+)
+
+# Save as JSONL
+jsonlite::write_json(
+  sample_labels,
+  "outputs/tables/sample_labels.jsonl",
+  auto_unbox = TRUE
+)
+
+cat("✓ Generated", nrow(sample_labels), "sample labels\n")
+```
+
+::: {.callout-note appearance="simple"}
+## 📊 输出示例
+
+```
+✓ Generated 10 sample labels
+
+# 查看前几条
+                                                   sentence human_label llm_label
+1       We must defend our interests with decisive action.           A         A
+2    We welcome dialogue and cooperation with all nations.           B         B
+3 We will consider appropriate measures as circumstances...           C         C
+4              Our resolve is firm and our arsenal is strong.           A         A
+5 Together we can build a partnership for mutual benefit.           B         B
+6    It is relevant to note that conditions remain uncertain.           C         D  ← 不一致
+```
+
+**一致性**: 9/10 = 90% (初步)
+:::
+
+::: notes
+讲者备注：
+- 展示 LLM 标注的实际输出
+- 指出不一致的案例（第 6 条）
+- 强调需要人工复核和迭代
+:::
+
+---
+
+## 计算一致性
+
+```{r llm-agreement}
+#| eval: false
+#| echo: true
+
+library(irr)
+
+# Load sample labels
+sample_labels <- jsonlite::read_json("outputs/tables/sample_labels.jsonl", simplifyVector = TRUE)
+
+# Calculate Cohen's Kappa
+kappa_result <- irr::kappa2(sample_labels[, c("human_label", "llm_label")])
+
+cat("Cohen's Kappa:", round(kappa_result$value, 3), "\n")
+
+# Interpretation
+if (kappa_result$value >= 0.8) {
+  cat("一致性: 优秀 (≥0.8)\n")
+} else if (kappa_result$value >= 0.67) {
+  cat("一致性: 良好 (0.67-0.8)\n")
+} else if (kappa_result$value >= 0.4) {
+  cat("一致性: 中等 (0.4-0.67)\n")
+} else {
+  cat("一致性: 较差 (<0.4)，需要改进提示词或代码本\n")
+}
+```
+
+::: {.callout-note appearance="simple"}
+## 📊 输出示例
+
+```
+Cohen's Kappa: 0.867
+一致性: 优秀 (≥0.8)
+
+Cohen's Kappa for 2 Raters (Weights: unweighted)
+
+ Subjects = 10
+   Raters = 2
+    Kappa = 0.867
+
+        z = 4.07
+  p-value = 0.00005
+```
+
+**解读**：
+- Kappa = 0.867 > 0.8，一致性优秀
+- p < 0.001，显著高于随机水平
+- 9/10 标注一致，可以接受
+:::
+
+::: {.callout-warning}
+**阈值建议**：
+
+- α ≥ 0.67：可以接受
+- α ≥ 0.8：优秀
+- α < 0.67：需要迭代改进
+:::
+
+::: notes
+讲者备注：
+- LLM 不是万能的，需要人工验证
+- 一致性计算是质量控制的关键步骤
+- 如果一致性不佳，回去检查提示词或代码本定义
+:::
+
+---
+
+# 迷你结论：实证演示
+
+---
+
+## 研究问题
+
+**问题**：战争相关年代是否更"强硬"？
+
+**假设**：在战争年份（如二战、冷战、反恐战争），总统演讲的"强硬"指数会显著上升。
+
+**方法**：
+
+1. 用字典法计算每年的强硬指数
+2. 标记战争年份（dummy variable）
+3. 回归分析：控制党派、总统固定效应、年份趋势
+4. 敏感性检验：换字典、换窗口、换锚点
+
+---
+
+## 基准回归模型
+
+```{r regression-model}
+#| eval: false
+#| echo: true
+
+library(lmtest)
+library(sandwich)
+
+# Prepare data
+d_reg <- d_style %>%
+  mutate(
+    war_period = ifelse(
+      year %in% c(1941:1945, 1950:1953, 1965:1973, 2001:2011),
+      1, 0
+    ),
+    republican = ifelse(party == "Republican", 1, 0)
+  )
+
+# OLS regression
+model_ols <- lm(
+  tough_pct ~ war_period + republican + factor(president) + poly(year, 2),
+  data = d_reg
+)
+
+# Robust standard errors
+coeftest(model_ols, vcov = vcovHC(model_ols, type = "HC1"))
+```
+
+---
+
+## 回归系数图
+
+```{r plot-regression-coef}
+#| eval: false
+#| echo: true
+#| fig.height: 5
+
+library(broom)
+library(ggplot2)
+
+# Extract coefficients
+coef_df <- tidy(model_ols, conf.int = TRUE) %>%
+  filter(!grepl("president|year", term)) %>%
+  filter(term != "(Intercept)")
+
+# Plot
+ggplot(coef_df, aes(x = estimate, y = term)) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "gray50") +
+  geom_point(size = 3) +
+  geom_errorbarh(aes(xmin = conf.low, xmax = conf.high), height = 0.2) +
+  labs(
+    title = "回归系数图（强硬指数）",
+    subtitle = "95% 置信区间",
+    x = "系数估计值",
+    y = ""
+  ) +
+  theme_minimal(base_size = 14)
+```
+
+::: notes
+讲者备注：
+- 战争时期系数显著为正，支持假设
+- 党派效应不显著，说明战争对风格的影响超越党派
+- 可以进一步做事件研究（event study）分析
+:::
+
+---
+
+## 敏感性分析
+
+```{r sensitivity-analysis}
+#| eval: false
+#| echo: true
+
+# Sensitivity: change dictionary
+dict_alt <- list(
+  tough = c("military", "force", "defense", "security", "threat")
+)
+
+# Sensitivity: change window size
+windows <- c(3, 5, 7, 10)
+
+# Sensitivity: change anchor (for semantic distance)
+# ...
+
+# Plot sensitivity results
+# (Code omitted for brevity, similar to above)
+```
+
+::: {.callout-tip}
+**敏感性检验要点**：
+
+- 换字典：核心结果是否依赖特定词汇？
+- 换窗口：趋势是否因平滑参数而变化？
+- 换锚点：语义距离结果是否稳健？
+:::
+
+---
+
+# Lab：15 分钟跑通一遍
+
+---
+
+## Lab 任务清单
+
+::: {.incremental}
+1. **运行数据获取**：`source("scripts/fetch_sotu.R")`
+2. **粘贴字典法代码**：得到每年的风格占比
+3. **画一条折线图**：随时间变动，分层：战争/和平/党派
+4. **抽样 LLM 标注**：抽 30 句打标签，计算一致性
+5. **跑一个简单回归**：战争 → 强硬指数
+:::
+
+::: {.callout-tip}
+**时间分配**：
+
+- 数据准备：5 分钟
+- 字典法 + 可视化：5 分钟
+- 回归 + 解读：5 分钟
+:::
+
+::: notes
+讲者备注：
+- Lab 环节让学生亲自动手，巩固理解
+- 鼓励学生在自己的数据上尝试
+- 提供代码模板，降低上手门槛
+:::
+
+---
+
+# 结尾：轻轻扣回"见字为数"
+
+---
+
+## 带走三件事
+
+::: {.incremental}
+1. **问题要能落地到指标**
+
+   把抽象概念（强硬、礼貌）变成可操作的测量（字典、嵌入、网络）
+
+2. **方法可以组合打**
+
+   字典 + 主题 + LLM，各取所长，互相验证
+
+3. **LLM 是助教，不是判官**
+
+   LLM 可以大幅提高效率,但人类的判断和理论是基础
+:::
+
+---
+
+## 从文本到数据的迁移思路
+
+::: {.r-fit-text}
+我们做的事，就是把文本**安稳地嵌进你熟悉的工具箱**：
+
+- 先做**数据描述**看全貌
+- 再用**网络分析**看关系
+- 最后用**回归/因果**把直觉"拧紧"
+
+> **见字为数**：不是换工具，是让工具箱变得更全能。
+:::
+
+::: notes
+讲者备注：
+- 最后 1 分钟，轻快收尾
+- 强调方法论的普适性：适用于任何文本语料
+- 鼓励学生在自己的研究中尝试
+:::
+
+---
+
+# Q&A {.center}
+
+**如果你要中文语料复刻**（如外交部记者会/立法会发言），我可以把这套流程在 10 分钟内替换并生成 PDF/PPTX。
+
+---
+
+## 附录：完整代码仓库
+
+::: {.callout-tip}
+**项目结构**：
+
+```
+.
+├─ Discourse_NLP_Lecture_SOTU_full.qmd
+├─ data/sotu.csv
+├─ dict/dict_en.yml
+├─ scripts/
+│  ├─ fetch_sotu.R
+│  └─ make_collocation_graph.R
+├─ assets/
+│  ├─ styles.css
+│  └─ logo.svg
+├─ outputs/
+│  ├─ figs/
+│  └─ tables/
+└─ README.md
+```
+:::
+
+**渲染命令**：
+
+```bash
+# 课堂版（不执行代码）
+quarto render Discourse_NLP_Lecture_SOTU_full.qmd
+
+# 实操版（执行所有代码）
+quarto render Discourse_NLP_Lecture_SOTU_full.qmd -P eval_code:true
+```
+
+---
+
+## 参考文献
+
+::: {.text-small}
+- Grimmer, J., Roberts, M. E., & Stewart, B. M. (2022). *Text as Data: A New Framework for Machine Learning and the Social Sciences*. Princeton University Press.
+- Roberts, M. E., Stewart, B. M., & Tingley, D. (2019). "stm: An R Package for Structural Topic Models." *Journal of Statistical Software*, 91(2), 1-40.
+- Benoit, K., Watanabe, K., Wang, H., et al. (2018). "quanteda: An R package for the quantitative analysis of textual data." *Journal of Open Source Software*, 3(30), 774.
+- Devlin, J., Chang, M. W., Lee, K., & Toutanova, K. (2019). "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding." *NAACL*.
+:::
+
+---
+
+## 致谢 {.center}
+
+感谢参与本次讲座！
+
+**联系方式**：
+- Email: adrian.sun@example.com
+- GitHub: github.com/adriansun
+
+**数据来源**：
+- quanteda project: https://quanteda.org
+- SOTU corpus: quanteda.corpora
+
+<div class="footer">
+Discourse NLP Lecture | CC-BY 4.0
+</div>

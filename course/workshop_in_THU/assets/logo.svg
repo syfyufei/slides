@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="95" fill="#3498db" opacity="0.1"/>
+
+  <!-- Main content: Text-to-Data concept -->
+  <g transform="translate(100, 100)">
+    <!-- Document/Text icon (left side) -->
+    <g transform="translate(-50, -30)">
+      <rect x="-20" y="-25" width="40" height="50" rx="3" fill="#2c3e50" opacity="0.8"/>
+      <line x1="-12" y1="-15" x2="12" y2="-15" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      <line x1="-12" y1="-5" x2="12" y2="-5" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      <line x1="-12" y1="5" x2="12" y2="5" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      <line x1="-12" y1="15" x2="5" y2="15" stroke="white" stroke-width="2" stroke-linecap="round"/>
+    </g>
+
+    <!-- Arrow (center) -->
+    <g transform="translate(0, -5)">
+      <path d="M -15 0 L 15 0" stroke="#3498db" stroke-width="3" stroke-linecap="round"/>
+      <path d="M 10 -8 L 20 0 L 10 8" fill="none" stroke="#3498db" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+
+    <!-- Data/Chart icon (right side) -->
+    <g transform="translate(50, -30)">
+      <rect x="-20" y="-25" width="40" height="50" rx="3" fill="#27ae60" opacity="0.8"/>
+      <!-- Bar chart -->
+      <rect x="-15" y="5" width="8" height="15" fill="white" opacity="0.9"/>
+      <rect x="-4" y="-5" width="8" height="25" fill="white" opacity="0.9"/>
+      <rect x="7" y="-10" width="8" height="30" fill="white" opacity="0.9"/>
+    </g>
+
+    <!-- Title text below -->
+    <text x="0" y="45" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#2c3e50">
+      Discourse NLP
+    </text>
+  </g>
+</svg>

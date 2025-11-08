@@ -1,0 +1,32 @@
+
+Call:
+lm(formula = tough_pct ~ war_period + republican, data = d_style)
+
+Residuals:
+   Min     1Q Median     3Q    Max 
+-6.132 -2.051 -1.009  1.418 18.782 
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   4.8672     0.3000  16.222  < 2e-16 ***
+war_period    2.3457     0.5360   4.377 1.81e-05 ***
+republican   -0.6301     0.4395  -1.433    0.153    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 3.346 on 237 degrees of freedom
+Multiple R-squared:  0.08124,	Adjusted R-squared:  0.07349 
+F-statistic: 10.48 on 2 and 237 DF,  p-value: 4.358e-05
+
+
+=== Robust Standard Errors ===
+
+t test of coefficients:
+
+            Estimate Std. Error t value  Pr(>|t|)    
+(Intercept)  4.86720    0.26998 18.0281 < 2.2e-16 ***
+war_period   2.34570    0.60272  3.8918 0.0001293 ***
+republican  -0.63005    0.45484 -1.3852 0.1672894    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+

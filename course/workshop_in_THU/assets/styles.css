@@ -1,0 +1,282 @@
+/* ==============================================================================
+   Custom Styles for Discourse NLP Lecture
+   ============================================================================== */
+
+/* Title and headings */
+.reveal h1 {
+  font-size: 2.2em;
+  font-weight: 700;
+  margin-bottom: 0.5em;
+  color: #2c3e50;
+}
+
+.reveal h2 {
+  font-size: 1.8em;
+  font-weight: 600;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  color: #34495e;
+}
+
+.reveal h3 {
+  font-size: 1.4em;
+  font-weight: 500;
+  color: #7f8c8d;
+}
+
+/* Subtitle styling */
+.reveal .subtitle {
+  font-size: 1.2em;
+  color: #7f8c8d;
+  font-style: italic;
+  margin-top: -0.5em;
+}
+
+/* Body text */
+.reveal {
+  font-size: 1.1em;
+  line-height: 1.6;
+  font-family: "PingFang SC", "Noto Sans SC", "Microsoft YaHei", "Source Han Sans SC", "WenQuanYi Micro Hei", "SimHei", "Helvetica Neue", Arial, sans-serif;
+}
+
+.reveal p {
+  margin: 0.8em 0;
+}
+
+/* Code blocks */
+.reveal pre {
+  width: 95%;
+  margin: 1em auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  font-size: 0.65em;
+  line-height: 1.4;
+}
+
+.reveal code {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Menlo', 'Monaco', 'Microsoft YaHei Mono', 'Consolas', monospace;
+  background-color: #f5f5f5;
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+.reveal pre code {
+  background-color: transparent;
+  padding: 0;
+  font-size: 1em;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+/* Lists */
+.reveal ul, .reveal ol {
+  margin-left: 1.5em;
+}
+
+.reveal li {
+  margin: 0.5em 0;
+}
+
+/* Emphasis colors */
+.reveal .red {
+  color: #e74c3c;
+  font-weight: 600;
+}
+
+.reveal .blue {
+  color: #3498db;
+  font-weight: 600;
+}
+
+.reveal .green {
+  color: #27ae60;
+  font-weight: 600;
+}
+
+.reveal .gray {
+  color: #95a5a6;
+}
+
+/* Figures and images */
+.reveal img {
+  max-width: 95%;
+  max-height: 550px;
+  margin: 0.5em auto;
+  border-radius: 4px;
+}
+
+.reveal figure {
+  margin: 1em 0;
+}
+
+.reveal figcaption {
+  font-size: 0.8em;
+  color: #7f8c8d;
+  font-style: italic;
+  margin-top: 0.5em;
+}
+
+/* Tables */
+.reveal table {
+  margin: 1em auto;
+  border-collapse: collapse;
+  font-size: 0.8em;
+}
+
+.reveal table th {
+  background-color: #34495e;
+  color: white;
+  padding: 0.6em;
+  font-weight: 600;
+}
+
+.reveal table td {
+  padding: 0.5em;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+.reveal table tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* Blockquotes */
+.reveal blockquote {
+  width: 90%;
+  margin: 1em auto;
+  padding: 0.8em 1.2em;
+  border-left: 5px solid #3498db;
+  background-color: #f8f9fa;
+  font-style: italic;
+  color: #2c3e50;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Notes styling */
+.reveal .notes {
+  font-size: 0.9em;
+  color: #7f8c8d;
+  background-color: #fef9e7;
+  padding: 0.8em;
+  border-left: 4px solid #f39c12;
+  margin: 1em 0;
+  border-radius: 4px;
+}
+
+/* Callout boxes */
+.reveal .callout-tip {
+  background-color: #e8f8f5;
+  border-left: 5px solid #1abc9c;
+  padding: 1em;
+  margin: 1em 0;
+  border-radius: 4px;
+}
+
+.reveal .callout-warning {
+  background-color: #fef5e7;
+  border-left: 5px solid #f39c12;
+  padding: 1em;
+  margin: 1em 0;
+  border-radius: 4px;
+}
+
+.reveal .callout-note {
+  background-color: #ebf5fb;
+  border-left: 5px solid #3498db;
+  padding: 1em;
+  margin: 1em 0;
+  border-radius: 4px;
+}
+
+/* Columns layout */
+.reveal .columns {
+  display: flex;
+  gap: 2em;
+  align-items: flex-start;
+}
+
+.reveal .column {
+  flex: 1;
+}
+
+/* Footer */
+.reveal .footer {
+  position: absolute;
+  bottom: 1em;
+  left: 1em;
+  font-size: 0.6em;
+  color: #95a5a6;
+}
+
+/* Slide number */
+.reveal .slide-number {
+  font-size: 0.7em;
+  color: #7f8c8d;
+}
+
+/* Fragment animations */
+.reveal .fragment.highlight-current-red.current-fragment {
+  color: #e74c3c;
+}
+
+/* Scrollable slide helper - enable for ALL slides by default */
+.reveal .slides {
+  overflow: visible !important;
+}
+
+.reveal .slides section {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  max-height: 100vh;
+  padding-bottom: 2em;
+}
+
+.reveal section.scrollable {
+  height: 100%;
+  overflow-y: auto;
+}
+
+.reveal .fragment.highlight-current-blue.current-fragment {
+  color: #3498db;
+}
+
+/* Custom utility classes */
+.reveal .text-center {
+  text-align: center;
+}
+
+.reveal .text-small {
+  font-size: 0.8em;
+}
+
+.reveal .text-smaller {
+  font-size: 0.75em;
+}
+
+.reveal .text-tiny {
+  font-size: 0.6em;
+}
+
+.reveal .mt-1 {
+  margin-top: 1em;
+}
+
+.reveal .mb-1 {
+  margin-bottom: 1em;
+}
+
+/* Print-specific styles */
+@media print {
+  .reveal h1, .reveal h2 {
+    page-break-after: avoid;
+  }
+
+  .reveal pre {
+    page-break-inside: avoid;
+  }
+
+  .reveal img {
+    max-width: 100%;
+    page-break-inside: avoid;
+  }
+}

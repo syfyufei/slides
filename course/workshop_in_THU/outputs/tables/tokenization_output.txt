@@ -1,0 +1,7 @@
+Tokens consisting of 1 document.
+text1 :
+ [1] "Fellow-Citizens" "of"              "the"             "Senate"         
+ [5] "and"             "House"           "of"              "Representatives"
+ [9] ":"               "I"               "embrace"         "with"           
+[ ... and 21 more ]
+

@@ -1,0 +1,4 @@
+ [1] "fellow-citizens" "senate"          "house"           "representatives"
+ [5] "embrace"         "great"           "satisfaction"    "opportunity"    
+ [9] "now"             "presents"        "congratulating"  "present"        
+[13] "favorable"       "prospects"       "public"          "affairs"        
