@@ -278,7 +278,7 @@ $$
 
 ::: {.column width="50%"}
 
-![](cate.png)
+![](figure/cate.png)
 
 :::
 ::::
