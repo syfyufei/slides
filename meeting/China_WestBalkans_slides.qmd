@@ -140,7 +140,7 @@ set.seed(313)
 :::
 
 ::: {.column width="50%"}
-![](china_balkans_timeline_professional.gif){fig-align="center" height=600}
+![](figure/china_balkans_timeline_professional.gif){fig-align="center" height=600}
 :::
 ::::
 
@@ -174,7 +174,7 @@ set.seed(313)
 :::
 
 ::: {.column width="50%"}
-![](china_balkans_timeline_professional.gif){fig-align="center" height=600}
+![](figure/china_balkans_timeline_professional.gif){fig-align="center" height=600}
 :::
 ::::
 
@@ -333,7 +333,7 @@ $$
 
 ## 发现一："当局者迷"的都市圈效应
 
-![](../../../figure/distance_effect_selected_thresholds.png){fig-align="center" height=500}
+![](figure/distance_effect_selected_thresholds.png){fig-align="center" height=500}
 
 :::{.fragment}
 - [10-30公里]{.golden}范围效应最强
@@ -380,7 +380,7 @@ $$
 
 ## 距离效应的完整图谱
 
-![](../../../figure/distance_effect_analysis_with_country_controls.png){fig-align="center" height=500}
+![](figure/distance_effect_analysis_with_country_controls.png){fig-align="center" height=500}
 
 
 
@@ -390,7 +390,7 @@ $$
 
 ## 发现二：类别异质性的"四象限"分布
 
-![](../../../figure/distance_effect_by_category.png){fig-align="center" height=500}
+![](figure/distance_effect_by_category.png){fig-align="center" height=500}
 
 :::{.notes}
 
@@ -421,13 +421,13 @@ $$
 :::
 
 ## 整体类别对比
-![](../../../figure/category_effect_analysis_with_country_controls.png){fig-align="center" height=500}
+![](figure/category_effect_analysis_with_country_controls.png){fig-align="center" height=500}
 
 ## 发现三：国家异质性
 
 :::: {.columns}
 ::: {.column width="60%"}
-![](../../../figure/country_effect_analysis_with_country_controls.png){fig-align="center" height=450}
+![](figure/country_effect_analysis_with_country_controls.png){fig-align="center" height=450}
 :::
 
 
@@ -439,7 +439,7 @@ $$
 
 ## 国家层面因素分析
 
-![](../../../figure/national_controls_effect_analysis.png){fig-align="center" height=500}
+![](figure/national_controls_effect_analysis.png){fig-align="center" height=500}
 
 # 结论  {background="#43464B"}
 
