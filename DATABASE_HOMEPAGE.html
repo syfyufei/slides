@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8">
+  <title>一带一路软实力数据库</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --bg: #05060a;
+      --text: #f5f6ff;
+      --muted: #a7b0c9;
+      --accent: #5ff4d4;
+      --accent-2: #6c63ff;
+      --card: rgba(11, 14, 32, 0.7);
+      --glass: rgba(255, 255, 255, 0.06);
+      --border: rgba(255, 255, 255, 0.15);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: radial-gradient(circle at top, #14173c 0%, #05060a 55%, #020205 100%);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    .background {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .orb {
+      position: absolute;
+      width: 360px;
+      height: 360px;
+      background: radial-gradient(circle, rgba(111,255,207,0.45), transparent 70%);
+      filter: blur(20px);
+      animation: float 14s ease-in-out infinite;
+    }
+
+    .orb-two {
+      width: 420px;
+      height: 420px;
+      background: radial-gradient(circle, rgba(126,111,255,0.55), transparent 70%);
+      animation-duration: 18s;
+    }
+
+    .orb-three {
+      width: 280px;
+      height: 280px;
+      background: radial-gradient(circle, rgba(255,150,199,0.55), transparent 70%);
+      animation-duration: 20s;
+    }
+
+    @keyframes float {
+      0% { transform: translate3d(-15%, -10%, 0) scale(1); }
+      50% { transform: translate3d(5%, 10%, 0) scale(1.2); }
+      100% { transform: translate3d(-15%, -10%, 0) scale(1); }
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 60px 24px 140px;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 70px;
+      position: relative;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 999px;
+      background: rgba(111, 255, 207, 0.12);
+      color: var(--accent);
+      font-size: 14px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.6rem, 5vw, 3.6rem);
+      line-height: 1.15;
+      margin: 24px 0 16px;
+    }
+
+    .hero p {
+      max-width: 700px;
+      margin: 0 auto 32px;
+      font-size: 1.1rem;
+      color: var(--muted);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 999px;
+      padding: 14px 28px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      text-decoration: none;
+      color: var(--text);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(120deg, var(--accent), #00e1ff 60%);
+      color: #02121d;
+      box-shadow: 0 15px 30px rgba(95, 244, 212, 0.35);
+    }
+
+    .btn-ghost {
+      border: 1px solid var(--border);
+      background: transparent;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 20px 40px rgba(95, 244, 212, 0.35);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      margin-bottom: 60px;
+    }
+
+    .stat-card {
+      padding: 24px;
+      border-radius: 20px;
+      background: var(--card);
+      border: 1px solid var(--glass);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, rgba(111,255,207,0.12), transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .stat-card:hover::after {
+      opacity: 1;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 0.9rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      font-size: 2.4rem;
+      font-weight: 700;
+      margin: 10px 0 4px;
+    }
+
+    .stat-desc {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .section-title {
+      font-size: 2rem;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .section-desc {
+      max-width: 720px;
+      margin: 0 auto 40px;
+      text-align: center;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .dataset-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin-bottom: 70px;
+    }
+
+    .dataset-card {
+      padding: 28px;
+      border-radius: 24px;
+      background: linear-gradient(145deg, rgba(255,255,255,0.07), rgba(255,255,255,0.01));
+      border: 1px solid var(--border);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.45);
+    }
+
+    .dataset-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .dataset-card h3 {
+      font-size: 1.6rem;
+      margin: 18px 0 12px;
+    }
+
+    .dataset-card p {
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 18px;
+    }
+
+    .dataset-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .chip {
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(111, 255, 207, 0.12);
+      color: var(--text);
+      font-size: 0.9rem;
+    }
+
+    .dataset-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 12px;
+    }
+
+    .dataset-list li {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--glass);
+      color: var(--text);
+    }
+
+    .dataset-list li:last-child {
+      border-bottom: none;
+    }
+
+    .section-alt {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 32px;
+      padding: 50px 30px;
+      margin-bottom: 70px;
+      border: 1px solid var(--glass);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 25px 55px rgba(0, 0, 0, 0.4);
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 22px;
+    }
+
+    .step-card {
+      padding: 22px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      min-height: 150px;
+    }
+
+    .step-number {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(95, 244, 212, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    .cta {
+      text-align: center;
+      padding: 60px 24px;
+      border-radius: 32px;
+      background: linear-gradient(135deg, rgba(95,244,212,0.15), rgba(108,99,255,0.2));
+      border: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.45);
+    }
+
+    .cta h2 {
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
+
+    .cta p {
+      color: var(--muted);
+      margin-bottom: 26px;
+      line-height: 1.6;
+    }
+
+    footer {
+      margin-top: 70px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 640px) {
+      .hero-actions {
+        flex-direction: column;
+      }
+      .dataset-meta {
+        flex-direction: column;
+      }
+      .container {
+        padding: 40px 18px 100px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="background">
+    <div class="orb orb-one" style="top: -60px; left: -20px;"></div>
+    <div class="orb orb-two" style="bottom: 10%; right: -50px;"></div>
+    <div class="orb orb-three" style="top: 40%; left: 70%;"></div>
+  </div>
+
+  <main class="container">
+    <section class="hero">
+      <span class="eyebrow">BELT &amp; ROAD · SOFT POWER LAB</span>
+      <h1>看懂“一带一路”软实力的外溢瞬间</h1>
+      <p>我们把全球舆论的脉搏与地面项目的真实进展融合在一起，用视觉化的方式捕捉中国故事如何在世界媒体与城市街头同步扩散。</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#dataset">探索数据宇宙 →</a>
+        <a class="btn btn-ghost" href="#actions">如何使用</a>
+      </div>
+    </section>
+
+    <section class="stats-grid">
+      <article class="stat-card">
+        <div class="stat-label">全球报道</div>
+        <div class="stat-value">58,783,344</div>
+        <div class="stat-desc">篇关于中国的新闻，覆盖 2013–2025 年的世界媒体现场。</div>
+      </article>
+      <article class="stat-card">
+        <div class="stat-label">媒体来源</div>
+        <div class="stat-value">15,448</div>
+        <div class="stat-desc">家不同媒体在同一数据库中发声，记录观点与情绪波动。</div>
+      </article>
+      <article class="stat-card">
+        <div class="stat-label">项目链接</div>
+        <div class="stat-value">1590</div>
+        <div class="stat-desc">个“一带一路”项目与新闻实时匹配，看到声誉如何随项目升温。</div>
+      </article>
+      <article class="stat-card">
+        <div class="stat-label">丝路项目</div>
+        <div class="stat-value">1574</div>
+        <div class="stat-desc">条落地案例，涵盖能源、交通、医疗、文化等 8 大场景。</div>
+      </article>
+    </section>
+
+    <section id="dataset">
+      <h2 class="section-title">数据宇宙 · 两大入口</h2>
+      <p class="section-desc">一个记录“世界怎样谈论中国”，一个记录“中国在世界做了什么”。两个子数据集像双生镜面，彼此映射，让软实力的流动被真实看见。</p>
+      <div class="dataset-grid">
+        <article class="dataset-card">
+          <span class="dataset-badge">全球脉搏</span>
+          <h3>GDELT 世界媒体雷达</h3>
+          <p>追踪全球媒体对中国的报道热度与情绪，让你快速锁定哪些故事正在发酵。</p>
+          <div class="dataset-meta">
+            <span class="chip">2013–2025</span>
+            <span class="chip">世界媒体 → 中国</span>
+          </div>
+          <ul class="dataset-list">
+            <li>实时比较不同国家的关注度和语调。</li>
+            <li>观察“一个项目”点亮周边城市的舆论光圈。</li>
+            <li>发现哪个媒体群体在扩散友好/质疑的叙事。</li>
+          </ul>
+          <a class="btn btn-ghost" href="data/gdelt_with_investment_data_categorized.csv">下载新闻集</a>
+        </article>
+
+        <article class="dataset-card">
+          <span class="dataset-badge" style="color:#ffd6ff;">地面行动</span>
+          <h3>“一带一路”项目地图</h3>
+          <p>136 个落地项目，配有精确坐标、时间与主题标签，呈现中国方案如何在全球生根。</p>
+          <div class="dataset-meta">
+            <span class="chip">2006–2023</span>
+            <span class="chip">6 国 · 8 大行业</span>
+          </div>
+          <ul class="dataset-list">
+            <li>了解每条铁路、工厂、医院背后的合作故事。</li>
+            <li>用距离感知，谁是项目的“邻居城市”。</li>
+            <li>跨行业对比：能源、制造、文化项目的光环差异。</li>
+          </ul>
+          <a class="btn btn-ghost" href="data/China_categorized.csv">下载项目表</a>
+        </article>
+      </div>
+    </section>
+
+    <section id="actions" class="section-alt">
+      <h2 class="section-title" style="margin-top:0;">怎么玩？</h2>
+      <p class="section-desc">即便不是数据科学家，也能快速体验数据魅力。以下三个思路帮你更炫酷地讲述“一带一路”故事。</p>
+      <div class="steps">
+        <article class="step-card">
+          <div class="step-number">1</div>
+          <h3>洞察热度</h3>
+          <p>挑选任意城市或国家，观察报道数量与情绪的升降，做一张“舆论温度计”。</p>
+        </article>
+        <article class="step-card">
+          <div class="step-number">2</div>
+          <h3>放大现场</h3>
+          <p>将地面项目放在地图上，搭配照片或无人机视频，打造沉浸式叙事。</p>
+        </article>
+        <article class="step-card">
+          <div class="step-number">3</div>
+          <h3>讲述故事线</h3>
+          <p>从一个项目出发，串联附近的媒体反应，形成“启动—施工—反馈”的故事闭环。</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="cta">
+      <h2>准备点亮你的展示吗？</h2>
+      <p>将这份数据库嵌入报告、展览或互动页面，让观众即刻看到“一带一路”软实力的扩散轨迹。需要更多灵感？随时和我们聊聊。</p>
+      <div class="hero-actions" style="justify-content:center;">
+        <a class="btn btn-primary" href="DATABASE_HOMEPAGE.md">阅读 Markdown 版</a>
+        <a class="btn btn-ghost" href="mailto:sunyf20@mails.tsinghua.edu.cn">联系团队</a>
+      </div>
+    </section>
+
+    <footer>
+      Powered by China-westBalkans · Made with data &amp; imagination ✦
+    </footer>
+  </main>
+</body>
+</html>
